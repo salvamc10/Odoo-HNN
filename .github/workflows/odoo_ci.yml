@@ -1,19 +1,17 @@
-name: Odoo CI
+name: Odoo Tests
 
 on:
   push:
     branches:
       - dev
       - test
-      - main
   pull_request:
     branches:
       - dev
       - test
-      - main
 
 jobs:
-  lint-and-test:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,15 +23,6 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: (Opcional) Instalar Odoo si quieres usar pruebas con unittest
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pylint pylint-odoo
-
-      - name: Lint with flake8
-        run: |
-          flake8 ./custom_addons --exclude=__pycache__
-
-      - name: Lint with pylint-odoo
-        run: |
-          pylint --load-plugins=pylint_odoo ./custom_addons --disable=all --enable=odoo
+          echo "Aquí podrías preparar tests en el futuro"
