@@ -8,23 +8,27 @@ se le asigna una nueva secuencia personalizada según la plantilla de presupuest
 
 Reemplaza automatizaciones previas realizadas con Odoo Studio.
 
-Autor: Web Rental Solutions
+Autor: Salva M - Web Rental Solutions
 Fecha: abril 2025
 """
 
-from odoo import models, api
+from odoo import models, api # type: ignore
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    @api.model
-    def create(self, vals):
-        record = super().create(vals)
-        record._apply_custom_sequence()
-        return record
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._apply_custom_sequence()
+        return records
 
     def write(self, vals):
+        """
+        Aplica la lógica de secuencia personalizada también al modificar un pedido.
+        Es compatible con escrituras en lote (recordsets múltiples).
+        """
         result = super().write(vals)
         for record in self:
             record._apply_custom_sequence()
