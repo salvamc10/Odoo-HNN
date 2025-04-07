@@ -23,6 +23,6 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: (Opcional) Instalar Odoo si quieres usar pruebas con unittest
+      - name: Mensaje temporal para tests
         run: |
           echo "Aquí podrías preparar tests en el futuro"
