@@ -30,9 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pylint pylint-odoo
 
-      - name: Lint with flake8
-        run: |
-          flake8 ./custom_addons --exclude=__pycache__
+          - name: Lint with pylint-odoo
+          run: |
+            pylint --load-plugins=pylint_odoo ./custom_addons        
 
       - name: Lint with pylint-odoo
         run: |
