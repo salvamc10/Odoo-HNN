@@ -29,6 +29,9 @@ class SaleOrder(models.Model):
         Aplica la lógica de secuencia personalizada también al modificar un pedido.
         Es compatible con escrituras en lote (recordsets múltiples).
         """
+        if self.env.context.get('no_sequence'):
+            return super().write(vals)
+    
         result = super().write(vals)
         for record in self:
             record._apply_custom_sequence()
@@ -63,7 +66,7 @@ class SaleOrder(models.Model):
                 if sequence_id:
                     sequence = self.env['ir.sequence'].sudo().next_by_code(sequence_id)
                     if sequence:
-                        record.write({
+                        record.with_context(no_sequence=True).write({
                             'origin': record.name,
                             'name': sequence,
                         })
