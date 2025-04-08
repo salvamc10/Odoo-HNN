@@ -4,7 +4,7 @@
     'summary': 'Permite editar la fecha de confirmación en pedidos de compra',
     'category': 'Purchases',
     'license': 'LGPL-3',
-    'author': 'Tu Nombre / Web Rental Solutions',
+    'author': 'Salva M',
     'depends': ['purchase'],
     'data': [
         'views/purchase_order_view.xml',
