@@ -8,11 +8,11 @@ se le asigna una nueva secuencia personalizada según la plantilla de presupuest
 
 Reemplaza automatizaciones previas realizadas con Odoo Studio.
 
-Autor: Salva M - Web Rental Solutions
+Autor: Salva M
 Fecha: abril 2025
 """
 
-from odoo import models, api # type: ignore
+from odoo import models, api
 
 
 class SaleOrder(models.Model):
