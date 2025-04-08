@@ -44,8 +44,8 @@ jobs:
           PGUSER: odoo
           PGPASSWORD: odoo
         run: |
-          odoo --addons-path=custom_addons
-              --db_user=odoo \
-              --test-enable \
-              --stop-after-init \
-              --log-level=test
+          odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
+            --db_user=odoo \
+            --test-enable \
+            --stop-after-init \
+            --log-level=test
