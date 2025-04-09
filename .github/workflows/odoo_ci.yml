@@ -54,6 +54,7 @@ jobs:
         run: |
           odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
             --db_user=odoo \
+            --init=quality_control_by_workcenter \
             --test-enable \
             --stop-after-init \
             --log-level=test
