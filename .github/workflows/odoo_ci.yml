@@ -1,10 +1,13 @@
 name: Odoo CI
 
+# Este workflow se ejecuta automáticamente en cada Pull Request
+# hacia las ramas dev, test y main
 on:
   pull_request:
     branches:
       - dev
       - test
+      - main
 
 jobs:
   odoo-tests:
@@ -36,6 +39,11 @@ jobs:
       - name: Instalar dependencias adicionales si es necesario
         run: |
           apt-get update && apt-get install -y git
+
+      - name: Validar estilo de código con flake8
+        run: |
+          apt update && apt install -y python3-flake8
+          flake8 custom_addons --max-line-length=120 || true
 
       - name: Ejecutar pruebas de Odoo
         env:
