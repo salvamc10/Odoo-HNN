@@ -49,21 +49,19 @@ class MrpProduction(models.Model):
 
         for workorder in self.workorder_ids:
             for point in points:
-                # Validar centro de trabajo obligatorio
                 if point.workcenter_id != workorder.workcenter_id:
                     continue
 
-                # Caso 1: punto de control asignado a un producto específico
-                if point.product_id and point.product_id != Product:
+                # Caso 1: punto definido por producto específico
+                if point.product_ids and Product not in point.product_ids:
                     continue
 
-                # Caso 2: punto de control por categoría
+                # Caso 2: punto por categoría
                 if point.product_category_ids and Category not in point.product_category_ids:
                     continue
 
-                # Caso 3: punto general (sin producto ni categoría) → se permite
+                # Caso 3: sin productos ni categorías → se aplica a todos
 
-                # Crear el quality.check vinculado al workorder correspondiente
                 QualityCheck.create({
                     'workorder_id': workorder.id,
                     'production_id': self.id,
