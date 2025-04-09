@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields
+from odoo import models, fields # type: ignore
 
 """
 Este módulo extiende el modelo de Quality Point para permitir la asignación de puntos de control a centros de trabajo específicos.
