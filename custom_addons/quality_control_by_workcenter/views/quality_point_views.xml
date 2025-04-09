@@ -9,10 +9,8 @@ permitiendo que un punto de control se aplique por centro de trabajo.
         <field name="model">quality.point</field>
         <field name="inherit_id" ref="quality.quality_point_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='product_criteria']" position="after">
-                <group string="Centro de trabajo">
-                    <field name="workcenter_id"/>
-                </group>
+            <xpath expr="//field[@name='picking_type_ids']" position="after">
+                <field name="workcenter_id"/>
             </xpath>
         </field>
     </record>
