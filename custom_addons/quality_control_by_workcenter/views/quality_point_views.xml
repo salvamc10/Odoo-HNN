@@ -7,7 +7,7 @@ permitiendo que un punto de control se aplique por centro de trabajo.
     <record id="view_quality_point_form_inherit_workcenter" model="ir.ui.view">
         <field name="name">quality.point.form.workcenter</field>
         <field name="model">quality.point</field>
-        <field name="inherit_id" ref="quality_control.quality_point_form"/>
+        <field name="inherit_id" ref="quality.quality_point_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//group[@name='product_criteria']" position="after">
                 <group string="Centro de trabajo">
