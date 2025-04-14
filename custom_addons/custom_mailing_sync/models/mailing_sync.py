@@ -50,21 +50,40 @@ class ResPartner(models.Model):
         for partner in self:
             if 'email' in vals and partner.email and mailing_list:
                 new_email = vals.get('email')
+                current_mailing = partner.mailing_contact_id
+                # Buscar un mailing.contact con el nuevo email
                 existing_contact = self.env['mailing.contact'].search([
                     ('email', '=', new_email)
                 ], limit=1)
                 if existing_contact:
-                    # Si el mailing_contact es distinto al actual, lo reasociamos
-                    if partner.mailing_contact_id != existing_contact:
+                    # Si hay un mailing_contact existente y es distinto al actual:
+                    if current_mailing and current_mailing.id != existing_contact.id:
+                        # Comprueba si el mailing_contact actual no está usado por otros partners
+                        others = self.search([
+                            ('mailing_contact_id', '=', current_mailing.id),
+                            ('id', '!=', partner.id)
+                        ])
+                        if not others:
+                            # Si no se usa en ningún otro partner, eliminarlo
+                            current_mailing.unlink()
+                        # Asocia el partner al mailing_contact existente
                         partner.mailing_contact_id = existing_contact.id
+                        # Asegura que el mailing_contact esté vinculado a la lista
                         if mailing_list.id not in existing_contact.list_ids.ids:
                             existing_contact.write({'list_ids': [(4, mailing_list.id)]})
-                else:
-                    # Si no existe, pero el partner ya tenía un mailing_contact,
-                    # actualizamos su email para sincronizarlo
-                    if partner.mailing_contact_id:
-                        partner.mailing_contact_id.write({'email': new_email})
                     else:
+                        # Si no tenía mailing_contact, lo asocia al existente
+                        if not current_mailing:
+                            partner.mailing_contact_id = existing_contact.id
+                            if mailing_list.id not in existing_contact.list_ids.ids:
+                                existing_contact.write({'list_ids': [(4, mailing_list.id)]})
+                else:
+                    # No se encontró mailing_contact con el nuevo email:
+                    if current_mailing:
+                        # Actualiza el mailing_contact actual con el nuevo email
+                        current_mailing.write({'email': new_email})
+                    else:
+                        # Crea un nuevo mailing_contact y lo asocia al partner
                         new_contact = self.env['mailing.contact'].create({
                             'email': new_email,
                             'name': partner.name or '',
@@ -74,14 +93,15 @@ class ResPartner(models.Model):
         return res
 
     def unlink(self):
-        for partner in self:
-            if partner.mailing_contact_id:
-                # Verifica si hay otros partners asociados al mismo mailing_contact
-                others = self.search([
-                    ('mailing_contact_id', '=', partner.mailing_contact_id.id),
-                    ('id', '!=', partner.id)
-                ])
-                # Si no hay otros, elimina el mailing_contact
-                if not others:
-                    partner.mailing_contact_id.unlink()
-        return super(ResPartner, self).unlink()
+        # Recopila los mailing_contact asociados a estos partners antes de eliminarlos
+        mailing_contacts = self.mapped('mailing_contact_id')
+        res = super(ResPartner, self).unlink()
+        # Para cada mailing_contact, si ya no está referenciado por ningún partner, se elimina
+        for mailing in mailing_contacts:
+            ref_count = self.env['res.partner'].search_count([
+                ('mailing_contact_id', '=', mailing.id)
+            ])
+            if ref_count == 0:
+                mailing.unlink()
+        return res
+
