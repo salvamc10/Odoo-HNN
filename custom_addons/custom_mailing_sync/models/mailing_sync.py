@@ -43,36 +43,45 @@ class ResPartner(models.Model):
         return partners
 
     def write(self, vals):
-        """
-        Al editar un partner, si se modifica el 'email', 
-        se busca si ya existe en mailing.contact. 
-        Si existe, se asocia. Si no, se crea uno nuevo.
-        """
         res = super(ResPartner, self).write(vals)
-        
         mailing_list = self.env['mailing.list'].search([
             ('name', '=', 'BBDD BHIOR BASE DE DATOS ESPAÑA')
         ], limit=1)
-        
         for partner in self:
-            # Solo si el email se ha modificado
             if 'email' in vals and partner.email and mailing_list:
+                new_email = vals.get('email')
                 existing_contact = self.env['mailing.contact'].search([
-                    ('email', '=', partner.email)
+                    ('email', '=', new_email)
                 ], limit=1)
-                
                 if existing_contact:
-                    # Asociar el partner a este contacto existente
-                    partner.mailing_contact_id = existing_contact.id
-                    # Asegurar que esté en la lista
-                    if mailing_list.id not in existing_contact.list_ids.ids:
-                        existing_contact.write({'list_ids': [(4, mailing_list.id)]})
+                    # Si el mailing_contact es distinto al actual, lo reasociamos
+                    if partner.mailing_contact_id != existing_contact:
+                        partner.mailing_contact_id = existing_contact.id
+                        if mailing_list.id not in existing_contact.list_ids.ids:
+                            existing_contact.write({'list_ids': [(4, mailing_list.id)]})
                 else:
-                    # Crear nuevo contacto si no existe ninguno
-                    new_contact = self.env['mailing.contact'].create({
-                        'email': partner.email,
-                        'name': partner.name or '',
-                        'list_ids': [(4, mailing_list.id)]
-                    })
-                    partner.mailing_contact_id = new_contact.id
+                    # Si no existe, pero el partner ya tenía un mailing_contact,
+                    # actualizamos su email para sincronizarlo
+                    if partner.mailing_contact_id:
+                        partner.mailing_contact_id.write({'email': new_email})
+                    else:
+                        new_contact = self.env['mailing.contact'].create({
+                            'email': new_email,
+                            'name': partner.name or '',
+                            'list_ids': [(4, mailing_list.id)]
+                        })
+                        partner.mailing_contact_id = new_contact.id
         return res
+
+    def unlink(self):
+        for partner in self:
+            if partner.mailing_contact_id:
+                # Verifica si hay otros partners asociados al mismo mailing_contact
+                others = self.search([
+                    ('mailing_contact_id', '=', partner.mailing_contact_id.id),
+                    ('id', '!=', partner.id)
+                ])
+                # Si no hay otros, elimina el mailing_contact
+                if not others:
+                    partner.mailing_contact_id.unlink()
+        return super(ResPartner, self).unlink()
