@@ -45,7 +45,7 @@ class ResPartner(models.Model):
     def write(self, vals):
         res = super(ResPartner, self).write(vals)
         mailing_list = self.env['mailing.list'].search([
-            ('name', '=', 'BBDD BHIOR BASE DE DATOS ESPAÑA')
+            ('name', '=', '10. BHIOR BASE DE DATOS ESPAÑA B2B')
         ], limit=1)
         for partner in self:
             if 'email' in vals and partner.email and mailing_list:
@@ -104,4 +104,3 @@ class ResPartner(models.Model):
             if ref_count == 0:
                 mailing.unlink()
         return res
-
