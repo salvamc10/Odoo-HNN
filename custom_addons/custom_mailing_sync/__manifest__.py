@@ -12,7 +12,7 @@
     'author': "Tu Nombre",
     'license': 'LGPL-3',
     'depends': [
-        'mailing',
+        'mass_mailing',
         'contacts', 
     ],
     'data': [
