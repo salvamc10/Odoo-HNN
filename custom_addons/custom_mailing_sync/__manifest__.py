@@ -1,6 +1,6 @@
 {
-    'name': "Sincronización de Email con Mailing List",
-    'version': '18.0.1.0.0',
+    'name': "Sincronización de Email del Contacto con Mailing List",
+    'version': '1.0',
     'summary': "Automatiza la incorporación y actualización de contactos en la lista de mailing a partir de los registros en res.partner.",
     'description': """
         Este módulo añade la funcionalidad para que:
@@ -9,7 +9,7 @@
             
         Se previene duplicidad mediante la asignación de un campo relacional.
     """,
-    'author': "Tu Nombre",
+    'author': "Salva M",
     'license': 'LGPL-3',
     'depends': [
         'mass_mailing',
