@@ -16,7 +16,7 @@ class ResPartner(models.Model):
         """
         partners = super(ResPartner, self).create(vals_list)
         mailing_list = self.env['mailing.list'].search([
-            ('name', '=', 'BBDD BHIOR BASE DE DATOS ESPAÑA')
+            ('name', '=', '10. BHIOR BASE DE DATOS ESPAÑA B2B')
         ], limit=1)
         
         for partner in partners:
