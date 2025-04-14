@@ -1,5 +1,5 @@
 {
-    'name': 'Purchase: Editable Fecha Confirmación',
+    'name': 'Fecha de confirmación editable',
     'version': '1.0',
     'summary': 'Permite editar la fecha de confirmación en pedidos de compra',
     'description': """
