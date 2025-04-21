@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Asignación de número de máquina',
-    'summary': 'Asigna un número de máquina automático excepto para la categoría "Recambios / Bhior"',
+    'summary': 'Asigna un número de máquina a todos los productos que pertenecen a las categorías declaradas', 
     'description': '''
     Este módulo reemplaza una automatización de Odoo Studio.  
     Asigna automáticamente un número de máquina mediante una secuencia personalizada,  
-    salvo si el producto pertenece a la categoría "Recambios / Bhior".
+    a todos los productos que pertenecen a las categorías declaradas".
     ''',
     'author': 'Salva M',
     'version': '1.0',
