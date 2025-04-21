@@ -1,8 +1,11 @@
 name: Odoo CI
 
-# Este workflow se ejecuta automáticamente en cada Pull Request
-# hacia las ramas dev, test y main
 on:
+  push:
+    branches:
+      - dev
+      - test
+      - main
   pull_request:
     branches:
       - dev
@@ -36,19 +39,20 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Instalar dependencias
+      - name: Instalar dependencias del sistema
         run: |
           apt-get update && apt-get install -y git python3-flake8
 
       - name: Validar estilo de código con flake8
         run: |
-          apt update && apt install -y python3-flake8
           flake8 custom_addons --max-line-length=120 || true
 
-      - name: Validar estilo de código con flake8
+      - name: Definir módulos a testear si no se proporciona
         run: |
-          apt update && apt install -y python3-flake8
-          flake8 custom_addons --max-line-length=120 || true
+          if [ -z "$MODS" ]; then
+            export MODS=$(find custom_addons -maxdepth 1 -type d -not -name '__pycache__' -not -name 'custom_addons' -exec basename {} \; | paste -sd "," -)
+            echo "MODS=$MODS" >> $GITHUB_ENV
+          fi
 
       - name: Ejecutar pruebas de Odoo
         env:
@@ -56,6 +60,7 @@ jobs:
           PGPORT: 5432
           PGUSER: odoo
           PGPASSWORD: odoo
+          MODS: ${{ env.MODS }}
         run: |
           echo "Instalando módulos: $MODS"
           odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
