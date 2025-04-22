@@ -1,55 +1,34 @@
-# -*- coding: utf-8 -*-
-"""
-Módulo: custom_assign_machine_number
-
-Este módulo asigna un número de máquina mediante una secuencia personalizada a los lotes creados,
-salvo que el producto esté en cualqueira de las categorías seleccionadas".
-
-Reemplaza una automatización previa creada con Odoo Studio.
-
-Autor: Salva M  
-Fecha: abril 2025
-"""
-
 from odoo import models, api # type: ignore
 
 class StockLot(models.Model):
-    _inherit = 'stock.lot'
+    _inherit = 'stock.production.lot'
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        records._assign_machine_number()
-        return records
+    @api.model
+    def create(self, vals):
+        lot = super(StockLot, self).create(vals)
+        # sólo si el campo existe en este entorno
+        if 'x_studio_numero_de_maquina' in lot._fields:
+            lot._assign_machine_number()
+        return lot
 
+    @api.multi
     def write(self, vals):
-        updating_machine_number = 'x_studio_numero_de_maquina' in vals
-        result = super().write(vals)
-        if not updating_machine_number:
-            self._assign_machine_number()
-        return result
+        res = super(StockLot, self).write(vals)
+        # (opcional) volver a asignar si quieres pisar en write
+        return res
 
+    @api.multi
     def _assign_machine_number(self):
-        """Asigna un número de máquina solo si el producto pertenece a ciertas categorías."""
-        categorias_validas = {
-            'Aspiradoras',
-            'Barredoras',
-            'Calentador Industrial',
-            'Fregadoras',
-            'Hidrolimpiadoras',
-            'Hidrolimpiadoras / Agua Caliente',
-            'Hidrolimpiadoras / Agua Fría',
-            'Nebulizador',
-            'Rotativa',
-            'Vapor',
-        }
-
+        categorias_validas = {'Nebulizador', 'Rotativa', 'Vapor'}
         for rec in self:
+            # si no existe el campo en la definición, _fields lo aborta
+            if not rec._fields.get('x_studio_numero_de_maquina'):
+                continue
+            # si ya tiene número, no tocar
             if rec.x_studio_numero_de_maquina:
                 continue
-
-            categoria = rec.product_id.categ_id.name if rec.product_id and rec.product_id.categ_id else ""
-            if categoria.strip() in categorias_validas:
-                secuencia = self.env['ir.sequence'].sudo().next_by_code('machine.sequence')
-                if secuencia:
-                    rec.write({'x_studio_numero_de_maquina': secuencia})
+            cat = (rec.product_id.categ_id.name or '').strip()
+            if cat in categorias_validas:
+                seq = self.env['ir.sequence'].sudo().next_by_code('machine.sequence')
+                if seq:
+                    rec.write({'x_studio_numero_de_maquina': seq})
