@@ -1,0 +1,71 @@
+name: Odoo CI
+
+on:
+  push:
+    branches:
+      - dev
+      - test
+      - main
+  pull_request:
+    branches:
+      - dev
+      - test
+      - main
+
+jobs:
+  odoo-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: odoo
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U odoo"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    container:
+      image: odoo:18
+      options: --user root
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Instalar dependencias del sistema
+        run: |
+          apt-get update && apt-get install -y git python3-flake8
+
+      - name: Validar estilo de código con flake8
+        run: |
+          flake8 custom_addons --max-line-length=120 || true
+
+      - name: Definir módulos a testear si no se proporciona
+        run: |
+          if [ -z "$MODS" ]; then
+            export MODS=$(find custom_addons -maxdepth 1 -type d -not -name '__pycache__' -not -name 'custom_addons' -exec basename {} \; | paste -sd "," -)
+            echo "MODS=$MODS" >> $GITHUB_ENV
+          fi
+
+      - name: Ejecutar pruebas de Odoo
+        env:
+          PGHOST: postgres
+          PGPORT: 5432
+          PGUSER: odoo
+          PGPASSWORD: odoo
+          MODS: ${{ env.MODS }}
+        run: |
+          echo "Instalando módulos: $MODS"
+          odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
+            --db_user=odoo \
+            --init=$MODS \
+            --test-enable \
+            --stop-after-init \
+            --log-level=test
