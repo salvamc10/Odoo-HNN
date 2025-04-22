@@ -10,6 +10,6 @@
         'views/quality_point_template_views.xml',
     ],
     'installable': True,
-    'application': False,
+    'application': True,
     'license': 'LGPL-3',
 }

@@ -1,4 +1,4 @@
-from odoo import models
+from odoo import models # type: ignore
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'

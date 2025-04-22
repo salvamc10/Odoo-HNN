@@ -30,8 +30,12 @@
         <field name="view_mode">tree,form</field>
     </record>
 
+    <menuitem id="menu_quality_point_template_root"
+            name="Gestión de Calidad"
+            sequence="10"/>
+
     <menuitem id="menu_quality_point_template"
             name="Plantillas Checks Calidad"
-            parent="mrp.menu_mrp_configuration"
+            parent="menu_quality_point_template_root"
             action="action_quality_point_template"/>
 </odoo>
