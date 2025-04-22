@@ -1,0 +1,37 @@
+<odoo>
+    <record id="view_quality_point_template_tree" model="ir.ui.view">
+        <field name="name">quality.point.template.tree</field>
+        <field name="model">quality.point.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="workcenter_id"/>
+                <field name="categ_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_quality_point_template_form" model="ir.ui.view">
+        <field name="name">quality.point.template.form</field>
+        <field name="model">quality.point.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="workcenter_id"/>
+                    <field name="categ_id"/>
+                    <field name="quality_point_ids" widget="many2many_tags"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_quality_point_template" model="ir.actions.act_window">
+        <field name="name">Plantillas Checks por Categoría y Centro</field>
+        <field name="res_model">quality.point.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_quality_point_template"
+            name="Plantillas Checks Calidad"
+            parent="mrp.menu_mrp_configuration"
+            action="action_quality_point_template"/>
+</odoo>
