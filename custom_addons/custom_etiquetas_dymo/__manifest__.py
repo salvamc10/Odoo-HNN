@@ -8,7 +8,7 @@
     "version": "18.0.1.0",
     "author": "Salva M",
     "category": "Inventory",
-    "depends": ["stock", "stock_barcode", "base"],
+    "depends": ["stock", "stock_barcode", "stock_barcode_labels", "base"],
     "data": [
         "report/report_label_54x25.xml",
         "report/report.xml",
