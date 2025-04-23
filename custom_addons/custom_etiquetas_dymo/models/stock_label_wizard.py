@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields # type: ignore
 
 class StockLabelWizard(models.TransientModel):
     _inherit = 'stock.label.wizard'

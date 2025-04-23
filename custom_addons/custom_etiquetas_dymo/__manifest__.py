@@ -11,8 +11,8 @@
     "depends": ["stock", "stock_barcode", "base"],
     "data": [
         "report/report_label_54x25.xml",
-        "report/report.xml"
-        "data/label_formats.xml",
+        "report/report.xml",
+        "data/label_formats.xml"
     ],
     "installable": True,
     "application": False
