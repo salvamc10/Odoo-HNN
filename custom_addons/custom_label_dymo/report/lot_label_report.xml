@@ -1,12 +1,10 @@
 <odoo>
   <template id="report_lotlabel_dymo">
-    <t t-call="web.basic_layout">
+    <t t-call="web.external_layout">
       <t t-foreach="docs" t-as="lot">
-        <!-- Contenedor exterior para centrar la etiqueta en la hoja -->
-        <div style="width: 100%; display: flex; justify-content: center; page-break-inside: avoid;">
-          <!-- Etiqueta en sí -->
-          <div style="width: 57mm; height: 32mm; font-family: Arial, sans-serif; padding: 2mm; box-sizing: border-box; border: 1px solid transparent;">
-            <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-around; align-items: center; text-align: center;">
+        <div style="display: flex; justify-content: center; width: 100%; page-break-inside: avoid;">
+          <div style="width: 57mm; height: 32mm; font-family: Arial, sans-serif; padding: 2mm; box-sizing: border-box; text-align: center; border: 1px solid transparent;">
+            <div style="height: 100%; display: flex; flex-direction: column; justify-content: space-around; align-items: center;">
 
               <img t-att-src="'/report/barcode/Code128/%s' % lot.name" style="height: 34px;" />
 
