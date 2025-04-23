@@ -32,6 +32,6 @@
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">custom_label_dymo.report_lotlabel_dymo</field>
     <field name="print_report_name">'Etiqueta - %s' % (object.name)</field>
-    <field name="paperformat_id" ref="custom_label_dymo.paperformat_dymo_label"/>
+    <field name="paperformat_id" search="[('name','=','Dymo Label Sheet')]"/>
   </record>
 </odoo>
