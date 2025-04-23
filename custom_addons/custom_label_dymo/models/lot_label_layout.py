@@ -4,7 +4,7 @@ from odoo import models, fields # type: ignore
 class LotLabelLayout(models.TransientModel):
     _inherit = "lot.label.layout"
 
-    print_format = fields.Selection(selection_add=[('dymo', 'Dymo')])
+    print_format = fields.Selection(selection_add=[('dymo', 'Dymo')], ondelete="set default")
 
     def _get_report_name(self):
         if self.print_format == 'dymo':
