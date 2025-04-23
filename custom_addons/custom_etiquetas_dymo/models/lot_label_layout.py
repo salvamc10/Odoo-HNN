@@ -5,4 +5,4 @@ class LotLabelLayout(models.TransientModel):
 
     print_format = fields.Selection(selection_add=[
         ('54x25', '54 x 25')
-    ])
+    ], ondelete={'54x25': 'set default'})
