@@ -3,7 +3,7 @@
     'version': '18.0.1.0',
     'summary': "Impresión de etiquetas Dymo para números de serie o lote",
     "license": "AGPL-3",
-    "author": "Salva M.",
+    "author": "Salva M",
     "category": "Inventory",
     "depends": ["stock"],
     "description": "Permite imprimir etiquetas Dymo para números de serie o lote. Esta funcionalidad es útil para "
