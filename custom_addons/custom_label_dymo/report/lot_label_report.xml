@@ -13,7 +13,7 @@
     </t>
   </template>
 
-  <record id="report_lotlabel_dymo" model="ir.actions.report">
+  <record id="action_report_lotlabel_dymo" model="ir.actions.report">
     <field name="name">Etiqueta Dymo Lote</field>
     <field name="model">stock.production.lot</field>
     <field name="report_type">qweb-pdf</field>
