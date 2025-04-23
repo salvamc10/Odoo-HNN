@@ -8,7 +8,8 @@
     a todos los productos que pertenecen a las categorías declaradas".
     ''',
     'author': 'Salva M',
-    'version': '1.0',
+    'version': '18.0.1.0',
+    'category': 'Warehouse',
     'license': 'LGPL-3',
     'depends': ['stock'],
     'data': [],
