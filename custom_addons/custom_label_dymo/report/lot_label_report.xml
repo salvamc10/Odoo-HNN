@@ -3,23 +3,17 @@
   <template id="report_lotlabel_dymo">
     <t t-call="web.basic_layout">
       <t t-foreach="docs" t-as="lot">
-        <div style="width: 85mm; height: 30mm; padding: 2mm 4mm; font-family: Arial, sans-serif;">
-          <div style="text-align: center;">
-            <t t-if="lot.product_id.barcode">
-              <img t-att-src="'/report/barcode/Code128/%s' % lot.product_id.barcode" height="40"/>
-              <br/>
-              <span style="font-size: 10px;"><t t-esc="lot.product_id.barcode"/></span>
-            </t>
-          </div>
-          <div style="text-align: center; font-size: 12px; font-weight: bold; margin-top: 2mm;">
+        <div style="width: 57mm; height: 32mm; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: Arial, sans-serif; font-size: 9px; text-align: center; border: 1px solid #000;">
+          <t t-if="lot.product_id.barcode">
+            <img t-att-src="'/report/barcode/Code128/%s' % lot.product_id.barcode" height="32"/>
+            <br/>
+            <span><t t-esc="lot.product_id.barcode"/></span>
+          </t>
+          <div style="font-weight: bold; font-size: 10px; margin-top: 2mm;">
             <t t-esc="lot.product_id.name"/>
           </div>
-          <div style="text-align: center; font-size: 10px;">
-            <t t-esc="lot.name"/>
-          </div>
-          <div style="text-align: center; font-size: 10px;">
-            <t t-esc="lot.product_id.default_code"/>
-          </div>
+          <div><t t-esc="lot.name"/></div>
+          <div><t t-esc="lot.product_id.default_code"/></div>
         </div>
       </t>
     </t>
