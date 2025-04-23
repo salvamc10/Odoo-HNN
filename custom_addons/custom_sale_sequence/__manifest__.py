@@ -1,6 +1,6 @@
 {
     'name': 'Secuencia de ventas personalizada',
-    'version': '1.0',
+    'version': '18.0.1.0',
     'author': 'Salva M',
     'license': 'LGPL-3',
     'summary': 'Asigna automáticamente una secuencia personalizada en pedidos de venta según la plantilla seleccionada',
