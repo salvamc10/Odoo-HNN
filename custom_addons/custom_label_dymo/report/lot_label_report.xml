@@ -3,21 +3,22 @@
   <template id="report_lotlabel_dymo">
     <t t-call="web.basic_layout">
       <t t-foreach="docs" t-as="lot">
-        <div style="width: 57mm; height: 32mm; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: Arial, sans-serif; font-size: 9px; text-align: center; padding: 2mm 3mm; box-sizing: border-box;">
-          <div style="margin-bottom: 2mm;">
-            <img t-att-src="'/report/barcode/Code128/%s' % lot.name" height="28"/>
-            <div style="font-size: 9px; margin-top: 1mm;">
-              <t t-esc="lot.name"/>
-            </div>
+        <div style="width: 57mm; height: 32mm; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: Arial, sans-serif; padding: 3mm 3mm; box-sizing: border-box; text-align: center;">
+
+          <img t-att-src="'/report/barcode/Code128/%s' % lot.name" style="height: 34px; margin-bottom: 2mm;" />
+
+          <div style="font-size: 11px; margin-bottom: 2mm;">
+            <t t-esc="lot.name"/>
           </div>
 
-          <div style="font-weight: bold; font-size: 10px; margin-top: 2mm;">
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 1mm;">
             <t t-esc="lot.product_id.name"/>
           </div>
 
-          <div style="font-size: 9px; margin-top: 1mm;">
+          <div style="font-size: 10px;">
             [<t t-esc="lot.product_id.default_code"/>]
           </div>
+
         </div>
       </t>
     </t>
