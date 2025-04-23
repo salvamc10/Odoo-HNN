@@ -1,4 +1,5 @@
 <odoo>
+  <!-- PLANTILLA QWEB PARA LOTE -->
   <template id="report_lotlabel_dymo">
     <t t-call="web.basic_layout">
       <t t-foreach="docs" t-as="lot">
@@ -24,6 +25,7 @@
     </t>
   </template>
 
+  <!-- ACCIÓN DEL REPORTE -->
   <record id="action_report_lotlabel_dymo" model="ir.actions.report">
     <field name="name">Etiqueta Dymo Lote</field>
     <field name="model">stock.production.lot</field>
