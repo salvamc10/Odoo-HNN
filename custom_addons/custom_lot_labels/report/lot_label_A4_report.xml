@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <template id="report_lotlabel_info_a4">
+    <t t-call="web.basic_layout">
+      <t t-set="o" t-value="None"/>
+      <main style="padding-top: 0mm; margin-top: 0mm;">
+        <t t-foreach="docs" t-as="lot">
+
+          <!-- Preparamos las variables para lote y serie -->
+          <t t-set="lot_split" t-value="lot.name.split('/')"/>
+          <t t-set="lote" t-value="lot_split[0] if len(lot_split) > 1 else ''"/>
+          <t t-set="serie" t-value="lot_split[1] if len(lot_split) > 1 else lot.name"/>
+
+          <div style="page-break-after: always; font-family: Arial, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%; width: 100%; padding: 30px 0;">
+
+            <!-- REFERENCIA INTERNA -->
+            <div style="font-size: 130px; margin-bottom: 30px; word-break: break-word;">
+              <t t-esc="lot.product_id.default_code"/>
+            </div>
+
+            <!-- CÓDIGO DE BARRAS DEL PRODUCTO -->
+            <div style="margin-bottom: 30px;">
+              <img t-att-src="'/report/barcode/Code128/%s' % lot.product_id.default_code"
+                  style="height: 80px;" />
+            </div>
+
+            <!-- LOTE -->
+            <div style="font-size: 110px; margin-bottom: 20px; word-break: break-word;">
+              <t t-esc="lote"/>
+            </div>
+
+            <!-- MÁQUINA -->
+            <div style="font-size: 110px; margin-bottom: 20px; word-break: break-word;">
+              <t t-esc="lot.x_machine_number or ''"/>
+            </div>
+
+            <!-- SERIE -->
+            <div style="font-size: 90px; margin-bottom: 30px; word-break: break-word;">
+              <t t-esc="serie"/>
+            </div>
+
+            <!-- CÓDIGO DE BARRAS DEL LOTE/SERIE COMPLETO -->
+            <div>
+              <img t-att-src="'/report/barcode/Code128/%s' % lot.name"
+                  style="height: 80px;" />
+            </div>
+
+          </div>
+        </t>
+      </main>
+    </t>
+  </template>
+
+  <record id="action_report_lotlabel_info_a4" model="ir.actions.report">
+    <field name="name">Ficha Lote A4</field>
+    <field name="model">stock.lot</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">custom_lot_labels.report_lotlabel_info_a4</field>
+    <field name="print_report_name">'Ficha Lote - %s' % (object.name)</field>
+    <field name="paperformat_id" ref="hr_payroll.paperformat_euro_light"/>
+  </record>
+</odoo>
