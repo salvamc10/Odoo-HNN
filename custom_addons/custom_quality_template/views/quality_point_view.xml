@@ -1,0 +1,14 @@
+<odoo>
+    <record id="custom_quality_point_list_editable" model="ir.ui.view">
+        <field name="name">quality.point.view.list.inherit</field>
+        <field name="model">quality.point</field>
+        <field name="inherit_id" ref="quality.quality_point_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">1</attribute>
+                <attribute name="edit">1</attribute>
+                <attribute name="delete">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
