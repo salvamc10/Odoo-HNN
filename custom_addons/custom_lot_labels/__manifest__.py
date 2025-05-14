@@ -21,6 +21,7 @@
         'report/label_dymo_remove_price.xml',
         'report/label_dymo_fix_default_code.xml',
     ],
+    'pre_init_hook': 'pre_init_hook',
     'installable': True,
     'application': False,
 }
