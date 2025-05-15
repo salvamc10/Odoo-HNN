@@ -10,7 +10,7 @@
     Permite ver los números de serie de los productos fabricados y su estado en la fabricación.
     Así como el mecánico responsabe, el modelo en cuestión y demás campos.
     """,
-    'depends': ['stock', 'product', 'mrp'],
+    'depends': ['stock', 'product', 'mrp', 'custom_lot_labels'],
     'data': [
         'views/stock_lot_view.xml',
     ],

@@ -18,11 +18,13 @@ class StockLotInherit(models.Model):
         readonly=False
     )
 
-    state = fields.Char(
-        string='Estado',
-        compute='_compute_state',
-        store=False
-    )
+    state = fields.Selection([
+        ('reception', 'Recepción'),
+        ('manufacturing', 'Fabricación'),
+        ('in_stock', 'En Stock'),
+        ('scrapped', 'Desechado'),
+        ('in_transit', 'Cliente'),
+    ], string='Estado', compute='_compute_state', store=True)
 
     # Operaciones pendientes de calidad durante la fabricación
     quality_operations_pending = fields.Integer(
@@ -71,33 +73,28 @@ class StockLotInherit(models.Model):
             else:
                 lot.mechanic_id = False
 
-    @api.depends('name')
+    @api.depends('location_id')
     def _compute_state(self):
-        """ Calcula el estado en función de la ubicación actual. """
+        """ Calcula el estado basado en el tipo de ubicación, eliminando dependencia de nombres fijos. """
         for lot in self:
-            move_line = self.env['stock.move.line'].search([
-                ('lot_id', '=', lot.id)
-            ], limit=1, order='date desc')
-
-            if move_line:
-                location = move_line.location_dest_id
-
-                if location.complete_name.startswith('Partners/Vendors'):
-                    lot.state = 'Pendiente'
-                elif location.complete_name.startswith('WH/Input'):
-                    lot.state = 'Recepción'
-                elif location.complete_name.startswith('Virtual Locations/Production'):
-                    lot.state = 'Fabricación'
-                elif location.complete_name.startswith('WH/Stock'):
-                    lot.state = 'En Almacén'
-                elif location.complete_name.startswith('Virtual Locations/Scrap'):
-                    lot.state = 'Desechado'
-                elif location.complete_name.startswith('WH/Output'):
-                    lot.state = 'En Tránsito'
+            location = lot.location_id
+            if not location:
+                lot.state = 'in_stock'
+                continue
+            if location.usage == 'supplier':
+                lot.state = 'reception'
+            elif location.usage == 'production':
+                lot.state = 'manufacturing'
+            elif location.usage == 'inventory':
+                scrap_location = self.env.ref('stock.stock_location_scrapped', raise_if_not_found=False)
+                if scrap_location and location.id == scrap_location.id:
+                    lot.state = 'scrapped'
                 else:
-                    lot.state = 'Desconocido'
+                    lot.state = 'in_stock'
+            elif location.usage == 'customer':
+                lot.state = 'in_transit'
             else:
-                lot.state = 'Sin Movimientos'
+                lot.state = 'in_stock'
 
     @api.depends('name')
     def _compute_quality_operations_pending(self):
