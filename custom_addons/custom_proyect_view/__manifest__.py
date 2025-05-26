@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Proyectos por departamento',
+    'name': 'Proyectos por departamento predefinidos',
     'author': 'Salva M',
     'version': '18.0.1.0',
     'category': 'Project',
