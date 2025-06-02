@@ -5,15 +5,15 @@
         <field name="name">stock.lot.list.custom</field>
         <field name="model">stock.lot</field>
         <field name="arch" type="xml">
-            <list string="Gestión de Unidades">
-                <field name="mechanic_id" string="Mecánico"/>
-                <field name="product_id" string="Modelo"/>
-                <field name="state" string="Estado"/>
-                <field name="name" string="Número de Serie"/>
-                <field name="x_machine_number" string="Número de Máquina"/>
-                <field name="quality_operations_pending" string="Operaciones de Fabricación"/>
-                <field name="quality_operations_outgoing" string="Operaciones de Salida"/>
-                <field name="note" string="Comentarios"/>
+            <list string="Gestión de Unidades" sample="1" multi_edit="1">
+                <field name="employee_assigned_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Mecánicos Asignados"/>
+                <field name="product_id" string="Modelo" readonly="1"/>
+                <field name="state" string="Estado" widget="badge" readonly="1"/>
+                <field name="name" string="Nº de Serie" readonly="1"/>
+                <field name="x_machine_number" string="Nº de Máquina" readonly="1"/>
+                <field name="quality_operations_pending" string="Op. Fabricación" readonly="1"/>
+                <field name="quality_operations_outgoing" string="Op. Salida" readonly="1"/>
+                <field name="note" string="Comentarios" readonly="1"/>
             </list>
         </field>
     </record>
@@ -26,10 +26,10 @@
             <form string="Gestión de Unidades">
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="product_id"/>
-                        <field name="x_machine_number"/>
-                        <field name="mechanic_id" readonly="1"/>
+                        <field name="name" readonly="1"/>
+                        <field name="product_id" readonly="1"/>
+                        <field name="x_machine_number" readonly="1"/>
+                        <field name="employee_assigned_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                         <field name="state" readonly="1"/>
                     </group>
                     <group>
@@ -37,7 +37,7 @@
                         <field name="quality_operations_outgoing" readonly="1"/>
                     </group>
                     <group string="Notas">
-                        <field name="note" placeholder="Escribe aquí tus notas..." widget="html"/>
+                        <field name="note" widget="html" readonly="1"/>
                     </group>
                 </sheet>
             </form>
@@ -46,7 +46,7 @@
 
     <!-- Acción para abrir la vista -->
     <record id="action_stock_lot_custom" model="ir.actions.act_window">
-        <field name="name">Gestión de Unidades</field>
+        <field name="name">Gestión de unidades</field>
         <field name="res_model">stock.lot</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_stock_lot_list_custom"/>
@@ -54,7 +54,7 @@
 
     <!-- Menú personalizado -->
     <menuitem id="menu_stock_lot_custom" 
-            name="Gestión de Unidades" 
+            name="Gestión de unidades" 
             parent="stock.menu_stock_root"
             action="action_stock_lot_custom"/>
 </odoo>

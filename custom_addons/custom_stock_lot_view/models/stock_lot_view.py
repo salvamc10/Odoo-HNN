@@ -4,11 +4,18 @@ from odoo import models, fields, api # type: ignore
 class StockLotInherit(models.Model):
     _inherit = 'stock.lot'
 
-    mechanic_id = fields.Many2one(
+    employee_assigned_ids = fields.Many2many(
         'hr.employee',
-        string='Mecánico',
-        compute='_compute_mechanic',
-        store=False
+        string='Empleados Asignados',
+        related='workorder_id.employee_assigned_ids',
+        readonly=False
+    )
+    
+    workorder_id = fields.Many2one(
+        'mrp.workorder',
+        compute='_compute_workorder_id',
+        string='Orden de Trabajo',
+        store=True
     )
 
     product_id = fields.Many2one(
@@ -23,7 +30,7 @@ class StockLotInherit(models.Model):
         ('manufacturing', 'Fabricación'),
         ('in_stock', 'En Stock'),
         ('scrapped', 'Desechado'),
-        ('in_transit', 'Cliente'),
+        ('in_transit', 'Vendida'),
     ], string='Estado', compute='_compute_state', store=True)
 
     # Operaciones pendientes de calidad durante la fabricación
@@ -42,36 +49,7 @@ class StockLotInherit(models.Model):
 
     note = fields.Text(
             string='Notas',
-        )
-
-    @api.depends('name')
-    def _compute_mechanic(self):
-        """ Busca el operario asignado en la orden de trabajo activa en el taller. 
-        Si no hay ninguno, muestra el último que trabajó. """
-        for lot in self:
-            production = self.env['mrp.production'].search([
-                ('lot_producing_id', '=', lot.id)
-            ], limit=1)
-
-            if production:
-                work_order = self.env['mrp.workorder'].search([
-                    ('production_id', '=', production.id),
-                    ('state', 'in', ['progress', 'ready'])
-                ], limit=1)
-
-                if work_order:
-                    if work_order.connected_employee_ids:
-                        lot.mechanic_id = work_order.connected_employee_ids[0]
-                    else:
-                        last_log = self.env['mrp.workcenter.productivity'].search([
-                            ('workorder_id', '=', work_order.id),
-                            ('employee_id', '!=', False),
-                        ], order='date_end desc', limit=1)
-                        lot.mechanic_id = last_log.employee_id if last_log else False
-                else:
-                    lot.mechanic_id = False
-            else:
-                lot.mechanic_id = False
+    )
 
     @api.depends('location_id')
     def _compute_state(self):
@@ -120,12 +98,12 @@ class StockLotInherit(models.Model):
     def _compute_quality_operations_outgoing(self):
         """ Calcula cuántas operaciones de calidad quedan pendientes para la salida. """
         for lot in self:
-            # 🔍 Buscar las líneas de movimiento relacionadas al lote
+            # Buscar las líneas de movimiento relacionadas al lote
             move_lines = self.env['stock.move.line'].search([
                 ('lot_id', '=', lot.id)
             ])
 
-            # 🔎 A partir de esas líneas, identificamos los `pickings` de salida (outgoing)
+            # A partir de esas líneas, identificamos los `pickings` de salida (outgoing)
             picking_ids = move_lines.mapped('picking_id').filtered(lambda p: p.picking_type_id.code == 'outgoing')
 
             if picking_ids:
@@ -138,4 +116,18 @@ class StockLotInherit(models.Model):
                 lot.quality_operations_outgoing = len(quality_checks)
             else:
                 lot.quality_operations_outgoing = 0
+
+    @api.depends('name')
+    def _compute_workorder_id(self):
+        for lot in self:
+            production = self.env['mrp.production'].search([
+                ('lot_producing_id', '=', lot.id)
+            ], limit=1)
     
+            if production:
+                workorder = self.env['mrp.workorder'].search([
+                    ('production_id', '=', production.id)
+                ], limit=1)
+                lot.workorder_id = workorder.id if workorder else False
+            else:
+                lot.workorder_id = False
