@@ -1,9 +1,0 @@
-<odoo>
-    <record id="action_projects_by_department" model="ir.actions.act_window">
-        <field name="name">Proyectos del Departamento</field>
-        <field name="res_model">project.project</field>
-        <field name="view_mode">kanban,tree,form</field>
-        <field name="context">{'search_default_department_filter': 1}</field>
-        <field name="domain">[('department_id','=',context.get('default_department_id'))]</field>
-    </record>
-</odoo>

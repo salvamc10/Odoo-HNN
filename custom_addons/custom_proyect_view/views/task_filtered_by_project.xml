@@ -1,8 +1,0 @@
-<odoo>
-    <record id="action_tasks_by_project" model="ir.actions.act_window">
-        <field name="name">Tareas del Proyecto</field>
-        <field name="res_model">project.task</field>
-        <field name="view_mode">kanban,tree,form</field>
-        <field name="domain">[('project_id','=',context.get('default_project_id'))]</field>
-    </record>
-</odoo>
