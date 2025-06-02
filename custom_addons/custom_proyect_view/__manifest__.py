@@ -8,7 +8,6 @@
     'summary': 'Pantalla inicial por Departamento > Proyecto > Tareas',
     'depends': ['project', 'hr'],
     'data': [
-
     ],
     'installable': True,
     'application': True,
