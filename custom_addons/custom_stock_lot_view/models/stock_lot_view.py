@@ -37,15 +37,15 @@ class StockLotInherit(models.Model):
     quality_operations_pending = fields.Integer(
         string='Operaciones de Fabricación',
         compute='_compute_quality_operations_pending',
-        store=False
+        store=True # Cambio realizado por Pedro 03/06/2025
     )
 
     # Operaciones pendientes de calidad en la salida
     quality_operations_outgoing = fields.Integer(
         string='Operaciones de Salida',
         compute='_compute_quality_operations_outgoing',
-        store=False
-    )
+        store=True # Cambio realizado por Pedro 03/06/2025
+    )    
 
     note = fields.Text(
             string='Notas',
