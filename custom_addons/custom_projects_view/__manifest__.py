@@ -12,9 +12,7 @@
     'depends': ['project', 'hr'],
     'data': [
         'views/project_views.xml',
-        'views/project_kanban.xml',
     ],
     'installable': True,
     'application': False,
-    'auto_install': False,
 }

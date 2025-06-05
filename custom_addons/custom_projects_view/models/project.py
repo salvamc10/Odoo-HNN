@@ -6,6 +6,5 @@ class ProjectProject(models.Model):
     department_id = fields.Many2one(
         'hr.department',
         string="Departamento",
-        required=True,
         help="Departamento responsable del proyecto."
     )

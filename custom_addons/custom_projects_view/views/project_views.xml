@@ -14,68 +14,6 @@
         </field>
     </record>
 
-    <!-- Kanban: Departamento en tarjeta -->
-    <record id="project_project_kanban_view_group_stage_inherit_department" model="ir.ui.view">
-        <field name="name">project.project.kanban.group.stage.inherit.department</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.project_kanban_view_group_stage"/>
-        <field name="arch" type="xml">
-            <xpath expr="//t[@t-name='card']//div[1]" position="after">
-                <div t-if="record.department_id.raw_value" class="text-muted mt-1">
-                    <i class="fa fa-users me-1" title="Departamento"/> <field name="department_id"/>
-                </div>
-            </xpath>
-        </field>
-    </record>
-
-    <!-- Lista: Departamento después de Nombre -->
-    <record id="project_project_list_view_group_stage_inherit_department" model="ir.ui.view">
-        <field name="name">project.project.list.group.stage.inherit.department</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.project_list_view_group_stage"/>
-        <field name="arch" type="xml">
-            <field name="name" position="after">
-                <field name="department_id"/>
-            </field>
-        </field>
-    </record>
-
-    <!-- Gantt: Departamento después de Usuario -->
-    <record id="project_project_gantt_view_inherit_department" model="ir.ui.view">
-        <field name="name">project.project.gantt.view.inherit.department</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project_enterprise.project_project_view_gantt"/>
-        <field name="arch" type="xml">
-            <field name="user_id" position="after">
-                <field name="department_id"/>
-            </field>
-        </field>
-    </record>
-
-    <!-- Calendario: Departamento después de Usuario -->
-    <record id="project_project_calendar_view_inherit_department" model="ir.ui.view">
-        <field name="name">project.project.calendar.view.inherit.department</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.view_project_calendar"/>
-        <field name="arch" type="xml">
-            <field name="user_id" position="after">
-                <field name="department_id"/>
-            </field>
-        </field>
-    </record>
-
-    <!-- Actividad: Departamento después de Usuario -->
-        <record id="project_project_activity_view_inherit_department" model="ir.ui.view">
-        <field name="name">project.project.activity.view.inherit.department</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.project_project_view_activity"/>
-        <field name="arch" type="xml">
-            <field name="user_id" position="after">
-                <field name="department_id"/>
-            </field>
-        </field>
-    </record>
-
     <record id="project_project_view_form_simplified_inherit_department" model="ir.ui.view">
         <field name="name">project.project.form.simplified.inherit.department</field>
         <field name="model">project.project</field>
@@ -84,7 +22,7 @@
             <xpath expr="//field[@name='name']" position="after">
                 <div style="display: flex; flex-direction: column; margin-top: 16px;">
                     <label for="department_id" class="o_form_label" style="margin-bottom:2px;">
-                        Departamento<span class="o_required" title="Este campo es obligatorio">*</span>
+                        Departamento<span  title="Este campo es obligatorio">*</span>
                     </label>
                     <field
                         name="department_id"
@@ -95,20 +33,4 @@
             </xpath>
         </field>
     </record>
-
-    <record id="project_edit_project_inherit_department" model="ir.ui.view">
-        <field name="name">project.edit.project.inherit.department</field>
-        <field name="model">project.project</field>
-        <field name="inherit_id" ref="project.edit_project"/>
-        <field name="arch" type="xml">
-            <field name="name" position="after">
-                <field
-                    name="department_id"
-                    string="Departamento"
-                    placeholder="p. ej. Marketing"
-                    required="1"/>
-            </field>
-        </field>
-    </record>
-
 </odoo>
