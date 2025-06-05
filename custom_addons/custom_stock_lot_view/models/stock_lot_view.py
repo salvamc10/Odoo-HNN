@@ -34,9 +34,10 @@ class StockLotInherit(models.Model):
     ], string='Estado', compute='_compute_state', store=True)
 
     # Operaciones pendientes de calidad durante la fabricación
-    quality_operations_pending = fields.Integer(
+    # Cambio campo realizado por Pedro 05/06/2025 
+    mrp_order_pending = fields.Integer(
         string='Operaciones de Fabricación',
-        compute='_compute_quality_operations_pending',
+        compute='_compute_mrp_order_pending',
         store=True # Cambio realizado por Pedro 03/06/2025
     )
 
@@ -74,9 +75,10 @@ class StockLotInherit(models.Model):
             else:
                 lot.state = 'in_stock'
 
+    # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
     @api.depends('name')
-    def _compute_quality_operations_pending(self):
-        """ Calcula cuántas operaciones de calidad quedan pendientes para este lote. """
+    def _compute_mrp_order_pending(self):
+        """ Calcula cuántas operaciones de fabricación quedan pendientes para este lote. """
         for lot in self:
             # Encontrar la producción asociada
             production = self.env['mrp.production'].search([
@@ -85,14 +87,14 @@ class StockLotInherit(models.Model):
 
             if production:
                 # Buscar los controles de calidad relacionados con las órdenes de trabajo de esa producción
-                quality_checks = self.env['quality.check'].search([
-                    ('workorder_id.production_id', '=', production.id),
-                    ('quality_state', 'not in', ['pass'])
+                mrp_order = self.env['mrp.workorder'].search([
+                    ('production_id', '=', production.id),
+                    ('state', 'not in', ['done', 'cancel'])
                 ])
                 # Contar los que están pendientes
-                lot.quality_operations_pending = len(quality_checks)
+                lot.mrp_order_pending = len(mrp_order)
             else:
-                lot.quality_operations_pending = 0
+                lot.mrp_order_pending = 0
 
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
