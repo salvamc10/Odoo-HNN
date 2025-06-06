@@ -94,16 +94,18 @@ class StockLotInherit(models.Model):
     @api.depends('production_id.workorder_ids.state')
     def _compute_mrp_order_pending(self):
         for lot in self:
-            # Obtener todas las órdenes de fabricación asociadas a este lote
+        # Buscar la orden de fabricación donde este lote es el producto que se está fabricando
             production = self.env['mrp.production'].search([
                 ('lot_producing_id', '=', lot.id)
             ], limit=1)
-
+            
             if production:
-                all_workorders = production.workorder_ids.filtered(
-                    lambda w: w.state not in ['done', 'cancel']
+                # Filtrar workorders que están en estados pendientes
+                pending_states = ['draft', 'confirmed', 'progress', 'to_close']
+                pending_workorders = production.workorder_ids.filtered(
+                    lambda w: w.state in pending_states
                 )
-                lot.mrp_order_pending = len(all_workorders)
+                lot.mrp_order_pending = len(pending_workorders)
             else:
                 lot.mrp_order_pending = 0
 
