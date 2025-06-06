@@ -57,7 +57,7 @@ class StockLotInherit(models.Model):
 
     # Relación con la orden de fabricación asociada añadido por Pedro 06/06/2025
     production_id = fields.Many2one(
-    'mrp.production',
+    'mrp.workorder',
     compute='_compute_production_id',
     string='Orden de Fabricación',
     store=True
@@ -145,7 +145,7 @@ class StockLotInherit(models.Model):
     @api.depends('name')
     def _compute_production_id(self):
         for lot in self:
-            production = self.env['mrp.production'].search([
-                ('lot_producing_id', '=', lot.id)
+            production = self.env['mrp.workorder'].search([
+                ('finished_lot_id', '=', lot.id)
             ], limit=1)
             lot.production_id = production.id if production else False
