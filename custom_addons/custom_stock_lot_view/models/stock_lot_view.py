@@ -45,7 +45,7 @@ class StockLotInherit(models.Model):
     mrp_order_pending = fields.Integer(
         string='Operaciones de Fabricación',
         compute='_compute_mrp_order_pending',
-        store=True # Cambio realizado por Pedro 03/06/2025
+        store=False # Cambio realizado por Pedro 03/06/2025
     )
 
     # Operaciones pendientes de calidad en la salida
@@ -91,13 +91,14 @@ class StockLotInherit(models.Model):
                 lot.state = 'in_stock'
 
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
-    @api.depends('production_id.workorder_ids.state')
     def _compute_mrp_order_pending(self):
         for lot in self:
-            if lot.production_id:
-                # Filtrar workorders que están en estados pendientes
+            workorder = lot.production_id
+            if workorder and workorder.production_id:
+                production = workorder.production_id
                 pending_states = ['draft', 'confirmed', 'progress', 'to_close']
-                pending_workorders = lot.production_id.workorder_ids.filtered(
+                # Solo cuentas los workorders en estado pendiente
+                pending_workorders = production.workorder_ids.filtered(
                     lambda w: w.state in pending_states
                 )
                 lot.mrp_order_pending = len(pending_workorders)
