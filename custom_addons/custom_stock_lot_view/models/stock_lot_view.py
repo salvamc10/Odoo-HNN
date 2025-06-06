@@ -88,6 +88,7 @@ class StockLotInherit(models.Model):
         for lot in self:
             # Contar workorders asociadas a este lote que no estén terminadas ni canceladas
             pending = lot.mrp_workorder_ids.filtered(lambda w: w.state not in ['done', 'cancel'])
+            
             lot.mrp_order_pending = len(pending)
             
     @api.depends('name')
