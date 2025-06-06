@@ -33,6 +33,13 @@ class StockLotInherit(models.Model):
         ('in_transit', 'Vendida'),
     ], string='Estado', compute='_compute_state', store=True)
 
+    # Relación con workorders que tienen este lote como terminado
+    mrp_workorder_ids = fields.One2many(
+        'mrp.workorder',
+        'finished_lot_id',
+        string='Órdenes de trabajo asociadas'
+    )
+
     # Operaciones pendientes de calidad durante la fabricación
     # Cambio campo realizado por Pedro 05/06/2025 
     mrp_order_pending = fields.Integer(
@@ -76,32 +83,13 @@ class StockLotInherit(models.Model):
                 lot.state = 'in_stock'
 
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
-    @api.depends('name')
+    @api.depends('mrp_workorder_ids.state')
     def _compute_mrp_order_pending(self):
-        import logging
-        logger = logging.getLogger(__name__)
         for lot in self:
-            logger.warning(f"[DEBUG-WARNING] Lote: id={lot.id}, name={lot.name}")
-            print(f"[DEBUG-PRINT] Lote: id={lot.id}, name={lot.name}")
-            # Encontrar la producción asociada
-            production = self.env['mrp.production'].search([
-                ('lot_producing_id', '=', lot.id)
-            ], limit=1)
-            logger.warning(f"[DEBUG-WARNING] Producción encontrada para lote {lot.id}: {production and production.id or 'Ninguna'}")
-            print(f"[DEBUG-PRINT] Producción encontrada para lote {lot.id}: {production and production.id or 'Ninguna'}")
-            if production:
-                mrp_order = self.env['mrp.workorder'].search([
-                    ('production_id', '=', production.id),
-                    ('state', 'not in', ['done', 'cancel'])
-                ])
-                logger.warning(f"[DEBUG-WARNING] Workorders pendientes para producción {production.id}: {mrp_order.ids}")
-                print(f"[DEBUG-PRINT] Workorders pendientes para producción {production.id}: {mrp_order.ids}")
-                lot.mrp_order_pending = len(mrp_order)
-            else:
-                lot.mrp_order_pending = 0
-                logger.warning(f"[DEBUG-WARNING] No se encontró producción para el lote {lot.id}, se asigna 0.")
-                print(f"[DEBUG-PRINT] No se encontró producción para el lote {lot.id}, se asigna 0.")
-
+            # Contar workorders asociadas a este lote que no estén terminadas ni canceladas
+            pending = lot.mrp_workorder_ids.filtered(lambda w: w.state not in ['done', 'cancel'])
+            lot.mrp_order_pending = len(pending)
+            
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
         """ Calcula cuántas operaciones de calidad quedan pendientes para la salida. """
