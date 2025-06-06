@@ -87,17 +87,14 @@ class StockLotInherit(models.Model):
     def _compute_mrp_order_pending(self):
         for lot in self:
             # Obtener todas las órdenes de fabricación asociadas a este lote
-            production_orders = lot.mrp_production_ids
-            
-            # Contar todas las workorders pendientes de todas las órdenes de fabricación
-            pending_count = 0
-            for production in production_orders:
-                pending_workorders = production.workorder_ids.filtered(
-                    lambda w: w.state not in ['done', 'cancel']
-                )
-                pending_count += len(pending_workorders)
-            
-            lot.mrp_order_pending = pending_count
+            all_workorders = lot.mrp_production_ids.mapped('workorder_ids')
+        
+            # Filtrar las que no están terminadas ni canceladas
+            pending_workorders = all_workorders.filtered(
+                lambda w: w.state not in ['done', 'cancel']
+            )
+        
+            lot.mrp_order_pending = len(pending_workorders)
             
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
