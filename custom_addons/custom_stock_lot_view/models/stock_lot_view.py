@@ -83,13 +83,21 @@ class StockLotInherit(models.Model):
                 lot.state = 'in_stock'
 
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
-    @api.depends('mrp_workorder_ids.state')
+    @api.depends('mrp_production_ids.workorder_ids.state')
     def _compute_mrp_order_pending(self):
         for lot in self:
-            # Contar workorders asociadas a este lote que no estén terminadas ni canceladas
-            pending = lot.mrp_workorder_ids.filtered(lambda w: w.state not in ['done', 'cancel'])
+            # Obtener todas las órdenes de fabricación asociadas a este lote
+            production_orders = lot.mrp_production_ids
             
-            lot.mrp_order_pending = len(pending)
+            # Contar todas las workorders pendientes de todas las órdenes de fabricación
+            pending_count = 0
+            for production in production_orders:
+                pending_workorders = production.workorder_ids.filtered(
+                    lambda w: w.state not in ['done', 'cancel']
+                )
+                pending_count += len(pending_workorders)
+            
+            lot.mrp_order_pending = pending_count
             
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
