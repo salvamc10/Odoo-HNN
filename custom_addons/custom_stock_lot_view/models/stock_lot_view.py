@@ -61,7 +61,7 @@ class StockLotInherit(models.Model):
     compute='_compute_production_id',
     string='Orden de Fabricación',
     store=True
-)
+    )
 
     note = fields.Text(
             string='Notas',
@@ -148,7 +148,7 @@ class StockLotInherit(models.Model):
             else:
                 lot.workorder_id = False
 
-    @api.depends('name')
+    @api.depends('x_studio_numero_serie')
     def _compute_production_id(self):
         for lot in self:
             production = self.env['mrp.production'].search([
