@@ -81,22 +81,26 @@ class StockLotInherit(models.Model):
         import logging
         logger = logging.getLogger(__name__)
         for lot in self:
-            logger.info(f"[DEBUG] Lote: id={lot.id}, name={lot.name}")
+            logger.warning(f"[DEBUG-WARNING] Lote: id={lot.id}, name={lot.name}")
+            print(f"[DEBUG-PRINT] Lote: id={lot.id}, name={lot.name}")
             # Encontrar la producción asociada
             production = self.env['mrp.production'].search([
                 ('lot_producing_id', '=', lot.id)
             ], limit=1)
-            logger.info(f"[DEBUG] Producción encontrada para lote {lot.id}: {production and production.id or 'Ninguna'}")
+            logger.warning(f"[DEBUG-WARNING] Producción encontrada para lote {lot.id}: {production and production.id or 'Ninguna'}")
+            print(f"[DEBUG-PRINT] Producción encontrada para lote {lot.id}: {production and production.id or 'Ninguna'}")
             if production:
                 mrp_order = self.env['mrp.workorder'].search([
                     ('production_id', '=', production.id),
                     ('state', 'not in', ['done', 'cancel'])
                 ])
-                logger.info(f"[DEBUG] Workorders pendientes para producción {production.id}: {mrp_order.ids}")
+                logger.warning(f"[DEBUG-WARNING] Workorders pendientes para producción {production.id}: {mrp_order.ids}")
+                print(f"[DEBUG-PRINT] Workorders pendientes para producción {production.id}: {mrp_order.ids}")
                 lot.mrp_order_pending = len(mrp_order)
             else:
                 lot.mrp_order_pending = 0
-                logger.info(f"[DEBUG] No se encontró producción para el lote {lot.id}, se asigna 0.")
+                logger.warning(f"[DEBUG-WARNING] No se encontró producción para el lote {lot.id}, se asigna 0.")
+                print(f"[DEBUG-PRINT] No se encontró producción para el lote {lot.id}, se asigna 0.")
 
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
