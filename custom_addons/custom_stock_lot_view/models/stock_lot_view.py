@@ -78,23 +78,25 @@ class StockLotInherit(models.Model):
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
     @api.depends('name')
     def _compute_mrp_order_pending(self):
-        """ Calcula cuántas operaciones de fabricación quedan pendientes para este lote. """
+        import logging
+        logger = logging.getLogger(__name__)
         for lot in self:
+            logger.info(f"[DEBUG] Lote: id={lot.id}, name={lot.name}")
             # Encontrar la producción asociada
             production = self.env['mrp.production'].search([
                 ('lot_producing_id', '=', lot.id)
             ], limit=1)
-
+            logger.info(f"[DEBUG] Producción encontrada para lote {lot.id}: {production and production.id or 'Ninguna'}")
             if production:
-                # Buscar los controles de calidad relacionados con las órdenes de trabajo de esa producción
                 mrp_order = self.env['mrp.workorder'].search([
                     ('production_id', '=', production.id),
                     ('state', 'not in', ['done', 'cancel'])
                 ])
-                # Contar los que están pendientes
+                logger.info(f"[DEBUG] Workorders pendientes para producción {production.id}: {mrp_order.ids}")
                 lot.mrp_order_pending = len(mrp_order)
             else:
                 lot.mrp_order_pending = 0
+                logger.info(f"[DEBUG] No se encontró producción para el lote {lot.id}, se asigna 0.")
 
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
