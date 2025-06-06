@@ -83,7 +83,7 @@ class StockLotInherit(models.Model):
                 lot.state = 'in_stock'
 
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
-    @api.depends('workorder_ids.state')
+    @api.depends('mrp_workorder_ids.state')
     def _compute_mrp_order_pending(self):
         for lot in self:
             # Obtener todas las órdenes de fabricación asociadas a este lote
