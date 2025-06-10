@@ -55,14 +55,7 @@ class StockLotInherit(models.Model):
         store=True # Cambio realizado por Pedro 03/06/2025
     )  
 
-    # # Relación con la orden de fabricación asociada añadido por Pedro 06/06/2025
-    # production_id = fields.Many2one(
-    # 'mrp.workorder',
-    # compute='_compute_production_id',
-    # string='Orden de Fabricación',
-    # store=True
-    # )
-
+   
     note = fields.Text(
             string='Notas',
     )
@@ -137,10 +130,4 @@ class StockLotInherit(models.Model):
             else:
                 lot.workorder_id = False
 
-    # @api.depends('name')
-    # def _compute_production_id(self):
-    #     for lot in self:
-    #         production = self.env['mrp.workorder'].search([
-    #             ('finished_lot_id', '=', lot.id)
-    #         ], limit=1)
-    #         lot.production_id = production.id if production else False
+   
