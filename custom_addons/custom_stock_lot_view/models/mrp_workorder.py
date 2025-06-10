@@ -34,11 +34,7 @@ class MrpWorkorder(models.Model):
                     ('workorder_id', '=', workorder.id),
                     ('point_id', '!=', False)
                 ])
-<<<<<<< HEAD
                 checks_fallidos = checks.filtered(lambda c: c.quality_state != 'pass')
-=======
-                checks_fallidos = checks.filtered(lambda c: not c.passed)
->>>>>>> 9218e6a551246013cca81bb006652e4b05db4480
 
                 # Buscar alertas asociadas
                 alertas = self.env['quality.alert'].search([
