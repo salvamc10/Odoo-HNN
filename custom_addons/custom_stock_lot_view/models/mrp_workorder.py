@@ -26,3 +26,25 @@ class MrpWorkorder(models.Model):
             if production.lot_producing_id:
                 res.finished_lot_id = production.lot_producing_id.id
         return res
+
+    def button_finish(self):
+            for workorder in self:
+                # Buscar checks de calidad pendientes
+                checks = self.env['quality.check'].search([
+                    ('workorder_id', '=', workorder.id),
+                    ('point_id', '!=', False)
+                ])
+                checks_fallidos = checks.filtered(lambda c: not c.passed)
+
+                # Buscar alertas asociadas
+                alertas = self.env['quality.alert'].search([
+                    ('workorder_id', '=', workorder.id)
+                ])
+
+                if checks_fallidos and not alertas:
+                    raise exceptions.UserError(
+                        "⚠️ No se puede finalizar la operación.\n"
+                        "Hay controles de calidad sin aprobar y no se ha registrado ninguna alerta de calidad que lo justifique."
+                    )
+
+            return super().button_finish()
