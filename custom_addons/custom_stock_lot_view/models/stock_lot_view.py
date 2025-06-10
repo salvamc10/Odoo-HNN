@@ -55,13 +55,13 @@ class StockLotInherit(models.Model):
         store=True # Cambio realizado por Pedro 03/06/2025
     )  
 
-    # Relación con la orden de fabricación asociada añadido por Pedro 06/06/2025
-    production_id = fields.Many2one(
-    'mrp.workorder',
-    compute='_compute_production_id',
-    string='Orden de Fabricación',
-    store=True
-    )
+    # # Relación con la orden de fabricación asociada añadido por Pedro 06/06/2025
+    # production_id = fields.Many2one(
+    # 'mrp.workorder',
+    # compute='_compute_production_id',
+    # string='Orden de Fabricación',
+    # store=True
+    # )
 
     note = fields.Text(
             string='Notas',
@@ -91,19 +91,13 @@ class StockLotInherit(models.Model):
                 lot.state = 'in_stock'
 
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
+    @api.depends('production_id.workorder_ids.state')
     def _compute_mrp_order_pending(self):
-        for lot in self:
-            workorder = lot.production_id
-            if workorder and workorder.production_id:
-                production = workorder.production_id
-                pending_states = ['draft', 'confirmed', 'progress', 'to_close']
-                # Solo cuentas los workorders en estado pendiente
-                pending_workorders = production.workorder_ids.filtered(
-                    lambda w: w.state in pending_states
-                )
-                lot.mrp_order_pending = len(pending_workorders)
-            else:
-                lot.mrp_order_pending = 0
+        for record in self:
+            active_workorders = record.workorder_ids.filtered(
+                lambda w: w.state not in ('done', 'cancel')
+            )
+            record.total_operation_count = len(active_workorders)
 
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
@@ -143,10 +137,10 @@ class StockLotInherit(models.Model):
             else:
                 lot.workorder_id = False
 
-    @api.depends('name')
-    def _compute_production_id(self):
-        for lot in self:
-            production = self.env['mrp.workorder'].search([
-                ('finished_lot_id', '=', lot.id)
-            ], limit=1)
-            lot.production_id = production.id if production else False
+    # @api.depends('name')
+    # def _compute_production_id(self):
+    #     for lot in self:
+    #         production = self.env['mrp.workorder'].search([
+    #             ('finished_lot_id', '=', lot.id)
+    #         ], limit=1)
+    #         lot.production_id = production.id if production else False
