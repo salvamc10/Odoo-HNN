@@ -97,7 +97,7 @@ class StockLotInherit(models.Model):
             active_workorders = record.workorder_ids.filtered(
                 lambda w: w.state not in ('done', 'cancel')
             )
-            record.total_operation_count = len(active_workorders)
+            record.mrp_order_pending = len(active_workorders)
 
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
