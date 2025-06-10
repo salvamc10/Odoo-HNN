@@ -45,7 +45,7 @@ class StockLotInherit(models.Model):
     mrp_order_pending = fields.Integer(
         string='Operaciones de Fabricación',
         compute='_compute_mrp_order_pending',
-        store=True # Cambio realizado por Pedro 03/06/2025
+        store=False # Cambio realizado por Pedro 03/06/2025
     )
 
     # Operaciones pendientes de calidad en la salida
@@ -53,8 +53,9 @@ class StockLotInherit(models.Model):
         string='Operaciones de Salida',
         compute='_compute_quality_operations_outgoing',
         store=True # Cambio realizado por Pedro 03/06/2025
-    )    
+    )  
 
+   
     note = fields.Text(
             string='Notas',
     )
@@ -85,11 +86,12 @@ class StockLotInherit(models.Model):
     # Modificado modulo para calcular las operaciones de fabricación pendientes, Pedro 05/06/2025
     @api.depends('mrp_workorder_ids.state')
     def _compute_mrp_order_pending(self):
-        for lot in self:
-            # Contar workorders asociadas a este lote que no estén terminadas ni canceladas
-            pending = lot.mrp_workorder_ids.filtered(lambda w: w.state not in ['done', 'cancel'])
-            lot.mrp_order_pending = len(pending)
-            
+        for record in self:
+            active_workorders = record.mrp_workorder_ids.filtered(
+                lambda w: w.state not in ('done', 'cancel')
+            )
+            record.mrp_order_pending = len(active_workorders)
+
     @api.depends('name')
     def _compute_quality_operations_outgoing(self):
         """ Calcula cuántas operaciones de calidad quedan pendientes para la salida. """
@@ -127,3 +129,5 @@ class StockLotInherit(models.Model):
                 lot.workorder_id = workorder.id if workorder else False
             else:
                 lot.workorder_id = False
+
+   
