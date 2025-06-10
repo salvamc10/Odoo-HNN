@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo import exceptions
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
