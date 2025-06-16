@@ -28,8 +28,8 @@ class StockLotInherit(models.Model):
     state = fields.Selection([
         ('reception', 'Recepción'),
         ('manufacturing', 'Fabricación'),
-        ('in_stock', 'En Stock'),
-        ('scrapped', 'Desechado'),
+        ('in_stock', 'Terminada'),
+        ('scrapped', 'Canibalizada'),
         ('in_transit', 'Vendida'),
     ], string='Estado', compute='_compute_state', store=True)
 
