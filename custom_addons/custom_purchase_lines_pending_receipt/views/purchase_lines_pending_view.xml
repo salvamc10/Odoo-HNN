@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_purchase_lines_pending_receipt" model="ir.actions.act_window">
+        <field name="name">Líneas de Compra por Recibir</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[("order_id.state", "=", "purchase"), ("product_qty", ">", "qty_received")]</field>
+    </record>
+
+    <menuitem id="menu_purchase_lines_pending_receipt"
+              name="Líneas por Recibir"
+              parent="purchase.menu_purchase_order"
+              action="action_purchase_lines_pending_receipt"
+              sequence="99"/>
+</odoo>
