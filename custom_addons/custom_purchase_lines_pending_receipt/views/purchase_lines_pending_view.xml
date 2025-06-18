@@ -6,7 +6,7 @@
         <field name="name">Líneas de Compra Pendientes</field>
         <field name="res_model">purchase.order.line</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[("order_id.state", "=", "purchase"), ("qty_received", "<", "product_qty")]</field>
+        <field name="domain">[("order_id.state", "=", "purchase"), ("qty_received", &lt;, "product_qty")]</field>
         <field name="context">{}</field>
     </record>
 
