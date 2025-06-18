@@ -6,6 +6,7 @@
         <record id="view_purchase_order_line_pending_tree" model="ir.ui.view">
             <field name="name">purchase.order.line.pending.tree</field>
             <field name="model">purchase.order.line</field>
+            <field name="type">list</field>
             <field name="priority">20</field>
             <field name="arch" type="xml">
                 <tree string="Líneas Pendientes de Recibir" decoration-info="qty_received == 0" decoration-warning="qty_received &lt; product_qty">
@@ -28,6 +29,7 @@
         <record id="view_purchase_order_line_pending_search" model="ir.ui.view">
             <field name="name">purchase.order.line.pending.search</field>
             <field name="model">purchase.order.line</field>
+            <field name="type">search</field>
             <field name="priority">20</field>
             <field name="arch" type="xml">
                 <search string="Buscar Líneas Pendientes">
