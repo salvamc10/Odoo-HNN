@@ -1,7 +1,7 @@
 {
     "name": "Purchase Lines Pending Receipt",
     "version": "1.0",
-    "depends": ["purchase"],
+    "depends": ["purchase", "stock"],
     "category": "Purchases",
     "author": "Pedro m.",
     "summary": "Vista de líneas de pedido pendientes de recepción",
