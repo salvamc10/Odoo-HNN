@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="product_variant_template" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='product_details']" position="inside">
+            <owl-component name="'my_module.VariantSelector'" t-props="{'category': product.categ_id.name}"/>
+        </xpath>
+    </template>
+</odoo>
