@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
+    <!-- Vista tree para líneas de compra pendientes -->
     <record id="purchase_lines_pending_tree_view" model="ir.ui.view">
         <field name="name">purchase.lines.pending.tree</field>
         <field name="model">purchase.order.line</field>
@@ -15,15 +16,6 @@
         </field>
     </record>
 
-    <!-- Acción para mostrar líneas de compra pendientes -->
-    <record id="action_purchase_lines_pending_receipt" model="ir.actions.act_window">
-        <field name="name">Líneas por Recibir</field>
-        <field name="res_model">purchase.order.line</field>
-        <field name="view_mode">tree,search</field>
-        <field name="view_id" ref="custom_purchase_lines_pending_receipt.purchase_lines_pending_tree_view"/>
-        <field name="domain">[("order_id.state", "=", "purchase"), ("qty_received", "&lt;", "product_qty")]</field>
-    </record>
-
     <!-- Vista de búsqueda personalizada -->
     <record id="view_purchase_order_line_pending_search" model="ir.ui.view">
         <field name="name">purchase.order.line.pending.search</field>
@@ -33,11 +25,34 @@
                 <field name="order_id"/>
                 <field name="product_id"/>
                 <filter name="not_received" string="Sin Recepcionar" domain="[('qty_received', '&lt;', 'product_qty')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_by_order" string="Orden de Compra" context="{'group_by': 'order_id'}"/>
+                    <filter name="group_by_product" string="Producto" context="{'group_by': 'product_id'}"/>
+                </group>
             </search>
         </field>
     </record>
 
-    <!-- Botón en el menú de compras -->
+    <!-- Acción para mostrar líneas de compra pendientes -->
+    <record id="action_purchase_lines_pending_receipt" model="ir.actions.act_window">
+        <field name="name">Líneas por Recibir</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="purchase_lines_pending_tree_view"/>
+        <field name="search_view_id" ref="view_purchase_order_line_pending_search"/>
+        <field name="domain">[('order_id.state', '=', 'purchase'), ('qty_received', '&lt;', 'product_qty')]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay líneas de compra pendientes de recibir
+            </p>
+            <p>
+                Aquí aparecerán las líneas de órdenes de compra confirmadas que aún no han sido completamente recibidas.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú principal -->
     <menuitem id="menu_purchase_pending_lines_root"
               name="Líneas Pendientes"
               parent="purchase.menu_purchase_root"
