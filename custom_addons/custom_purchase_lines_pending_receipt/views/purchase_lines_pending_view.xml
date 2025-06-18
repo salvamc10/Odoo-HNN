@@ -9,7 +9,7 @@
             <field name="type">list</field>
             <field name="priority">20</field>
             <field name="arch" type="xml">
-                <list string="Líneas Pendientes de Recibir" decoration-info="qty_received == 0" decoration-warning="qty_received &lt; product_qty">
+                <tree string="Líneas Pendientes de Recibir" decoration-info="qty_received == 0" decoration-warning="qty_received &lt; product_qty">
                     <field name="order_id" string="Pedido de Compra"/>
                     <field name="partner_id" string="Proveedor"/>
                     <field name="product_id" string="Producto"/>
@@ -21,7 +21,7 @@
                     <field name="price_subtotal" string="Subtotal"/>
                     <field name="date_planned" string="Fecha Prevista"/>
                     <field name="state" string="Estado" invisible="1"/>
-                </list>
+                </tree>
             </field>
         </record>
 
@@ -84,7 +84,7 @@
             <field name="view_mode">list</field>
             <field name="view_id" ref="view_purchase_order_line_pending_tree"/>
             <field name="search_view_id" ref="view_purchase_order_line_pending_search"/>
-            <field name="domain">[('order_id.state', 'in', ['purchase', 'done']), ('qty_received', '&lt;', 'product_qty')]</field>
+            <field name="domain">[('order_id.state', 'in', ['purchase', 'done'])]</field>
             <field name="context">{
                 'default_state': 'purchase',
                 'search_default_pending_receipt': 1,
