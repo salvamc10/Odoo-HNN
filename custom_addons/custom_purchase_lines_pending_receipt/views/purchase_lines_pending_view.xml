@@ -1,15 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="action_purchase_lines_pending_receipt" model="ir.actions.act_window">
-        <field name="name">Líneas de Compra por Recibir</field>
+
+    <!-- Acción para mostrar líneas de compra pendientes -->
+    <record id="action_purchase_order_line_pending" model="ir.actions.act_window">
+        <field name="name">Líneas de Compra Pendientes</field>
         <field name="res_model">purchase.order.line</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[("order_id.state", "=", "purchase"), ("product_qty", ">", "qty_received")]</field>
+        <field name="domain">[("order_id.state", "=", "purchase"), ("qty_received", "<", "product_qty")]</field>
+        <field name="context">{}</field>
     </record>
 
-    <menuitem id="menu_purchase_lines_pending_receipt"
-              name="Líneas por Recibir"
-             
-              action="action_purchase_lines_pending_receipt"
-              sequence="99"/>
+    <!-- Vista de búsqueda personalizada -->
+    <record id="view_purchase_order_line_pending_search" model="ir.ui.view">
+        <field name="name">purchase.order.line.pending.search</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="order_id"/>
+                <field name="product_id"/>
+                <filter name="not_received" string="Sin Recepcionar" domain="[('qty_received', '&lt;', 'product_qty')]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Botón en el menú de compras -->
+    <menuitem id="menu_purchase_pending_lines_root"
+              name="Líneas Pendientes"
+              parent="purchase.menu_purchase_root"
+              action="action_purchase_order_line_pending"
+              sequence="25"/>
+
 </odoo>
