@@ -9,7 +9,7 @@
             <field name="type">list</field>
             <field name="priority">20</field>
             <field name="arch" type="xml">
-                <tree string="Líneas Pendientes de Recibir" decoration-info="qty_received == 0" decoration-warning="qty_received &lt; product_qty">
+                <list string="Líneas Pendientes de Recibir" decoration-info="qty_received == 0" decoration-warning="qty_received &lt; product_qty">
                     <field name="order_id" string="Pedido de Compra"/>
                     <field name="partner_id" string="Proveedor"/>
                     <field name="product_id" string="Producto"/>
@@ -21,7 +21,7 @@
                     <field name="price_subtotal" string="Subtotal"/>
                     <field name="date_planned" string="Fecha Prevista"/>
                     <field name="state" string="Estado" invisible="1"/>
-                </tree>
+                </list>
             </field>
         </record>
 
