@@ -9,7 +9,7 @@
 
     <menuitem id="menu_purchase_lines_pending_receipt"
               name="Líneas por Recibir"
-              parent="purchase.menu_purchase_order"
+             
               action="action_purchase_lines_pending_receipt"
               sequence="99"/>
 </odoo>
