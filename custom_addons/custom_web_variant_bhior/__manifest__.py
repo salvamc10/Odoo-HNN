@@ -16,7 +16,7 @@
     'assets': {
         'web.assets_frontend': [
             'custom_web_variant_bhior/static/src/js/variant_selector.js', 
-            'custom_web_variant_bhior/static/src/xml/template_view.xml'                      
+            # 'custom_web_variant_bhior/static/src/xml/template_view.xml'                      
         ],
     },
     'installable': True,

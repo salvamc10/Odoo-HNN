@@ -1,8 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="product_variant_template" inherit_id="website_sale.product">
-        <xpath expr="//div[@id='product_details']" position="inside">
-            <owl-component name="'my_module.VariantSelector'" t-props="{'category': product.categ_id.name}"/>
-        </xpath>
-    </template>
+  <template id="variant_selector_no_default" inherit_id="website_sale.variants">
+    <xpath expr="//select" position="inside">
+      <option value="" selected="selected" disabled hidden>Selecciona una opción</option>
+    </xpath>
+    <xpath expr="//option[@selected='selected']" position="attributes">
+      <attribute name="t-if">ptav.product_id and combination and ptav.product_id.id == combination.product_id.id</attribute>
+    </xpath>
+  </template>
 </odoo>
+
