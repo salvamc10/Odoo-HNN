@@ -12,8 +12,11 @@
     'depends': ['website_sale'],
     'data': [],
     'assets': {
+        'web.assets_frontend': [
+            'custom_web_variant_bhior/static/src/js/variant_selector.js',
+        ],
         'website.assets_frontend': [
-            'custom_web_variant_bhior/static/src/js/variant_selector.js',                               
+            'custom_web_variant_bhior/static/src/js/variant_selector.js',
         ],
     },
     'installable': True,
