@@ -10,13 +10,10 @@
     'license': 'LGPL-3',
     'author': 'Pedro M',
     'depends': ['website_sale', 'product'],
-    'data': [
-        'views/templates.xml'
-    ],
+    'data': [],
     'assets': {
         'web.assets_frontend': [
-            'custom_web_variant_bhior/static/src/js/variant_selector.js', 
-            # 'custom_web_variant_bhior/static/src/xml/template_view.xml'                      
+            'custom_web_variant_bhior/static/src/js/variant_selector.js',                               
         ],
     },
     'installable': True,
