@@ -1,7 +1,7 @@
 <odoo>
   <template id="variant_selector_no_default" inherit_id="website_sale.variants">
     <xpath expr="//select" position="inside">
-      <option value="" selected="selected" disabled hidden>Selecciona una opción</option>
+      <option value="" selected="selected" disabled="disabled" hidden="hidden">Selecciona una opción</option>
     </xpath>
     <xpath expr="//option[@selected='selected']" position="attributes">
       <attribute name="t-if">ptav.product_id and combination and ptav.product_id.id == combination.product_id.id</attribute>
