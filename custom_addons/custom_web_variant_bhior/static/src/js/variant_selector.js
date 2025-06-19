@@ -81,6 +81,42 @@ function handleVariantChange() {
     });  
 
     toggleAddToCartButton(allSelected);
+
+    if (!allSelected) return;
+
+    // Obtener product template ID desde el DOM
+    const productTemplateId = document.querySelector('input[name="product_template_id"]')?.value;
+    if (!productTemplateId) return;
+
+    const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
+
+    // Llamada AJAX a get_combination_info_website
+    fetch("/product/get_combination_info_website", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({
+            product_template_id: parseInt(productTemplateId),
+            combination: combination_ids,
+            quantity: 1
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Variant Info Received:", data);
+
+        // 🔁 Actualizar campo de descripción dinámica
+        const descDiv = document.querySelector('[data-oe-field="description_ecommerce"]');
+        if (descDiv && data.garantia) {
+            descDiv.innerHTML = `<div>${data.garantia}</div>`;
+        }
+    })
+    .catch(err => {
+        console.error("Error fetching combination info:", err);
+    });
+
 }
 
 function toggleAddToCartButton(show) {
