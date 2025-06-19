@@ -91,7 +91,7 @@ function handleVariantChange() {
     const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
 
     // Llamada AJAX a get_combination_info_website
-    fetch("/product/get_combination_info_website", {
+    fetch("/shop/product/get_combination_info_website", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -109,8 +109,8 @@ function handleVariantChange() {
 
         // 🔁 Actualizar campo de descripción dinámica
         const descDiv = document.querySelector('[data-oe-field="description_ecommerce"]');
-        if (descDiv && data.garantia) {
-            descDiv.innerHTML = `<div>${data.garantia}</div>`;
+        if (descDiv && data.Descripcion) {
+            descDiv.innerHTML = `<div>${data.Descripcion}</div>`;
         }
     })
     .catch(err => {
