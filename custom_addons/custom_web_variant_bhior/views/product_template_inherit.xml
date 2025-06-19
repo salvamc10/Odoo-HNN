@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="inherit_product_template_description" inherit_id="website_sale.product">
-        <!-- Ocultamos la descripción ecommerce -->
-        <xpath expr="//div[@id='product_details_description']" position="attributes">
+        <!-- Oculta la descripción ecommerce -->
+        <xpath expr="//div[contains(@class, 'o_product_page_description')]" position="attributes">
             <attribute name="style">display: none;</attribute>
         </xpath>
 
-        <!-- Insertamos una nueva descripción dinámica -->
-        <xpath expr="//div[@id='product_details_description']" position="after">
+        <!-- Añade el nuevo contenedor para la descripción personalizada -->
+        <xpath expr="//div[contains(@class, 'o_product_page_description')]" position="after">
             <div id="product_custom_description" class="o_product_custom_description mt-3"/>
         </xpath>
     </template>
 </odoo>
+
 
