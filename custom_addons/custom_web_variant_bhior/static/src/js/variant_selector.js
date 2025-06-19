@@ -1,4 +1,3 @@
-
 /** @odoo-module **/
 
 console.log("Variant Selector: Module loaded successfully");
@@ -21,7 +20,12 @@ function initVariantSelector() {
         // Quitar selección previa
         Array.from(select.options).forEach(function(option) {
             option.selected = false;
-        });
+
+             // Añadir descripción si está en data-description
+            const desc = option.dataset.description;
+            if (desc && !option.textContent.includes(desc)) {
+                option.textContent = `${option.textContent.trim()} - ${desc}`;
+            }        });
         
         // Verificar si ya existe una opción vacía
         var hasEmpty = Array.from(select.options).some(function(opt) {
@@ -43,7 +47,21 @@ function initVariantSelector() {
         }
         
         // Agregar event listener para cambios
-        select.addEventListener('change', function() {
+        select.addEventListener('change', function(e) {
+
+                    //Añado esta parte
+            const selects = document.querySelectorAll('select.js_variant_change');
+            const allSelected = Array.from(selects).every(function(sel) {
+                return sel.value && sel.value !== '' && sel.value !== '0';
+            });
+
+            if (!allSelected) {
+                e.stopImmediatePropagation(); // ⚠️ Bloquea propagación al sistema Odoo
+                console.log("Variant Selector: Not all selected - event ignored");
+                toggleAddToCartButton(false);
+                return;
+            }
+                
             console.log("Variant Selector: Select changed, value:", this.value);
             handleVariantChange();
         });
@@ -54,17 +72,14 @@ function initVariantSelector() {
     console.log("Variant Selector: Initialization complete");
 }
 
-function handleVariantChange() {
-    console.log("Variant Selector: Handling variant change");
-    
+function handleVariantChange() {    
     var selects = document.querySelectorAll('select.js_variant_change');
     var allSelected = Array.from(selects).every(function(select) {
         var isSelected = select.value && select.value !== '' && select.value !== '0';
         console.log("Variant Selector: Select value:", select.value, "Selected:", isSelected);
         return isSelected;
-    });
-    
-    console.log("Variant Selector: All variants selected:", allSelected);
+    });  
+
     toggleAddToCartButton(allSelected);
 }
 
@@ -78,12 +93,7 @@ function toggleAddToCartButton(show) {
     if (button) {
         button.style.display = show ? '' : 'none';
         console.log("Variant Selector: Button", show ? 'shown' : 'hidden');
-    } else {
-        console.log("Variant Selector: Add to cart button not found");
-        // Mostrar todos los botones disponibles para debug
-        var allButtons = document.querySelectorAll('button');
-        console.log("Variant Selector: Available buttons:", allButtons);
-    }
+     }
 }
 
 // Ejecutar inmediatamente y también cuando el DOM esté listo
@@ -129,3 +139,6 @@ observer.observe(document.body, {
 console.log("Variant Selector: All event listeners registered");
 
 
+
+    
+   
