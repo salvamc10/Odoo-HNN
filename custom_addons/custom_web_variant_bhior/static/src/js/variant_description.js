@@ -8,10 +8,11 @@ patch(WebsiteSale.prototype, {
     async _getCombinationInfo(ev) {
         const result = await super._getCombinationInfo(ev);
 
-        // Inyectar campo de descripción personalizada
-        const descContainer = document.querySelector('#product_custom_description');
-        if (descContainer) {
-            descContainer.innerHTML = result.product_product?.x_studio_descripcion_1 || '';
+       const customDescription = document.getElementById('product_custom_description');
+        const descriptionValue = result.product_product?.x_studio_descripcion_1;
+
+        if (customDescription) {
+            customDescription.innerHTML = descriptionValue ? descriptionValue : '';
         }
 
         return result;
