@@ -1,62 +1,131 @@
 
-// /** @odoo-module **/
+/** @odoo-module **/
 
-console.log("TEST: Variant selector loaded successfully");
+console.log("Variant Selector: Module loaded successfully");
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("TEST: DOM Content Loaded");
+function initVariantSelector() {
+    console.log("Variant Selector: Initializing...");
     
     var selects = document.querySelectorAll('select.js_variant_change');
-    console.log("TEST: Found", selects.length, "variant selects");
+    console.log("Variant Selector: Found", selects.length, "variant selects");
     
-    if (selects.length > 0) {
-        console.log("TEST: First select:", selects[0]);
-        selects[0].style.border = "2px solid red";
+    if (selects.length === 0) {
+        console.log("Variant Selector: No variant selects found, retrying in 500ms...");
+        setTimeout(initVariantSelector, 500);
+        return;
+    }
+    
+    selects.forEach(function(select, index) {
+        console.log("Variant Selector: Processing select", index + 1);
+        
+        // Quitar selección previa
+        Array.from(select.options).forEach(function(option) {
+            option.selected = false;
+        });
+        
+        // Verificar si ya existe una opción vacía
+        var hasEmpty = Array.from(select.options).some(function(opt) {
+            return opt.value === '' || opt.value === '0';
+        });
+        
+        if (!hasEmpty) {
+            var placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = '--- Selecciona una opción ---';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            select.insertBefore(placeholder, select.firstChild);
+            console.log("Variant Selector: Placeholder added to select", index + 1);
+        } else {
+            // Si ya existe una opción vacía, seleccionarla
+            select.value = '';
+            console.log("Variant Selector: Empty option already exists, selected it");
+        }
+        
+        // Agregar event listener para cambios
+        select.addEventListener('change', function() {
+            console.log("Variant Selector: Select changed, value:", this.value);
+            handleVariantChange();
+        });
+    });
+    
+    // Ocultar botón inicialmente
+    toggleAddToCartButton(false);
+    console.log("Variant Selector: Initialization complete");
+}
+
+function handleVariantChange() {
+    console.log("Variant Selector: Handling variant change");
+    
+    var selects = document.querySelectorAll('select.js_variant_change');
+    var allSelected = Array.from(selects).every(function(select) {
+        var isSelected = select.value && select.value !== '' && select.value !== '0';
+        console.log("Variant Selector: Select value:", select.value, "Selected:", isSelected);
+        return isSelected;
+    });
+    
+    console.log("Variant Selector: All variants selected:", allSelected);
+    toggleAddToCartButton(allSelected);
+}
+
+function toggleAddToCartButton(show) {
+    // Buscar diferentes posibles selectores para el botón
+    var button = document.querySelector('#add_to_cart') || 
+                 document.querySelector('.a-submit') ||
+                 document.querySelector('button[type="submit"]') ||
+                 document.querySelector('.btn-primary');
+    
+    if (button) {
+        button.style.display = show ? '' : 'none';
+        console.log("Variant Selector: Button", show ? 'shown' : 'hidden');
+    } else {
+        console.log("Variant Selector: Add to cart button not found");
+        // Mostrar todos los botones disponibles para debug
+        var allButtons = document.querySelectorAll('button');
+        console.log("Variant Selector: Available buttons:", allButtons);
+    }
+}
+
+// Ejecutar inmediatamente y también cuando el DOM esté listo
+initVariantSelector();
+
+// Backup: ejecutar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVariantSelector);
+} else if (document.readyState === 'complete') {
+    // DOM ya está listo, ejecutar inmediatamente
+    setTimeout(initVariantSelector, 100);
+}
+
+// Observar cambios dinámicos en la página (para AJAX)
+var observer = new MutationObserver(function(mutations) {
+    var shouldReinit = false;
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            Array.from(mutation.addedNodes).forEach(function(node) {
+                if (node.nodeType === 1) { // Element node
+                    if (node.classList && node.classList.contains('js_variant_change')) {
+                        shouldReinit = true;
+                    } else if (node.querySelector && node.querySelector('.js_variant_change')) {
+                        shouldReinit = true;
+                    }
+                }
+            });
+        }
+    });
+    
+    if (shouldReinit) {
+        console.log("Variant Selector: New variant selects detected, reinitializing...");
+        setTimeout(initVariantSelector, 100);
     }
 });
 
-// import { Component, onMounted } from "@odoo/owl";
-// import { registry } from "@web/core/registry";
+// Observar cambios en el documento
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
 
-// export class VariantSelectorController extends Component {
-//     setup() {
-//         onMounted(() => {
-//             this._insertPlaceholderOptions();
-//             this._toggleAddToCartButton(false);
-//         });
-//     }
+console.log("Variant Selector: All event listeners registered");
 
-//     _insertPlaceholderOptions() {
-//         const selects = this.el.querySelectorAll("select.variant_attribute");
-//         selects.forEach(select => {
-//             const hasEmpty = Array.from(select.options).some(opt => opt.value === "");
-//             if (!hasEmpty) {
-//                 const placeholder = new Option("--- Selecciona una opción ---", "", true, true);
-//                 placeholder.disabled = true;
-//                 select.insertBefore(placeholder, select.firstChild);
-//                 select.value = "";
-//             }
-
-//             select.addEventListener("change", () => this._onVariantChanged());
-//         });
-//     }
-
-//     _onVariantChanged() {
-//         const selects = this.el.querySelectorAll("select.variant_attribute");
-//         const allSelected = Array.from(selects).every(select => !!select.value);
-//         this._toggleAddToCartButton(allSelected);
-//     }
-
-//     _toggleAddToCartButton(show) {
-//         const button = this.el.querySelector("#add_to_cart, .a-submit");
-//         if (button) {
-//             button.style.display = show ? "" : "none";
-//         }
-//     }
-// }
-
-// registry.category("frontend_components").add("custom_variant_selector", {
-//     component: VariantSelectorController,
-//     selector: ".js_add_cart_variants",
-// });
 
