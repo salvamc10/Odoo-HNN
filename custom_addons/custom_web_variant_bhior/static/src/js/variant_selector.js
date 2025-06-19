@@ -21,11 +21,12 @@ function initVariantSelector() {
         Array.from(select.options).forEach(function(option) {
             option.selected = false;
 
-             // Añadir descripción si está en data-description
+            // Añadir descripción si está en data-description
             const desc = option.dataset.description;
             if (desc && !option.textContent.includes(desc)) {
                 option.textContent = `${option.textContent.trim()} - ${desc}`;
-            }        });
+            }
+        });
         
         // Verificar si ya existe una opción vacía
         var hasEmpty = Array.from(select.options).some(function(opt) {
@@ -48,17 +49,19 @@ function initVariantSelector() {
         
         // Agregar event listener para cambios
         select.addEventListener('change', function(e) {
-
-                    //Añado esta parte
             const selects = document.querySelectorAll('select.js_variant_change');
             const allSelected = Array.from(selects).every(function(sel) {
                 return sel.value && sel.value !== '' && sel.value !== '0';
             });
 
             if (!allSelected) {
-                e.stopImmediatePropagation(); // ⚠️ Bloquea propagación al sistema Odoo
-                console.log("Variant Selector: Not all selected - event ignored");
+                console.log("Variant Selector: Not all selected - hiding button");
                 toggleAddToCartButton(false);
+                // Limpiar descripción personalizada
+                const customDescDiv = document.getElementById('product_custom_description');
+                if (customDescDiv) {
+                    customDescDiv.innerHTML = '';
+                }
                 return;
             }
                 
@@ -84,36 +87,97 @@ function handleVariantChange() {
 
     if (!allSelected) return;
 
+    // Obtener información del producto seleccionado
     const productTemplateId = document.querySelector('input[name="product_template_id"]')?.value;
-    if (!productTemplateId) return;
-
     const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
+    
+    console.log("Variant Selector: Template ID:", productTemplateId);
+    console.log("Variant Selector: Combination IDs:", combination_ids);
 
-    fetch("/shop/product_configurator", {
+    // Buscar el product_id en las opciones seleccionadas
+    let productId = null;
+    selects.forEach(function(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && selectedOption.dataset.productId) {
+            productId = selectedOption.dataset.productId;
+        }
+    });
+
+    if (productId) {
+        console.log("Variant Selector: Found product ID:", productId);
+        updateCustomDescription(productId);
+    } else {
+        console.log("Variant Selector: No product ID found, trying alternative method");
+        // Método alternativo: buscar por combinación
+        findProductByAttributes(productTemplateId, combination_ids);
+    }
+}
+
+function updateCustomDescription(productId) {
+    const customDescDiv = document.getElementById('product_custom_description');
+    
+    if (!customDescDiv) {
+        console.log("Variant Selector: Custom description div not found");
+        return;
+    }
+
+    console.log("Variant Selector: Fetching description for product ID:", productId);
+
+    // Llamada AJAX para obtener la descripción
+    fetch("/shop/get_product_description", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({
-            product_template_id: parseInt(productTemplateId),
-            product_id: null,
-            combination: combination_ids,
-            quantity: 1,
-            only_template: false
-        }),
+            product_id: parseInt(productId)
+        })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        console.log("Variant Info Received:", data);
-
-        const descDiv = document.querySelector('[data-oe-field="description_ecommerce"]');
-        if (descDiv && data.product_product && data.product_product.Descripcion) {
-            descDiv.innerHTML = `<div>${data.product_product.Descripcion}</div>`;
+        console.log("Variant Selector: Description received:", data);
+        if (data.error) {
+            console.error("Variant Selector: Server error:", data.error);
+            customDescDiv.innerHTML = '';
+        } else {
+            customDescDiv.innerHTML = data.description || '';
         }
     })
     .catch(err => {
-        console.error("Error fetching combination info:", err);
+        console.error("Variant Selector: Error fetching description:", err);
+        customDescDiv.innerHTML = '';
+    });
+}
+
+function findProductByAttributes(templateId, attributeIds) {
+    if (!templateId || !attributeIds.length) return;
+
+    // Llamada para buscar el producto por atributos
+    fetch("/shop/find_product_by_attributes", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({
+            template_id: parseInt(templateId),
+            attribute_ids: attributeIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.product_id) {
+            updateCustomDescription(data.product_id);
+        }
+    })
+    .catch(err => {
+        console.error("Variant Selector: Error finding product:", err);
     });
 }
 
@@ -127,7 +191,7 @@ function toggleAddToCartButton(show) {
     if (button) {
         button.style.display = show ? '' : 'none';
         console.log("Variant Selector: Button", show ? 'shown' : 'hidden');
-     }
+    }
 }
 
 // Ejecutar inmediatamente y también cuando el DOM esté listo
@@ -171,8 +235,3 @@ observer.observe(document.body, {
 });
 
 console.log("Variant Selector: All event listeners registered");
-
-
-
-    
-   

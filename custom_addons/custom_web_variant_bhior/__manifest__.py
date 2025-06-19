@@ -16,11 +16,10 @@
     'assets': {
         'web.assets_frontend': [
             'custom_web_variant_bhior/static/src/js/variant_selector.js',
-            'custom_web_variant_bhior/static/src/js/variant_description.js'
-        ],
+                    ],
         'website.assets_frontend': [
             'custom_web_variant_bhior/static/src/js/variant_selector.js',
-            'custom_web_variant_bhior/static/src/js/variant_description.js'
+            
         ],
     },
     'installable': True,

@@ -5,14 +5,11 @@ class ProductProduct(models.Model):
 
     x_studio_descripcion_1 = fields.Html(string="Descripción Custom")
 
-    def _get_combination_info_variant(self, **kwargs):
-        res = super()._get_combination_info_variant(**kwargs)
-
-        print(f"DEBUG: res = {res}")
-        print(f"DEBUG: self = {self}")
-        print(f"DEBUG: has field = {hasattr(self, 'x_studio_descripcion_1')}")
-        
-        # Verificar que el campo existe antes de acceder
-        if hasattr(self, 'x_studio_descripcion_1'):
-            res['x_studio_descripcion_1'] = self.x_studio_descripcion_1 or ''
-        return res
+class ProductTemplateAttributeValue(models.Model):
+    _inherit = 'product.template.attribute.value'
+    
+    def _get_combination_name(self):
+        """Exclude values from single value lines or from no_variant attributes."""
+        ptavs = self._without_no_variant_attributes().with_prefetch(self._prefetch_ids)
+        ptavs = ptavs._filter_single_value_lines().with_prefetch(self._prefetch_ids)
+        return ", ".join([ptav.name or "" for ptav in ptavs])
