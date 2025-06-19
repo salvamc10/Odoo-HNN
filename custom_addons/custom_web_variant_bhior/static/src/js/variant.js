@@ -2,6 +2,7 @@
 
 odoo.define('custom_web_variant_bhior.variant_selector', function (require) {
     'use strict';
+    
 
     const publicWidget = require('web.public.widget');
     const VariantMixin = require('website_sale.variant_mixin');
