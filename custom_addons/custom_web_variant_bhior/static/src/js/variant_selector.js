@@ -84,14 +84,12 @@ function handleVariantChange() {
 
     if (!allSelected) return;
 
-    // Obtener product template ID desde el DOM
     const productTemplateId = document.querySelector('input[name="product_template_id"]')?.value;
     if (!productTemplateId) return;
 
     const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
 
-    // Llamada AJAX a get_combination_info_website
-    fetch("/shop/product/get_combination_info_website", {
+    fetch("/shop/product_configurator", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -99,24 +97,24 @@ function handleVariantChange() {
         },
         body: JSON.stringify({
             product_template_id: parseInt(productTemplateId),
+            product_id: null,
             combination: combination_ids,
-            quantity: 1
+            quantity: 1,
+            only_template: false
         }),
     })
     .then(response => response.json())
     .then(data => {
         console.log("Variant Info Received:", data);
 
-        // 🔁 Actualizar campo de descripción dinámica
         const descDiv = document.querySelector('[data-oe-field="description_ecommerce"]');
-        if (descDiv && data.Descripcion) {
-            descDiv.innerHTML = `<div>${data.Descripcion}</div>`;
+        if (descDiv && data.product_product && data.product_product.Descripcion) {
+            descDiv.innerHTML = `<div>${data.product_product.Descripcion}</div>`;
         }
     })
     .catch(err => {
         console.error("Error fetching combination info:", err);
     });
-
 }
 
 function toggleAddToCartButton(show) {

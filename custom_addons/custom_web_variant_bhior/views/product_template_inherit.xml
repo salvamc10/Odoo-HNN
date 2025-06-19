@@ -1,0 +1,12 @@
+<odoo>
+  <template id="product_custom_description" inherit_id="website_sale.product">
+    <xpath expr="//div[@data-oe-field='description_ecommerce']" position="after">
+      <div id="product_custom_description" class="mt-3">
+        <!-- El contenido se insertará desde JS -->
+      </div>
+    </xpath>
+    <xpath expr="//div[@data-oe-field='description_ecommerce']" position="attributes">
+      <attribute name="style">display: none;</attribute>
+    </xpath>
+  </template>
+</odoo>
