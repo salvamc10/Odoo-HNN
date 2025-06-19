@@ -9,10 +9,10 @@
     'category': 'Website',
     'license': 'LGPL-3',
     'author': 'Pedro M',
-    'depends': ['website_sale', 'product'],
+    'depends': ['website_sale'],
     'data': [],
     'assets': {
-        'web.assets_frontend': [
+        'website.assets_frontend': [
             'custom_web_variant_bhior/static/src/js/variant_selector.js',                               
         ],
     },
