@@ -9,7 +9,9 @@ class WebsiteSaleExtended(WebsiteSale):
 
     @http.route(['/website_sale/get_combination_info'], type='json', auth="public", website=True)
     def get_combination_info(self, product_template_id, product_id, combination, only_template=False, **kwargs):
-        result = super().get_combination_info(product_template_id, product_id, combination, only_template, **kwargs)
+        result = WebsiteSale.get_combination_info(
+            self, product_template_id, product_id, combination, only_template, **kwargs
+        )
 
         try:
             if product_id:
