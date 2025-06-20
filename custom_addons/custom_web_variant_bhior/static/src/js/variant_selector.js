@@ -76,37 +76,92 @@ function initVariantSelector() {
 }
 
 function handleVariantChange() {    
-    var selects = document.querySelectorAll('select.js_variant_change');
-    var allSelected = Array.from(selects).every(function(select) {
-        var isSelected = select.value && select.value !== '' && select.value !== '0';
+    const selects = document.querySelectorAll('select.js_variant_change');
+    const allSelected = Array.from(selects).every(function(select) {
+        const isSelected = select.value && select.value !== '' && select.value !== '0';
         console.log("Variant Selector: Select value:", select.value, "Selected:", isSelected);
         return isSelected;
-    });  
+    });
 
     toggleAddToCartButton(allSelected);
-   
+
     if (!allSelected) return;
 
-    // Obtener información del producto seleccionado
     const productTemplateId = document.querySelector('input[name="product_template_id"]')?.value;
     const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
-    
+
     console.log("Variant Selector: Template ID:", productTemplateId);
     console.log("Variant Selector: Combination IDs:", combination_ids);
 
-    // Buscar el product_id en las opciones seleccionadas
-    let productId = null;
-    selects.forEach(function(select) {
-        const selectedOption = select.options[select.selectedIndex];
-        if (selectedOption && selectedOption.dataset.productId) {
-            productId = selectedOption.dataset.productId;
+    fetch("/website_sale/get_combination_info", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+        },
+        body: JSON.stringify({
+            product_template_id: parseInt(productTemplateId),
+            product_id: false,
+            combination: combination_ids,
+            only_template: false
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const result = data.result;
+        if (!result) {
+            console.warn("Variant Selector: No combination info received");
+            return;
         }
-    });
 
-    if (!productId) {
-        console.log("Variant Selector: No product ID found, skipping custom description fetch");
-    }
+        const customDescDiv = document.getElementById('product_custom_description');
+        if (customDescDiv && 'x_studio_descripcion_1' in result) {
+            customDescDiv.innerHTML = result.x_studio_descripcion_1 || '';
+            console.log("Variant Selector: Description updated from direct fetch");
+        } else {
+            console.warn("Variant Selector: x_studio_descripcion_1 not in result");
+        }
+
+        // Bonus: también podrías actualizar aquí el nombre del producto, imagen, etc.
+    })
+    .catch(err => {
+        console.error("Variant Selector: Error fetching combination info:", err);
+    });
 }
+
+
+// function handleVariantChange() {    
+//     var selects = document.querySelectorAll('select.js_variant_change');
+//     var allSelected = Array.from(selects).every(function(select) {
+//         var isSelected = select.value && select.value !== '' && select.value !== '0';
+//         console.log("Variant Selector: Select value:", select.value, "Selected:", isSelected);
+//         return isSelected;
+//     });  
+
+//     toggleAddToCartButton(allSelected);
+   
+//     if (!allSelected) return;
+
+//     // Obtener información del producto seleccionado
+//     const productTemplateId = document.querySelector('input[name="product_template_id"]')?.value;
+//     const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
+    
+//     console.log("Variant Selector: Template ID:", productTemplateId);
+//     console.log("Variant Selector: Combination IDs:", combination_ids);
+
+//     // Buscar el product_id en las opciones seleccionadas
+//     let productId = null;
+//     selects.forEach(function(select) {
+//         const selectedOption = select.options[select.selectedIndex];
+//         if (selectedOption && selectedOption.dataset.productId) {
+//             productId = selectedOption.dataset.productId;
+//         }
+//     });
+
+//     if (!productId) {
+//         console.log("Variant Selector: No product ID found, skipping custom description fetch");
+//     }
+// }
 
 function toggleAddToCartButton(show) {
     // Buscar diferentes posibles selectores para el botón
