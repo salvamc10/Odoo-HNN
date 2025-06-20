@@ -1,68 +1,21 @@
 from odoo import http
 from odoo.http import request
+from odoo.addons.website_sale.controllers.main import WebsiteSale
 import logging
 
 _logger = logging.getLogger(__name__)
 
-class WebsiteSaleController(http.Controller):
-    
-    @http.route('/shop/get_product_description', type='json', auth='public', website=True, csrf=False)
-    def get_product_description(self, product_id, **kwargs):
-        """
-        Obtener descripción personalizada del producto
-        """
+class WebsiteSaleExtended(WebsiteSale):
+
+    @http.route(['/website_sale/get_combination_info'], type='json', auth="public", website=True)
+    def get_combination_info(self, product_template_id, product_id, combination, only_template=False, **kwargs):
+        result = super().get_combination_info(product_template_id, product_id, combination, only_template, **kwargs)
+
         try:
-            product = request.env['product.product'].browse(int(product_id))
-            description = getattr(product, 'x_studio_descripcion_1', '') or ''
-            
-            _logger.info(f"Product ID: {product_id}, Description: {description}")
-            
-            return {
-                'description': description,
-                'product_id': product.id,
-                'product_name': product.name
-            }
+            if product_id:
+                product = request.env['product.product'].sudo().browse(int(product_id))
+                result['x_studio_descripcion_1'] = product.x_studio_descripcion_1 or ''
         except Exception as e:
-            _logger.error(f"Error getting product description: {str(e)}")
-            return {'error': str(e)}
-    
-    @http.route('/shop/find_product_by_attributes', type='json', auth='public', website=True, csrf=False)
-    def find_product_by_attributes(self, **kwargs):
-        """
-        Buscar producto por template y atributos
-        """
-        try:
-            template_id_raw = kwargs.get('template_id')
-            attribute_ids = kwargs.get('attribute_ids', [])
+            _logger.error("Error adding custom description to variant response: %s", str(e))
 
-            if template_id_raw is None:
-                raise ValueError("template_id es requerido")
-
-            template_id = int(template_id_raw)
-            
-            _logger.info(f"Template ID recibido: {template_id}")
-            _logger.info(f"Atributos recibidos: {attribute_ids}")
-            _logger.info(f"Payload recibido en servidor: {kwargs}")
-
-            ProductProduct = request.env['product.product']
-            domain = [('product_tmpl_id', '=', template_id)]
-
-                        
-            # Si hay atributos específicos, filtrar por ellos
-            if attribute_ids:
-                domain.append(('product_template_attribute_value_ids', 'in', attribute_ids))
-            
-            product = ProductProduct.search(domain, limit=1)
-            
-            if product:
-                return {
-                    'product_id': product.id,
-                    'product_name': product.name
-                }
-            else:
-                return {'error': 'Product not found'}
-
-                
-        except Exception as e:
-            _logger.error(f"Error finding product by attributes: {str(e)}")
-            return {'error': str(e)}
+        return result
