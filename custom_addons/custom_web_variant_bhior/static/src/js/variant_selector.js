@@ -87,24 +87,20 @@ function handleVariantChange() {
 
     // Espera a que el DOM se actualice (por Odoo) y luego lee la descripción
     setTimeout(() => {
-        const variantData = document.querySelector('div.js_product'); // Contenedor del producto
-        if (!variantData) return;
-
-        // A veces Odoo guarda los datos de la combinación como data-json
-        const jsonData = variantData.dataset.productCombinationInfo;
-        if (!jsonData) return;
+        const comboData = document.querySelector('div.js_product')?.dataset?.productCombinationInfo;
+        if (!comboData) return;
 
         try {
-            const comboInfo = JSON.parse(jsonData);
-            if ('x_studio_descripcion_1' in comboInfo) {
+            const parsed = JSON.parse(comboData);
+            if ('x_studio_descripcion_1' in parsed) {
                 const customDescDiv = document.getElementById('product_custom_description');
                 if (customDescDiv) {
-                    customDescDiv.innerHTML = comboInfo.x_studio_descripcion_1 || '';
+                    customDescDiv.innerHTML = parsed.x_studio_descripcion_1 || '';
                     console.log("Variant Selector: Updated description from get_combination_info");
                 }
             }
         } catch (e) {
-            console.error("Variant Selector: Failed to parse combination info", e);
+            console.error("Variant Selector: Failed to parse combo data", e);
         }
     }, 150);
 
@@ -126,88 +122,84 @@ function handleVariantChange() {
         }
     });
 
-    if (productId) {
-        console.log("Variant Selector: Found product ID:", productId);
-        updateCustomDescription(productId);
-    } else {
-        console.log("Variant Selector: No product ID found, trying alternative method");
-        // Método alternativo: buscar por combinación
-        findProductByAttributes(productTemplateId, combination_ids);
+    if (!productId) {
+        console.log("Variant Selector: No product ID found, skipping custom description fetch");
     }
+
 }
 
-function updateCustomDescription(productId) {
-    const customDescDiv = document.getElementById('product_custom_description');
+// function updateCustomDescription(productId) {
+//     const customDescDiv = document.getElementById('product_custom_description');
     
-    if (!customDescDiv) {
-        console.log("Variant Selector: Custom description div not found");
-        return;
-    }
+//     if (!customDescDiv) {
+//         console.log("Variant Selector: Custom description div not found");
+//         return;
+//     }
 
-    console.log("Variant Selector: Fetching description for product ID:", productId);
+//     console.log("Variant Selector: Fetching description for product ID:", productId);
 
-    // Llamada AJAX para obtener la descripción
-    fetch("/shop/get_product_description", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify({
-            product_id: parseInt(productId)
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Variant Selector: Description received:", data);
-        if (data.error) {
-            console.error("Variant Selector: Server error:", data.error);
-            customDescDiv.innerHTML = '';
-        } else {
-            customDescDiv.innerHTML = data.description || '';
-        }
-    })
-    .catch(err => {
-        console.error("Variant Selector: Error fetching description:", err);
-        customDescDiv.innerHTML = '';
-    });
-}
+//     // Llamada AJAX para obtener la descripción
+//     fetch("/shop/get_product_description", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "X-Requested-With": "XMLHttpRequest",
+//         },
+//         body: JSON.stringify({
+//             product_id: parseInt(productId)
+//         })
+//     })
+//     .then(response => {
+//         if (!response.ok) {
+//             throw new Error(`HTTP error! status: ${response.status}`);
+//         }
+//         return response.json();
+//     })
+//     .then(data => {
+//         console.log("Variant Selector: Description received:", data);
+//         if (data.error) {
+//             console.error("Variant Selector: Server error:", data.error);
+//             customDescDiv.innerHTML = '';
+//         } else {
+//             customDescDiv.innerHTML = data.description || '';
+//         }
+//     })
+//     .catch(err => {
+//         console.error("Variant Selector: Error fetching description:", err);
+//         customDescDiv.innerHTML = '';
+//     });
+// }
 
-function findProductByAttributes(templateId, attributeIds) {
-    if (!templateId || !attributeIds.length) return;
+// function findProductByAttributes(templateId, attributeIds) {
+//     if (!templateId || !attributeIds.length) return;
 
-    console.log("Payload enviado:", JSON.stringify({
-            template_id: parseInt(templateId),
-            attribute_ids: attributeIds
-        }));
+//     console.log("Payload enviado:", JSON.stringify({
+//             template_id: parseInt(templateId),
+//             attribute_ids: attributeIds
+//         }));
 
-    // Llamada para buscar el producto por atributos
-    fetch("/shop/find_product_by_attributes", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify({
-            template_id: parseInt(templateId),
-            attribute_ids: attributeIds
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.product_id) {
-            updateCustomDescription(data.product_id);
-        }
-    })
-    .catch(err => {
-        console.error("Variant Selector: Error finding product:", err);
-    });
-}
+//     // Llamada para buscar el producto por atributos
+//     fetch("/shop/find_product_by_attributes", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "X-Requested-With": "XMLHttpRequest",
+//         },
+//         body: JSON.stringify({
+//             template_id: parseInt(templateId),
+//             attribute_ids: attributeIds
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.product_id) {
+//             updateCustomDescription(data.product_id);
+//         }
+//     })
+//     .catch(err => {
+//         console.error("Variant Selector: Error finding product:", err);
+//     });
+// }
 
 function toggleAddToCartButton(show) {
     // Buscar diferentes posibles selectores para el botón
