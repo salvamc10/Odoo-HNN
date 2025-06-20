@@ -158,6 +158,11 @@ function updateCustomDescription(productId) {
 function findProductByAttributes(templateId, attributeIds) {
     if (!templateId || !attributeIds.length) return;
 
+    console.log("Payload enviado:", JSON.stringify({
+            template_id: parseInt(templateId),
+            attribute_ids: attributeIds
+        }));
+
     // Llamada para buscar el producto por atributos
     fetch("/shop/find_product_by_attributes", {
         method: "POST",
@@ -165,7 +170,7 @@ function findProductByAttributes(templateId, attributeIds) {
             "Content-Type": "application/json",
             "X-Requested-With": "XMLHttpRequest",
         },
-        body: JSON.stringify({
+        body: JSON.stringify({            
             template_id: parseInt(templateId),
             attribute_ids: attributeIds
         })

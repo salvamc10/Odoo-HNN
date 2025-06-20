@@ -27,13 +27,15 @@ class WebsiteSaleController(http.Controller):
             return {'error': str(e)}
     
     @http.route('/shop/find_product_by_attributes', type='json', auth='public', website=True, csrf=False)
-    def find_product_by_attributes(self, template_id, attribute_ids, **kwargs):
+    def find_product_by_attributes(self, **kwargs):
         """
         Buscar producto por template y atributos
         """
         try:
             ProductProduct = request.env['product.product']
-            
+            template_id = kwargs.get('template_id')
+            attribute_ids = kwargs.get('attribute_ids', [])
+
             # Buscar el producto que coincida con el template y los atributos
             domain = [
                 ('product_tmpl_id', '=', int(template_id))
