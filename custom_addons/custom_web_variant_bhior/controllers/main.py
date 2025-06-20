@@ -32,15 +32,22 @@ class WebsiteSaleController(http.Controller):
         Buscar producto por template y atributos
         """
         try:
-            ProductProduct = request.env['product.product']
-            template_id = kwargs.get('template_id')
+            template_id_raw = kwargs.get('template_id')
             attribute_ids = kwargs.get('attribute_ids', [])
 
-            # Buscar el producto que coincida con el template y los atributos
-            domain = [
-                ('product_tmpl_id', '=', int(template_id))
-            ]
+            if template_id_raw is None:
+                raise ValueError("template_id es requerido")
+
+            template_id = int(template_id_raw)
             
+            _logger.info(f"Template ID recibido: {template_id}")
+            _logger.info(f"Atributos recibidos: {attribute_ids}")
+            _logger.info(f"Payload recibido en servidor: {kwargs}")
+
+            ProductProduct = request.env['product.product']
+            domain = [('product_tmpl_id', '=', template_id)]
+
+                        
             # Si hay atributos específicos, filtrar por ellos
             if attribute_ids:
                 domain.append(('product_template_attribute_value_ids', 'in', attribute_ids))
@@ -54,6 +61,7 @@ class WebsiteSaleController(http.Controller):
                 }
             else:
                 return {'error': 'Product not found'}
+
                 
         except Exception as e:
             _logger.error(f"Error finding product by attributes: {str(e)}")
