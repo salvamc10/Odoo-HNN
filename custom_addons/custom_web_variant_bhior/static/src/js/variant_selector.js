@@ -106,7 +106,8 @@ function handleVariantChange() {
                 product_template_id: parseInt(productTemplateId),
                 product_id: false,
                 combination: combination_ids,
-                only_template: false
+                only_template: false,
+                add_qty: 1.0
             }
         })
     })
@@ -126,7 +127,7 @@ function handleVariantChange() {
             console.warn("Variant Selector: x_studio_descripcion_1 not in result");
         }
 
-        // Bonus: también podrías actualizar aquí el nombre del producto, imagen, etc.
+       
     })
     .catch(err => {
         console.error("Variant Selector: Error fetching combination info:", err);
