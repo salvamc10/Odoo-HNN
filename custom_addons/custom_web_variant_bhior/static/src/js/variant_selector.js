@@ -100,10 +100,14 @@ function handleVariantChange() {
             "X-Requested-With": "XMLHttpRequest"
         },
         body: JSON.stringify({
-            product_template_id: parseInt(productTemplateId),
-            product_id: false,
-            combination: combination_ids,
-            only_template: false
+            jsonrpc: "2.0",
+            method: "call",
+            params: {
+                product_template_id: parseInt(productTemplateId),
+                product_id: false,
+                combination: combination_ids,
+                only_template: false
+            }
         })
     })
     .then(response => response.json())
