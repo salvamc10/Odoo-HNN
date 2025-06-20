@@ -135,39 +135,6 @@ function handleVariantChange() {
 }
 
 
-// function handleVariantChange() {    
-//     var selects = document.querySelectorAll('select.js_variant_change');
-//     var allSelected = Array.from(selects).every(function(select) {
-//         var isSelected = select.value && select.value !== '' && select.value !== '0';
-//         console.log("Variant Selector: Select value:", select.value, "Selected:", isSelected);
-//         return isSelected;
-//     });  
-
-//     toggleAddToCartButton(allSelected);
-   
-//     if (!allSelected) return;
-
-//     // Obtener información del producto seleccionado
-//     const productTemplateId = document.querySelector('input[name="product_template_id"]')?.value;
-//     const combination_ids = Array.from(selects).map(select => parseInt(select.value)).filter(Boolean);
-    
-//     console.log("Variant Selector: Template ID:", productTemplateId);
-//     console.log("Variant Selector: Combination IDs:", combination_ids);
-
-//     // Buscar el product_id en las opciones seleccionadas
-//     let productId = null;
-//     selects.forEach(function(select) {
-//         const selectedOption = select.options[select.selectedIndex];
-//         if (selectedOption && selectedOption.dataset.productId) {
-//             productId = selectedOption.dataset.productId;
-//         }
-//     });
-
-//     if (!productId) {
-//         console.log("Variant Selector: No product ID found, skipping custom description fetch");
-//     }
-// }
-
 function toggleAddToCartButton(show) {
     // Buscar diferentes posibles selectores para el botón
     var button = document.querySelector('#add_to_cart') || 
