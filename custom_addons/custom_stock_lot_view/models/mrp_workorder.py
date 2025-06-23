@@ -19,14 +19,15 @@ class MrpWorkorder(models.Model):
             record.operation_count = len(active_workorders)
 
    
-    @api.model
-    def create(self, vals):
-        res = super().create(vals)
-        if 'production_id' in vals:
-            production = self.env['mrp.production'].browse(vals['production_id'])
-            if production.lot_producing_id:
-                res.finished_lot_id = production.lot_producing_id.id
-        return res
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record, vals in zip(records, vals_list):
+            if 'production_id' in vals:
+                production = self.env['mrp.production'].browse(vals['production_id'])
+                if production.lot_producing_id:
+                    record.finished_lot_id = production.lot_producing_id.id
+        return records
 
     def button_finish(self):
             for workorder in self:
