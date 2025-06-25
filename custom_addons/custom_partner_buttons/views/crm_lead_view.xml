@@ -1,0 +1,15 @@
+<odoo>
+    <record id="view_crm_lead_form_inherit_direct_opportunity" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.direct.opportunity</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_create_direct_opportunity"
+                        type="object"
+                        string="Crear oportunidad"
+                        class="btn-primary"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

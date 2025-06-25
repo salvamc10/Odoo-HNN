@@ -1,0 +1,23 @@
+<odoo>
+    <record id="view_mail_activity_list_with_lead_type" model="ir.ui.view">
+        <field name="name">mail.activity.list.with.lead.type</field>
+        <field name="model">mail.activity</field>
+        <field name="arch" type="xml">
+            <list string="Actividades pendientes de Leads">
+                <field name="res_name" string="Lead"/>
+                <field name="lead_type" string="Tipo de lead/oportunidad"/>
+                <field name="activity_type_id"/>
+                <field name="summary"/>
+                <field name="date_deadline"/>
+                <field name="user_id"/>
+                <field name="state"/>
+                <button type="action"
+                    name="calendar.action_calendar_event"
+                    string=""
+                    icon="fa-calendar"
+                    class="btn-link"
+                    title="Abrir calendario"/>
+            </list>
+        </field>
+    </record>
+</odoo>
