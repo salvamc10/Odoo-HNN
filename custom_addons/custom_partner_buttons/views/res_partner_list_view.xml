@@ -4,6 +4,13 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_tree"/>
         <field name="arch" type="xml">
+
+            <!-- Ancho fijo al campo complete_name -->
+            <xpath expr="//list/field[@name='complete_name']" position="attributes">
+                <attribute name="width">300</attribute>
+            </xpath>
+
+            <!-- Campos adicionales -->
             <xpath expr="//list" position="inside">
                 <field name="x_lead_count" class="text-center"/>
                 <field name="x_opportunity_count" class="text-center"/>
@@ -11,6 +18,7 @@
                 <field name="x_pending_lead_activity_count" string="Act. pendientes (Leads)" class="text-center"/>
                 <field name="x_pending_opportunity_activity_count" string="Act. pendientes (Opps)" class="text-center"/>
             </xpath>
+
         </field>
     </record>
 </odoo>

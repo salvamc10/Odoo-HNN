@@ -44,3 +44,24 @@ class CrmLead(models.Model):
             'res_id': new_opportunity.id,
             'target': 'current',
         }
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        leads = super().create(vals_list)
+        for lead in leads:
+            lead._set_automatic_name()
+        return leads
+
+    def write(self, vals):
+        result = super().write(vals)
+        for lead in self:
+            if 'partner_id' in vals or 'type' in vals:
+                lead._set_automatic_name()
+        return result
+
+    def _set_automatic_name(self):
+        """ Asigna automáticamente un nombre si hay partner y tipo """
+        for record in self:
+            if record.partner_id:
+                tipo = "Lead" if record.type == "lead" else "Título Oportunidad"
+                record.name = f"{tipo} {record.partner_id.name}"

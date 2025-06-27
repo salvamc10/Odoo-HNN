@@ -37,7 +37,7 @@ class ResPartner(models.Model):
     last_activity_done_date = fields.Date(
         string='Última actividad realizada',
         compute='_compute_last_activity_done_date',
-        store=False
+        store=True
     )
 
     x_pending_lead_activity_count = fields.Integer(
@@ -88,18 +88,16 @@ class ResPartner(models.Model):
             partner.x_opportunity_count = len(partner.x_opportunity_ids)
             partner.x_lead_count = len(partner.x_lead_ids)
 
+    @api.depends('x_opportunity_ids.message_ids', 'x_lead_ids.message_ids')
     def _compute_last_activity_done_date(self):
         for partner in self:
-            leads = self.env['crm.lead'].search([('partner_id', '=', partner.id)])
-            lead_ids = leads.ids
+            # Todas las oportunidades y leads del partner
+            all_leads = partner.x_opportunity_ids | partner.x_lead_ids
 
-            if not lead_ids:
-                partner.last_activity_done_date = False
-                continue
-
+            # Mensajes relacionados con actividades hechas
             last_done_msg = self.env['mail.message'].search([
                 ('model', '=', 'crm.lead'),
-                ('res_id', 'in', lead_ids),
+                ('res_id', 'in', all_leads.ids),
                 ('message_type', '=', 'notification'),
                 ('subtype_id.name', '=', 'Actividades'),
                 ('body', 'ilike', 'hecho'),

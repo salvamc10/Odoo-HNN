@@ -16,7 +16,7 @@
             </xpath>
 
             <!-- Renombrar botón "Programar" a "Programar solo vencimiento" -->
-            <xpath expr="//button[@name='action_scheduel_activities']" position="attributes">
+            <xpath expr="//button[@name='action_schedule_activities']" position="attributes">
                 <attribute name="string">Programar solo vencimiento</attribute>
             </xpath>
 
