@@ -5,9 +5,9 @@
         <field name="inherit_id" ref="mail.mail_activity_schedule_view_form"/>
         <field name="arch" type="xml">
 
-            <!-- Ocultar campo Fecha de vencimiento -->
-            <xpath expr="//field[@name='date_deadline']" position="attributes">
-                <attribute name="invisible">1</attribute>
+            <!-- Renombrar botón "Abrir calendario" a "Programar en calendario" -->
+            <xpath expr="//button[@name='action_create_calendar_event']" position="attributes">
+                <attribute name="string">Programar en calendario</attribute>
             </xpath>
 
             <!-- Renombrar botón "Programar y marcar como hecho" a "Hecho" -->
@@ -15,8 +15,11 @@
                 <attribute name="string">Hecho</attribute>
             </xpath>
 
-            <!-- Eliminar botón "Hecho y programar siguiente" -->
-            <xpath expr="//button[@name='action_schedule_activities_done_and_schedule']" position="replace"/>
+            <!-- Renombrar botón "Programar" a "Programar solo vencimiento" -->
+            <xpath expr="//button[@name='action_scheduel_activities']" position="attributes">
+                <attribute name="string">Programar solo vencimiento</attribute>
+            </xpath>
+
         </field>
     </record>
 </odoo>
