@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <template id="report_ce_document_stock">
+ <template id="report_saleorder_serials_document">
     <t t-call="web.external_layout">
-      <div class="page">
-        <h2 style="text-align:center;">Declaración CE</h2>
-
-        <p><strong>Producto:</strong> <t t-out="o.product_id.display_name"/></p>
-        <p><strong>Referencia interna:</strong> <t t-out="o.product_id.default_code or ''"/></p>
-        <p><strong>Cantidad entregada:</strong> <t t-out="o.qty_done"/> <t t-out="o.product_uom_id.name"/></p>
-        <p><strong>Número de lote/serie:</strong> <t t-out="o.lot_id.name or 'N/A'"/></p>
-
-        <p><strong>Fecha de entrega:</strong> <t t-out="o.picking_id.date_done.strftime('%d/%m/%Y') if o.picking_id.date_done else 'Sin validar'"/></p>
-
-        <p><strong>Cliente:</strong> <t t-out="o.picking_id.partner_id.display_name"/></p>
-        <p><strong>Dirección:</strong> <t t-out="o.picking_id.partner_id.contact_address"/></p>
-
-        <br/>
-        <p>Certificamos que el producto indicado cumple con las normativas aplicables.</p>
-      </div>
+        <t t-foreach="doc._get_serial_numbers_grouped()" t-as="serial_line">
+            <div class="page">
+                <h2>Producto: <span t-out="serial_line['product'].name"/></h2>
+                <p><strong>Cantidad:</strong> 1 unidad</p>
+                <p><strong>Número de serie:</strong> <span t-out="serial_line['lot'].name"/></p>
+                <p><strong>Referencia interna:</strong> <span t-out="serial_line['product'].default_code"/></p>
+                <p><strong>Cliente:</strong> <span t-out="doc.partner_id.name"/></p>
+                <p><strong>Pedido:</strong> <span t-out="doc.name"/></p>
+            </div>
+        </t>
     </t>
-  </template>
+</template>
 </odoo>
