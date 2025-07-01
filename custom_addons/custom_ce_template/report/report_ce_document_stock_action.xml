@@ -2,7 +2,7 @@
 <odoo>
   <record id="action_report_saleorder_serials" model="ir.actions.report">
     <field name="name">Serials Sheet</field>
-    <field name="model">sale.order</field>
+    <field name="model">stock.move.line</field>
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">custom_ce_template.report_saleorder_serials_document</field>
     <field name="report_file">custom_ce_template.report_saleorder_serials_document</field>
