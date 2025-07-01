@@ -42,7 +42,7 @@ class SaleOrder(models.Model):
             # ==>> 🔥 Aquí inyectamos nuestra lógica de generación CE
             ce_attachment_ids = []
             try:
-                report = self.env.ref('custom_ce_template.report_ce_document_stock_action').sudo()
+                report = self.env.ref('custom_ce_template.action_report_saleorder_serials').sudo()
                 for picking in self.picking_ids.filtered(lambda p: p.state in ['assigned', 'done']):
                     for move_line in picking.move_line_ids:
                         product = move_line.product_id
