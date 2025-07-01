@@ -35,31 +35,27 @@ class StockPicking(models.Model):
                     _logger.warning(f"No se encontró sale_line para {product.display_name}")
                     continue
 
-                try:
-                    pdf_content, _ = report._render_qweb_pdf(move_line.id)
-                    filename = f"CE_{product.display_name}_{lot.name if lot else 'NOLot'}.pdf"
+                if self.sale_id:
+                    try:
+                        pdf_content, _ = report._render_qweb_pdf(move_line.id)
+                        if not pdf_content:
+                            _logger.error(f"No se generó contenido PDF para {product.display_name}")
+                            continue
 
-                    attachment = Attachment.create({
-                        'name': filename,
-                        'datas': base64.b64encode(pdf_content),
-                        'res_model': 'stock.picking',
-                        'res_id': self.id,
-                        'mimetype': 'application/pdf',
-                        'type': 'binary',
-                    })
+                        filename = f"CE_{product.display_name}_{lot.name if lot else 'NOLot'}.pdf"
 
-                    self.message_post(
-                        body=f"Hoja CE generada para {product.display_name} - {lot.name if lot else 'Sin lote'}", 
-                        attachment_ids=[attachment.id]
-                    )
+                        Attachment.create({
+                            'name': filename,
+                            'datas': base64.b64encode(pdf_content).decode('utf-8'),
+                            'res_model': 'sale.order',
+                            'res_id': self.sale_id.id,
+                            'mimetype': 'application/pdf',
+                            'type': 'binary',
+                        })
 
-                    if self.sale_id:
-                        self.sale_id.message_post(
-                            body="Hoja CE generada desde entrega", 
-                            attachment_ids=[attachment.id]
-                        )
+                        _logger.info(f"CE generado y vinculado al pedido de venta {self.sale_id.name}")
 
-                    _logger.info(f"CE generado exitosamente para {product.display_name}")
+                    except Exception as e:
+                        _logger.error(f"Error generando CE para {product.display_name}: {str(e)}")
 
-                except Exception as e:
-                    _logger.error(f"Error generando CE para {product.display_name}: {str(e)}")
+
