@@ -42,48 +42,33 @@ class SaleOrder(models.Model):
             # ==>> 🔥 Aquí inyectamos nuestra lógica de generación CE
             ce_attachment_ids = []
             try:
-                # 1. Verificar existencia del reporte
-                report = self.env.ref('custom_ce_template.action_report_saleorder_serials').sudo()
+                report_xmlid = 'custom_ce_template.action_report_saleorder_serials'
+                report = self.env.ref(report_xmlid).sudo()
                 _logger.info(f"✅ Reporte encontrado: ID={report.id}, Nombre='{report.name}'")
-                
-                # 2. Log de las transferencias procesadas
                 valid_pickings = self.picking_ids.filtered(lambda p: p.state in ['assigned', 'done'])
                 _logger.info(f"📦 Transferencias a procesar ({len(valid_pickings)}): {valid_pickings.mapped('name')}")
-                
                 for picking in valid_pickings:
                     _logger.info(f"🔍 Procesando transferencia: {picking.name} (ID: {picking.id})")
-                    
                     for move_line in picking.move_line_ids:
                         _logger.info(f"   ➡️ Línea de movimiento: ID={move_line.id}, Producto={move_line.product_id.display_name}")
-                        
                         product = move_line.product_id
                         lot = move_line.lot_id
-                        
-                        # 3. Validar tracking y lote
                         if product.tracking != 'serial':
                             _logger.warning(f"   ⚠️ Producto {product.display_name} no tiene tracking serial, omitiendo")
                             continue
-                            
                         if not lot:
                             _logger.warning(f"   ⚠️ Producto {product.display_name} sin lote asignado, omitiendo")
                             continue
-                            
                         _logger.info(f"   ✅ Generando CE para: {product.display_name}, Lote={lot.name}")
-                        
                         try:
-                            # 4. Log antes de renderizar PDF
                             _logger.info(f"   🖨️ Renderizando PDF para línea de movimiento ID={move_line.id}")
-                            move_line_id = move_line.id
-                            if not isinstance(move_line_id, list):
-                                move_line_id = [move_line_id]
-                            pdf_content, _ = report._render_qweb_pdf(move_line_id)
+                            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                                report_xmlid, [move_line.id]
+                            )
                             _logger.info(f"   ✔️ PDF generado correctamente, tamaño: {len(pdf_content)} bytes")
-                            
                         except Exception as render_error:
                             _logger.error(f"   ❌ Error al generar PDF: {str(render_error)}", exc_info=True)
-                            continue  # Continuar con siguiente línea
-                        
-                        # 5. Crear adjunto
+                            continue
                         filename = f"CE_{product.display_name}_{lot.name}.pdf"
                         try:
                             attachment = self.env['ir.attachment'].create({
@@ -96,13 +81,11 @@ class SaleOrder(models.Model):
                             })
                             ce_attachment_ids.append(attachment.id)
                             _logger.info(f"   📎 Adjunto creado: ID={attachment.id}, {filename}")
-                            
                         except Exception as attach_error:
                             _logger.error(f"   ❌ Error creando adjunto: {str(attach_error)}", exc_info=True)
-                            
             except Exception as e:
-                # 6. Log completo con traza
                 _logger.error(f"🔥 Error crítico en generación CE para {self.name}: {str(e)}", exc_info=True)
+
 
             if ce_attachment_ids:
                 ctx['default_attachment_ids'] = [(6, 0, ce_attachment_ids)]
