@@ -15,13 +15,16 @@ class StockPicking(models.Model):
         return res
 
     def _generate_ce_documents(self):
-        try:
-            report = self.env.ref('custom_ce_template.report_ce_document_stock_action')
-        except ValueError:
-            _logger.error("No se encontró el reporte 'custom_ce_template.report_ce_document_stock_action'")
-            return
-
         Attachment = self.env['ir.attachment']
+
+        try:
+            report = self.env.ref('custom_ce_template.report_ce_document_stock_action').sudo()
+            if not report or not report.exists():
+                _logger.error("El reporte CE no existe o fue eliminado.")
+                return
+        except Exception as e:
+            _logger.error(f"No se pudo cargar el reporte CE: {str(e)}")
+            return
 
         for move_line in self.move_line_ids:
             lot = move_line.lot_id
@@ -35,27 +38,38 @@ class StockPicking(models.Model):
                     _logger.warning(f"No se encontró sale_line para {product.display_name}")
                     continue
 
-                if self.sale_id:
-                    try:
-                        pdf_content, _ = report._render_qweb_pdf(move_line.id)
-                        if not pdf_content:
-                            _logger.error(f"No se generó contenido PDF para {product.display_name}")
-                            continue
+                try:
+                    pdf_content, _ = report._render_qweb_pdf(move_line.id)
+                    filename = f"CE_{product.display_name}_{lot.name if lot else 'NOLot'}.pdf"
 
-                        filename = f"CE_{product.display_name}_{lot.name if lot else 'NOLot'}.pdf"
+                    # Adjuntar al albarán
+                    attachment = Attachment.create({
+                        'name': filename,
+                        'datas': base64.b64encode(pdf_content),
+                        'res_model': 'stock.picking',
+                        'res_id': self.id,
+                        'mimetype': 'application/pdf',
+                        'type': 'binary',
+                    })
 
+                    self.message_post(
+                        body=f"Hoja CE generada para {product.display_name} - {lot.name if lot else 'Sin lote'}", 
+                        attachment_ids=[attachment.id]
+                    )
+
+                    # Adjuntar al pedido de venta
+                    if self.sale_id:
                         Attachment.create({
                             'name': filename,
-                            'datas': base64.b64encode(pdf_content).decode('utf-8'),
+                            'datas': base64.b64encode(pdf_content),
                             'res_model': 'sale.order',
                             'res_id': self.sale_id.id,
                             'mimetype': 'application/pdf',
                             'type': 'binary',
                         })
+                        _logger.info(f"CE adjuntado también al pedido: {self.sale_id.name}")
 
-                        _logger.info(f"CE generado y vinculado al pedido de venta {self.sale_id.name}")
+                    _logger.info(f"CE generado exitosamente para {product.display_name}")
 
-                    except Exception as e:
-                        _logger.error(f"Error generando CE para {product.display_name}: {str(e)}")
-
-
+                except Exception as e:
+                    _logger.error(f"Error generando CE para {product.display_name}: {str(e)}")
