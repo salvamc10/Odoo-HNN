@@ -7,8 +7,8 @@
     'category': 'Sales/CRM',
     'depends': ['sale', 'stock'],
     'data': [
-        'report/ce_report_template_stock.xml',
         'report/ce_report_action_stock.xml',
+        'report/ce_report_template_stock.xml',        
     ],
     'installable': True,
     'application': False,
