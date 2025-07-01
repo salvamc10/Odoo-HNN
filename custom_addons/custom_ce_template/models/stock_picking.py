@@ -29,17 +29,16 @@ class StockPicking(models.Model):
 
             _logger.info(f"Procesando línea: {product.display_name}, Lote: {lot.name if lot else 'Sin lote'}")
 
-            if lot and product.tracking != 'none':
+            if product.tracking != 'none':
                 sale_line = move_line.move_id.sale_line_id
                 if not sale_line:
                     _logger.warning(f"No se encontró sale_line para {product.display_name}")
                     continue
 
                 try:
-                    # Corrección 2: Usar el objeto correcto para el reporte
                     pdf_content, _ = report._render_qweb_pdf([move_line.id])
-                    filename = f"CE_{product.display_name}_{lot.name}.pdf"
-                    
+                    filename = f"CE_{product.display_name}_{lot.name if lot else 'NOLot'}.pdf"
+
                     attachment = Attachment.create({
                         'name': filename,
                         'datas': base64.b64encode(pdf_content),
@@ -48,9 +47,9 @@ class StockPicking(models.Model):
                         'mimetype': 'application/pdf',
                         'type': 'binary',
                     })
-                    
+
                     self.message_post(
-                        body=f"Hoja CE generada para {product.display_name} - {lot.name}", 
+                        body=f"Hoja CE generada para {product.display_name} - {lot.name if lot else 'Sin lote'}", 
                         attachment_ids=[attachment.id]
                     )
 
@@ -59,8 +58,8 @@ class StockPicking(models.Model):
                             body="Hoja CE generada desde entrega", 
                             attachment_ids=[attachment.id]
                         )
-                    
+
                     _logger.info(f"CE generado exitosamente para {product.display_name}")
-                    
+
                 except Exception as e:
                     _logger.error(f"Error generando CE para {product.display_name}: {str(e)}")
