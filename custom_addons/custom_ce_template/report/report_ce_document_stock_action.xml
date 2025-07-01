@@ -5,7 +5,6 @@
     <field name="model">stock.move.line</field>
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">custom_ce_template.report_ce_document_stock</field>
-    <field name="file">custom_ce_template.report_ce_document_stock</field>
-    <field name="print_report_name">'CE_%s_%s' % (object.product_id.name, object.lot_id.name or 'NOLot')</field>
+    <field name="print_report_name">'CE_%s_%s' % (object.product_id.name, object.lot_id.name or "NOLot")</field>
   </record>
 </odoo>

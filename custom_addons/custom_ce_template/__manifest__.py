@@ -5,7 +5,7 @@
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'category': 'Sales/CRM',
-    'depends': ['sale', 'stock'],
+    'depends': ['base''sale', 'stock'],
     'data': [
         'report/report_ce_document_stock_action.xml',
         'report/report_ce_document_stock.xml',
