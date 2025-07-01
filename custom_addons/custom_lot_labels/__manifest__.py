@@ -21,6 +21,7 @@
         'report/label_dymo_remove_price.xml',
         'report/label_dymo_fix_default_code.xml',
     ],
+    
     'installable': True,
     'application': False,
 }
