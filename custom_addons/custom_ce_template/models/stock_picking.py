@@ -73,7 +73,10 @@ class SaleOrder(models.Model):
                         try:
                             # 4. Log antes de renderizar PDF
                             _logger.info(f"   🖨️ Renderizando PDF para línea de movimiento ID={move_line.id}")
-                            pdf_content, _ = report._render_qweb_pdf(move_line.id)
+                            move_line_id = move_line.id
+                            if not isinstance(move_line_id, list):
+                                move_line_id = [move_line_id]
+                            pdf_content, _ = report._render_qweb_pdf(move_line_id)
                             _logger.info(f"   ✔️ PDF generado correctamente, tamaño: {len(pdf_content)} bytes")
                             
                         except Exception as render_error:
@@ -100,7 +103,7 @@ class SaleOrder(models.Model):
             except Exception as e:
                 # 6. Log completo con traza
                 _logger.error(f"🔥 Error crítico en generación CE para {self.name}: {str(e)}", exc_info=True)
-                
+
             if ce_attachment_ids:
                 ctx['default_attachment_ids'] = [(6, 0, ce_attachment_ids)]
 
