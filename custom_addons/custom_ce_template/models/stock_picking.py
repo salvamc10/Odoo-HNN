@@ -36,7 +36,7 @@ class StockPicking(models.Model):
                     continue
 
                 try:
-                    pdf_content, _ = report._render_qweb_pdf([move_line.id])
+                    pdf_content, _ = report._render_qweb_pdf(move_line.id)
                     filename = f"CE_{product.display_name}_{lot.name if lot else 'NOLot'}.pdf"
 
                     attachment = Attachment.create({
