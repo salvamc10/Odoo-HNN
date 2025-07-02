@@ -6,7 +6,7 @@
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
                 <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
-                <t t-call="web.external_layout">
+                <!--<t t-call="web.external_layout">-->
                     <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
                     <!-- Obtener unit_lines desde el contexto del objeto doc -->
                     <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
@@ -15,10 +15,13 @@
                         <t t-foreach="unit_lines" t-as="line_data">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
                                 <div style="text-align: center; margin-top: 20px;">
-                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px;"/>
-                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 10px;"/>
+                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 30px;"/>
+                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 30px;"/>
                                 </div>
+                                <h2 style="text-align: center; font-size: 36pt; margin-bottom: 20px;"><strong>CE</strong></h2>
+                                <br/><br/>
                                 <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;"><strong>DECLARACIÓN DE CONFORMIDAD CE</strong></h2>
+                                <br/><br/>
                                 <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
                                 <p style="margin: 5px 0;"><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España.</p>
                                 <p style="margin: 5px 0;"><strong>Teléfono:</strong> +34 868 994 367</p>
