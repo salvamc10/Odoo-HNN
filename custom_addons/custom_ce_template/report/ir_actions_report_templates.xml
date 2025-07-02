@@ -3,6 +3,100 @@
     <!-- Plantilla para el informe simple por unidad de producto (un solo PDF con múltiples páginas) -->
     <template id="report_simple_saleorder">
         <t t-call="web.html_container">
+            <t t-call-assets="web.report_assets_common" t-js="false"/>
+            <meta charset="UTF-8"/>
+            <style>
+                @page {
+                    margin: 0mm; /* Pegamos al borde del PDF */
+                }
+                .page {
+                    page-break-after: always;
+                    width: 210mm;
+                    margin: 0 auto;
+                    padding: 10mm 15mm; /* deja márgenes internos laterales */
+                }
+                body {
+                    font-family: DejaVu Sans, sans-serif;
+                    font-size: 13pt;
+                    line-height: 1;
+                }
+                .logo-container {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 15px;
+                }
+                .logo-left, .logo-right {
+                    width: 90px;
+                    height: auto;
+                }
+            </style>
+            <t t-foreach="docs" t-as="doc">
+                <!-- Depuración: Mostrar el contexto completo -->
+                <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
+                <t t-set="lang" t-value="'es_ES'"/>
+                <t t-set="doc" t-value="doc.with_context(lang=lang)" />
+                <!-- Obtener unit_lines desde el contexto del objeto doc -->
+                <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
+                <!-- Depuración: Mostrar unit_lines -->
+                <t t-if="unit_lines">
+                    <t t-foreach="unit_lines" t-as="line_data">
+                        <t t-if="line_data.get('name') and line_data.get('default_code') and line_data['name'].strip() and line_data['default_code'].strip()">
+                            <div class="page">
+                                <t t-set="base_url" t-value="request.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                                <div class="logo-container">
+                                    <img t-att-src="('%s/custom_ce_template/static/src/img/bhior.jpg' % base_url)" class="logo-left"/>
+                                    <img t-att-src="('%s/custom_ce_template/static/src/img/bhior2.jpg' % base_url)" class="logo-right"/>
+                                </div>
+                                <h2 style="text-align: center; font-size: 64pt; margin: 20px 0;"><strong>CE</strong></h2>
+                                <br/>
+                                <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;"><strong>DECLARACIÓN DE CONFORMIDAD CE</strong></h2>
+                                <br/>
+                                <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
+                                <p style="margin: 5px 0;"><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España</p>
+                                <p style="margin: 5px 0;"><strong>Teléfono:</strong> +34 868 994 367</p>
+                                <p style="margin: 5px 0;"><strong>Email:</strong> info@bhior.com</p>
+                                <br/>
+                                <p style="margin: 5px 0;"><strong>DECLARA QUE:</strong></p>
+                                <br/>
+                                <p style="margin: 5px 0;"><strong>El producto:</strong> <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
+                                <p style="margin: 5px 0;"><strong>Marca:</strong> BHIOR</p>
+                                <p style="margin: 5px 0;"><strong>Modelo:</strong> <span t-out="line_data.get('default_code', '')"/></p>
+                                <p style="margin: 5px 0;"><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.year if doc.date_order else ''"/></p>
+                                <br/>
+                                <p style="margin: 5px 0;"><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
+                                <ul style="margin: 10px 0; padding-left: 20px;">
+                                    <li>Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</li>
+                                    <li>Directiva 2014/30/UE sobre compatibilidad electromagnética.</li>
+                                </ul>
+                                <br/><br/>
+                                <p style="margin: 5px 0;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else ''"/></p>
+                                <p style="margin: 5px 0;"><strong>BHIOR INDUSTRIES EUROPE, S.L.U</strong></p>
+                                <br/><br/>
+                                <p style="text-align: center; font-size: 7pt; margin: 5px 0;">
+                                    BHIOR Industries Europe, S.L.U - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30629 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
+                                </p>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+                <t t-else="">
+                    <div class="page">
+                        <p>No product units available for this order.</p>
+                        <!-- Depuración: Mostrar el contenido de unit_lines y el contexto -->
+                        <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
+                        <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
+
+<!--<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   
+    <template id="report_simple_saleorder">
+        <t t-call="web.html_container">
             <meta charset="UTF-8"/>
             <style>
                 @page {
@@ -20,13 +114,13 @@
 
             </style>
             <t t-foreach="docs" t-as="doc">
-                <!-- Depuración: Mostrar el contexto completo -->
+                
                 <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
                 <t t-set="lang" t-value="doc.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'"/>
                 <t t-set="doc" t-value="doc.with_context(lang=lang)" />
-                <!-- Obtener unit_lines desde el contexto del objeto doc -->
+                
                 <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
-                <!-- Depuración: Mostrar unit_lines -->
+                
                 <t t-if="unit_lines">
                     <t t-foreach="unit_lines" t-as="line_data">
                         <t t-if="line_data.get('name') and line_data.get('default_code')">
@@ -68,7 +162,7 @@
                 <t t-else="">
                     <div class="page">
                         <p>No product units available for this order.</p>
-                        <!-- Depuración: Mostrar el contenido de unit_lines y el contexto -->
+                       
                         <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
                         <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
                     </div>
@@ -76,4 +170,4 @@
             </t>
         </t>
     </template>
-</odoo>
+</odoo>-->
