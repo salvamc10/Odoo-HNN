@@ -8,10 +8,26 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def _generate_unit_lines(self):
+        """ Generar unit_lines para el informe simple """
+        unit_lines = []
+        _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
+        for line in self.order_line:
+            if not line.display_type and line.product_uom_qty > 0:
+                qty = int(line.product_uom_qty)
+                for i in range(qty):
+                    unit_lines.append({
+                        'index': i + 1,
+                        'name': line.name or 'Unnamed Product',
+                        'price_unit': line.price_unit or 0.0,
+                        'price_subtotal': line.price_unit or 0.0,
+                        'default_code': line.product_id.default_code or '',
+                    })
+        _logger.info("Unit lines for %s: %s", self.name, unit_lines)
+        return unit_lines
+
     def _send_order_confirmation_mail(self):
-        """ Send a mail to the SO customer to inform them that their order has been confirmed.
-        :return: None
-        """
+        """ Send a mail to the SO customer to inform them that their order has been confirmed. """
         for order in self:
             mail_template = order._get_confirmation_template()
             if mail_template:
@@ -21,13 +37,7 @@ class SaleOrder(models.Model):
 
     def _send_order_notification_mail(self, mail_template):
         """ Send a mail to the customer with two PDF attachments: the standard sale order report
-        and one custom simple report containing one page per product unit.
-
-        Note: self.ensure_one()
-
-        :param mail.template mail_template: the template used to generate the mail
-        :return: None
-        """
+        and one custom simple report containing one page per product unit. """
         self.ensure_one()
 
         if not mail_template:
@@ -60,24 +70,11 @@ class SaleOrder(models.Model):
         # Generate one PDF with one page per product unit
         try:
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
-            unit_lines = []
-            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
-            for line in self.order_line:
-                if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
-                    qty = int(line.product_uom_qty)  # Convertir a entero para iterar
-                    for i in range(qty):
-                        unit_lines.append({
-                            'index': i + 1,
-                            'name': line.name or 'Unnamed Product',
-                            'price_unit': line.price_unit or 0.0,
-                            'price_subtotal': line.price_unit or 0.0,
-                            'default_code': line.product_id.default_code or '',
-                        })
-            _logger.info("Unit lines for %s: %s", self.name, unit_lines)
-
+            unit_lines = self._generate_unit_lines()
             if unit_lines:
-                self = self.with_context(unit_lines=unit_lines, lang='es_ES')
-                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': 'es_ES'})
+                lang = self.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'
+                self = self.with_context(unit_lines=unit_lines, lang=lang)
+                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': lang})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                     custom_report_action.report_name, res_ids=self.ids
                 )
@@ -111,8 +108,7 @@ class SaleOrder(models.Model):
             _logger.warning("No attachments generated for sale order %s", self.name)
 
     def action_quotation_send(self):
-        """ Opens a wizard to compose an email, with relevant mail template and two PDF attachments
-        (standard report and one simple report with one page per product unit) loaded by default """
+        """ Opens a wizard to compose an email, with relevant mail template and two PDF attachments. """
         self.filtered(lambda so: so.state in ('draft', 'sent')).order_line._validate_analytic_distribution()
         lang = self.env.context.get('lang')
         self.ensure_one()
@@ -140,24 +136,11 @@ class SaleOrder(models.Model):
         # Generate one PDF with one page per product unit
         try:
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
-            unit_lines = []
-            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
-            for line in self.order_line:
-                if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
-                    qty = int(line.product_uom_qty)  # Convertir a entero para iterar
-                    for i in range(qty):
-                        unit_lines.append({
-                            'index': i + 1,
-                            'name': line.name or 'Unnamed Product',
-                            'price_unit': line.price_unit or 0.0,
-                            'price_subtotal': line.price_unit or 0.0,
-                            'default_code': line.product_id.default_code or '',
-                        })
-            _logger.info("Unit lines for %s: %s", self.name, unit_lines)
-
+            unit_lines = self._generate_unit_lines()
             if unit_lines:
-                self = self.with_context(unit_lines=unit_lines, lang='es_ES')
-                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': 'es_ES'})
+                lang = self.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'
+                self = self.with_context(unit_lines=unit_lines, lang=lang)
+                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': lang})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                     custom_report_action.report_name, res_ids=self.ids
                 )
@@ -228,14 +211,7 @@ class SaleOrder(models.Model):
         return action
 
     def _find_mail_template(self):
-        """ Get the appropriate mail template for the current sales order based on its state.
-
-        If the SO is confirmed, we return the mail template for the sale confirmation.
-        Otherwise, we return the quotation email template.
-
-        :return: The correct mail template based on the current status
-        :rtype: record of `mail.template` or `None` if not found
-        """
+        """ Get the appropriate mail template for the current sales order based on its state. """
         self.ensure_one()
         if self.env.context.get('proforma') or self.state != 'sale':
             return self.env.ref('sale.email_template_edi_sale', raise_if_not_found=False)
@@ -243,10 +219,7 @@ class SaleOrder(models.Model):
             return self._get_confirmation_template()
 
     def _get_confirmation_template(self):
-        """ Get the mail template sent on SO confirmation (or for confirmed SO's).
-
-        :return: `mail.template` record or None if default template wasn't found
-        """
+        """ Get the mail template sent on SO confirmation (or for confirmed SO's). """
         self.ensure_one()
         default_confirmation_template_id = self.env['ir.config_parameter'].sudo().get_param(
             'sale.default_confirmation_template'
@@ -259,10 +232,7 @@ class SaleOrder(models.Model):
             return self.env.ref('sale.mail_template_sale_confirmation', raise_if_not_found=False)
 
     def action_quotation_sent(self):
-        """ Mark the given draft quotation(s) as sent.
-
-        :raise: UserError if any given SO is not in draft state.
-        """
+        """ Mark the given draft quotation(s) as sent. """
         if any(order.state != 'draft' for order in self):
             raise UserError(_("Only draft orders can be marked as sent directly."))
 
@@ -277,26 +247,21 @@ class IrActionsReport(models.Model):
     def _render_qweb_pdf_prepare_data(self, res_ids):
         """ Sobrescribir para añadir unit_lines al contexto para el informe simple """
         data = super()._render_qweb_pdf_prepare_data(res_ids)
+        _logger.info("Rendering report %s for res_ids: %s", self.report_name, res_ids)
         if self.report_name == 'custom_ce_template.report_simple_saleorder':
             records = self.env['sale.order'].browse(res_ids)
             unit_lines = []
             for order in records:
                 _logger.info("Preparing unit_lines for report %s, order %s", self.report_name, order.name)
-                for line in order.order_line:
-                    if not line.display_type and line.product_uom_qty > 0:
-                        qty = int(line.product_uom_qty)
-                        for i in range(qty):
-                            unit_lines.append({
-                                'index': i + 1,
-                                'name': line.name or 'Unnamed Product',
-                                'price_unit': line.price_unit or 0.0,
-                                'price_subtotal': line.price_unit or 0.0,
-                                'default_code': line.product_id.default_code or '',
-                            })
-                _logger.info("Unit lines for %s: %s", order.name, unit_lines)
+                unit_lines.extend(order._generate_unit_lines())
             if unit_lines:
                 data['context'] = data.get('context', {})
-                data['context']['unit_lines'] = unit_lines
-                data['context']['lang'] = 'es_ES'
-                _logger.info("Updated context with unit_lines for %s: %s", order.name, data['context'])
+                lang = self.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'
+                data['context'].update({
+                    'unit_lines': unit_lines,
+                    'lang': lang,
+                })
+                _logger.info("Updated context with unit_lines for report %s: %s", self.report_name, data['context'])
+            else:
+                _logger.warning("No unit lines generated for report %s", self.report_name)
         return data
