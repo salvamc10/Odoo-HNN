@@ -17,7 +17,7 @@
                 body {
                     font-family: DejaVu Sans, sans-serif;
                 }   
-                             
+
             </style>
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
@@ -32,8 +32,8 @@
                         <t t-if="line_data.get('name') and line_data.get('default_code')">
                             <div class="page" style="font-size: 12pt; line-height: 1.5;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                                    <img t-att-src="'/web/image?model=ir.attachment&field=datas&filename_field=name&name=bhior.jpg'" style="max-width: 150px; margin-right: 30px;"/>
-                                    <img t-att-src="'/web/image?model=ir.attachment&field=datas&filename_field=name&name=bhior2.jpg'" style="max-width: 150px; margin-left: 30px;"/>
+                                    <img t-att-src="'/web/image?model=ir.attachment&amp;field=datas&amp;filename_field=name&amp;name=bhior.jpg'" style="max-width: 150px; margin-right: 30px;"/>
+                                    <img t-att-src="'/web/image?model=ir.attachment&amp;field=datas&amp;filename_field=name&amp;name=bhior2.jpg'" style="max-width: 150px; margin-left: 30px;"/>
                                 </div>
                                 <h2 style="text-align: center; font-size: 44pt; margin: 20px 0;"><strong>CE</strong></h2>
                                 <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;"><strong>DECLARACIÓN DE CONFORMIDAD CE</strong></h2>
