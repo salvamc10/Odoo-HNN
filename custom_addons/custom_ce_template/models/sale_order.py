@@ -13,17 +13,19 @@ class SaleOrder(models.Model):
         unit_lines = []
         _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
         for line in self.order_line:
-            if not line.display_type and line.product_uom_qty > 0:
+            if not line.display_type and line.product_uom_qty > 0 and line.name and line.product_id.default_code:
                 qty = int(line.product_uom_qty)
                 for i in range(qty):
                     unit_lines.append({
                         'index': i + 1,
-                        'name': line.name or 'Unnamed Product',
+                        'name': line.name,
                         'price_unit': line.price_unit or 0.0,
                         'price_subtotal': line.price_unit or 0.0,
-                        'default_code': line.product_id.default_code or '',
+                        'default_code': line.product_id.default_code,
                     })
         _logger.info("Unit lines for %s: %s", self.name, unit_lines)
+        if not unit_lines:
+            _logger.warning("No valid unit lines generated for %s", self.name)
         return unit_lines
 
     def _send_order_confirmation_mail(self):
