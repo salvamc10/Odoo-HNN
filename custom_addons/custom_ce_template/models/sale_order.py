@@ -95,6 +95,7 @@ class SaleOrder(models.Model):
         except Exception as e:
             _logger.error("Failed to render custom simple sale order report for %s: %s", self.name, str(e))
 
+
         if attachments:
             try:
                 self.with_context(mail_send=True).message_post_with_source(
