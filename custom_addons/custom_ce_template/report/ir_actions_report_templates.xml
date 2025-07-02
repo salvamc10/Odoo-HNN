@@ -3,74 +3,63 @@
     <!-- Plantilla para el informe simple por unidad de producto (un solo PDF con múltiples páginas) -->
     <template id="report_simple_saleorder">
         <t t-call="web.html_container">
-            <t t-call-assets="web.report_assets_common" t-js="false"/>
             <meta charset="UTF-8"/>
             <style>
                 @page {
-                    margin: 15mm;
+                    margin: 15mm; /* Márgenes uniformes */
                 }
                 .page {
+                    page-break-after: always;
                     width: 180mm;
                     margin: 0 auto;
                     padding: 10mm;
-                    page-break-after: always;
                 }
                 body {
                     font-family: DejaVu Sans, sans-serif;
-                    font-size: 12pt;
-                    line-height: 1.5;
-                }
-                .footer {
-                    font-size: 10pt;
-                    text-align: center;
-                    margin-top: 20px;
-                }
-                .logo-container {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
-                .logo-container img {
-                    max-width: 150px;
                 }
             </style>
             <t t-foreach="docs" t-as="doc">
-                <t t-set="lang" t-value="'es_ES'"/>
-                <t t-set="doc" t-value="doc.with_context(lang=lang)"/>
+                <!-- Depuración: Mostrar el contexto completo -->
+                <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
+                <t t-set="lang" t-value="doc.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'"/>
+                <t t-set="doc" t-value="doc.with_context(lang=lang)" />
+                <!-- Obtener unit_lines desde el contexto del objeto doc -->
                 <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
+                <!-- Depuración: Mostrar unit_lines -->
                 <t t-if="unit_lines">
                     <t t-foreach="unit_lines" t-as="line_data">
                         <t t-if="line_data.get('name') and line_data.get('default_code')">
-                            <div class="page">
-                                <div class="logo-container">
-                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" alt="BHIOR Logo 1"/>
-                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" alt="BHIOR Logo 2"/>
+                            <div class="page" style="font-size: 12pt; line-height: 1.5;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                                    <img t-att-src="'/web/image?model=ir.attachment&field=datas&filename_field=name&name=bhior.jpg'" style="max-width: 150px; margin-right: 30px;"/>
+                                    <img t-att-src="'/web/image?model=ir.attachment&field=datas&filename_field=name&name=bhior2.jpg'" style="max-width: 150px; margin-left: 30px;"/>
                                 </div>
-                                <h2 style="text-align: center; font-size: 40pt; margin: 10px 0;">CE</h2>
-                                <h3 style="text-align: center; font-size: 16pt; margin-bottom: 20px;">DECLARACIÓN DE CONFORMIDAD CE</h3>
-                                <p><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
-                                <p><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España</p>
-                                <p><strong>Teléfono:</strong> +34 868 994 367</p>
-                                <p><strong>Email:</strong> info@bhior.com</p>
+                                <h2 style="text-align: center; font-size: 24pt; margin: 20px 0;"><strong>CE</strong></h2>
+                                <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;"><strong>DECLARACIÓN DE CONFORMIDAD CE</strong></h2>
                                 <br/>
-                                <p><strong>DECLARA QUE:</strong></p>
-                                <p><strong>El producto:</strong> <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
-                                <p><strong>Marca:</strong> BHIOR</p>
-                                <p><strong>Modelo:</strong> <span t-out="line_data.get('default_code', '')"/></p>
-                                <p><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.year if doc.date_order else ''"/></p>
+                                <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
+                                <p style="margin: 5px 0;"><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España</p>
+                                <p style="margin: 5px 0;"><strong>Teléfono:</strong> +34 868 994 367</p>
+                                <p style="margin: 5px 0;"><strong>Email:</strong> info@bhior.com</p>
                                 <br/>
-                                <p><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
+                                <p style="margin: 5px 0;"><strong>DECLARA QUE:</strong></p>
+                                <p style="margin: 5px 0;"><strong>El producto:</strong> <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
+                                <p style="margin: 5px 0;"><strong>Marca:</strong> BHIOR</p>
+                                <p style="margin: 5px 0;"><strong>Modelo:</strong> <span t-out="line_data.get('default_code', '')"/></p>
+                                <p style="margin: 5px 0;"><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.year if doc.date_order else ''"/></p>
+                                <br/>
+                                <p style="margin: 5px 0;"><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
                                 <ul style="margin: 10px 0; padding-left: 20px;">
                                     <li>Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</li>
                                     <li>Directiva 2014/30/UE sobre compatibilidad electromagnética.</li>
                                 </ul>
                                 <br/>
-                                <p>Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y').lower() if doc.date_order else ''"/></p>
-                                <p><strong>BHIOR INDUSTRIES EUROPE, S.L.U</strong></p>
-                                <div class="footer">
+                                <p style="margin: 5px 0;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else ''"/></p>
+                                <p style="margin: 5px 0;"><strong>BHIOR INDUSTRIES EUROPE, S.L.U</strong></p>
+                                <br/>
+                                <p style="font-size: 10pt; margin: 5px 0;">
                                     BHIOR Industries Europe, S.L.U - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30629 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
-                                </div>
+                                </p>
                             </div>
                         </t>
                     </t>
@@ -78,6 +67,7 @@
                 <t t-else="">
                     <div class="page">
                         <p>No product units available for this order.</p>
+                        <!-- Depuración: Mostrar el contenido de unit_lines y el contexto -->
                         <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
                         <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
                     </div>
