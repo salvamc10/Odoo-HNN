@@ -18,10 +18,10 @@ class SaleOrder(models.Model):
                 for i in range(qty):
                     unit_lines.append({
                         'index': i + 1,
-                        'name': line.name,
+                        'name': line.name.strip(),
                         'price_unit': line.price_unit or 0.0,
                         'price_subtotal': line.price_unit or 0.0,
-                        'default_code': line.product_id.default_code,
+                        'default_code': line.product_id.default_code.strip(),
                     })
         _logger.info("Unit lines for %s: %s", self.name, unit_lines)
         if not unit_lines:
@@ -74,7 +74,7 @@ class SaleOrder(models.Model):
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
             unit_lines = self._generate_unit_lines()
             if unit_lines:
-                lang = self.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'
+                lang = 'es_ES'
                 self = self.with_context(unit_lines=unit_lines, lang=lang)
                 _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': lang})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
@@ -112,7 +112,7 @@ class SaleOrder(models.Model):
     def action_quotation_send(self):
         """ Opens a wizard to compose an email, with relevant mail template and two PDF attachments. """
         self.filtered(lambda so: so.state in ('draft', 'sent')).order_line._validate_analytic_distribution()
-        lang = self.env.context.get('lang')
+        lang = 'es_ES'
         self.ensure_one()
 
         attachments = []
@@ -140,7 +140,6 @@ class SaleOrder(models.Model):
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
             unit_lines = self._generate_unit_lines()
             if unit_lines:
-                lang = self.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'
                 self = self.with_context(unit_lines=unit_lines, lang=lang)
                 _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': lang})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
@@ -233,16 +232,6 @@ class SaleOrder(models.Model):
         else:
             return self.env.ref('sale.mail_template_sale_confirmation', raise_if_not_found=False)
 
-    def action_quotation_sent(self):
-        """ Mark the given draft quotation(s) as sent. """
-        if any(order.state != 'draft' for order in self):
-            raise UserError(_("Only draft orders can be marked as sent directly."))
-
-        for order in self:
-            order.message_subscribe(partner_ids=order.partner_id.ids)
-
-        self.write({'state': 'sent'})
-
 class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'
 
@@ -258,10 +247,9 @@ class IrActionsReport(models.Model):
                 unit_lines.extend(order._generate_unit_lines())
             if unit_lines:
                 data['context'] = data.get('context', {})
-                lang = self.env['res.lang'].search([('code', '=', 'es_ES')], limit=1) and 'es_ES' or 'en_US'
                 data['context'].update({
                     'unit_lines': unit_lines,
-                    'lang': lang,
+                    'lang': 'es_ES',
                 })
                 _logger.info("Updated context with unit_lines for report %s: %s", self.report_name, data['context'])
             else:
