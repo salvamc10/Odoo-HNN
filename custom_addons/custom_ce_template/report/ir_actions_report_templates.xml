@@ -17,6 +17,7 @@
                 body {
                     font-family: DejaVu Sans, sans-serif;
                 }
+                
             </style>
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
