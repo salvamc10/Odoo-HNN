@@ -6,9 +6,9 @@
     'license': 'LGPL-3',
     'category': 'Sales/CRM',
     'depends': ['sale', 'stock'],
-    'data': [
-        'report/ce_report_template_stock.xml',
-        'report/ce_report_action_stock.xml',
+    "data": [
+        "report/ir_actions_report_templates.xml",
+        "report/ir_actions_report.xml",
     ],
     'installable': True,
     'application': False,
