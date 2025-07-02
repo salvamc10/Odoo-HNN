@@ -10,6 +10,12 @@
         "report/ir_actions_report_templates.xml",
         "report/ir_actions_report.xml",
     ],
+    'assets': {
+        'web.report_assets_common': [
+            'custom_ce_template/static/src/img/bhior.jpg',
+            'custom_ce_template/static/src/img/bhior2.jpg',
+        ],
+    },
     'installable': True,
     'application': False,
 }
