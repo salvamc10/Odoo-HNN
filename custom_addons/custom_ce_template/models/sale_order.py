@@ -61,7 +61,7 @@ class SaleOrder(models.Model):
         try:
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
             unit_lines = []
-            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type) for line in self.order_line])
+            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
             for line in self.order_line:
                 if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
                     qty = int(line.product_uom_qty)  # Convertir a entero para iterar
@@ -71,11 +71,11 @@ class SaleOrder(models.Model):
                             'name': line.name or 'Unnamed Product',
                             'price_unit': line.price_unit or 0.0,
                             'price_subtotal': line.price_unit or 0.0,  # Subtotal para una unidad
+                            'default_code': line.product_id.default_code or '',  # Añadir default_code
                         })
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
-                # Pasar unit_lines como parte del objeto sale.order
                 self = self.with_context(unit_lines=unit_lines)
                 _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
@@ -141,7 +141,7 @@ class SaleOrder(models.Model):
         try:
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
             unit_lines = []
-            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type) for line in self.order_line])
+            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
             for line in self.order_line:
                 if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
                     qty = int(line.product_uom_qty)  # Convertir a entero para iterar
@@ -151,11 +151,11 @@ class SaleOrder(models.Model):
                             'name': line.name or 'Unnamed Product',
                             'price_unit': line.price_unit or 0.0,
                             'price_subtotal': line.price_unit or 0.0,  # Subtotal para una unidad
+                            'default_code': line.product_id.default_code or '',  # Añadir default_code
                         })
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
-                # Pasar unit_lines como parte del objeto sale.order
                 self = self.with_context(unit_lines=unit_lines)
                 _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
@@ -270,3 +270,32 @@ class SaleOrder(models.Model):
             order.message_subscribe(partner_ids=order.partner_id.ids)
 
         self.write({'state': 'sent'})
+
+class IrActionsReport(models.Model):
+    _inherit = 'ir.actions.report'
+
+    def _render_qweb_pdf_prepare_data(self, res_ids):
+        """ Sobrescribir para añadir unit_lines al contexto para el informe simple """
+        data = super()._render_qweb_pdf_prepare_data(res_ids)
+        if self.report_name == 'custom_ce_template.report_simple_saleorder':
+            records = self.env['sale.order'].browse(res_ids)
+            unit_lines = []
+            for order in records:
+                _logger.info("Preparing unit_lines for report %s, order %s", self.report_name, order.name)
+                for line in order.order_line:
+                    if not line.display_type and line.product_uom_qty > 0:
+                        qty = int(line.product_uom_qty)
+                        for i in range(qty):
+                            unit_lines.append({
+                                'index': i + 1,
+                                'name': line.name or 'Unnamed Product',
+                                'price_unit': line.price_unit or 0.0,
+                                'price_subtotal': line.price_unit or 0.0,
+                                'default_code': line.product_id.default_code or '',
+                            })
+                _logger.info("Unit lines for %s: %s", order.name, unit_lines)
+            if unit_lines:
+                data['context'] = data.get('context', {})
+                data['context']['unit_lines'] = unit_lines
+                _logger.info("Updated context with unit_lines for %s: %s", order.name, data['context'])
+        return data
