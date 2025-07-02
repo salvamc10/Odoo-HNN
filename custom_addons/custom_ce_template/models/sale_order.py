@@ -70,14 +70,14 @@ class SaleOrder(models.Model):
                             'index': i + 1,
                             'name': line.name or 'Unnamed Product',
                             'price_unit': line.price_unit or 0.0,
-                            'price_subtotal': line.price_unit or 0.0,  # Subtotal para una unidad
-                            'default_code': line.product_id.default_code or '',  # Añadir default_code
+                            'price_subtotal': line.price_unit or 0.0,
+                            'default_code': line.product_id.default_code or '',
                         })
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
-                self = self.with_context(unit_lines=unit_lines)
-                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines})
+                self = self.with_context(unit_lines=unit_lines, lang='es_ES')
+                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': 'es_ES'})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                     custom_report_action.report_name, res_ids=self.ids
                 )
@@ -150,14 +150,14 @@ class SaleOrder(models.Model):
                             'index': i + 1,
                             'name': line.name or 'Unnamed Product',
                             'price_unit': line.price_unit or 0.0,
-                            'price_subtotal': line.price_unit or 0.0,  # Subtotal para una unidad
-                            'default_code': line.product_id.default_code or '',  # Añadir default_code
+                            'price_subtotal': line.price_unit or 0.0,
+                            'default_code': line.product_id.default_code or '',
                         })
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
-                self = self.with_context(unit_lines=unit_lines)
-                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines})
+                self = self.with_context(unit_lines=unit_lines, lang='es_ES')
+                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': 'es_ES'})
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                     custom_report_action.report_name, res_ids=self.ids
                 )
@@ -297,5 +297,6 @@ class IrActionsReport(models.Model):
             if unit_lines:
                 data['context'] = data.get('context', {})
                 data['context']['unit_lines'] = unit_lines
+                data['context']['lang'] = 'es_ES'
                 _logger.info("Updated context with unit_lines for %s: %s", order.name, data['context'])
         return data
