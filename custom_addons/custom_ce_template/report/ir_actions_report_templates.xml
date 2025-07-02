@@ -34,7 +34,7 @@
                                     <img t-att-src="'/web/image?model=ir.attachment&field=datas&filename_field=name&name=bhior.jpg'" style="max-width: 150px; margin-right: 30px;"/>
                                     <img t-att-src="'/web/image?model=ir.attachment&field=datas&filename_field=name&name=bhior2.jpg'" style="max-width: 150px; margin-left: 30px;"/>
                                 </div>
-                                <h2 style="text-align: center; font-size: 24pt; margin: 20px 0;"><strong>CE</strong></h2>
+                                <h2 style="text-align: center; font-size: 44pt; margin: 20px 0;"><strong>CE</strong></h2>
                                 <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;"><strong>DECLARACIÓN DE CONFORMIDAD CE</strong></h2>
                                 <br/>
                                 <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
