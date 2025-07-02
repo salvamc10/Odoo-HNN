@@ -3,6 +3,14 @@
     <!-- Plantilla para el informe simple por unidad de producto (un solo PDF con múltiples páginas) -->
     <template id="report_simple_saleorder">
         <t t-call="web.html_container">
+            <style>
+                @page {
+                    margin: 20mm;
+                }
+                .page {
+                    page-break-after: always;
+                }
+            </style>
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
                 <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
