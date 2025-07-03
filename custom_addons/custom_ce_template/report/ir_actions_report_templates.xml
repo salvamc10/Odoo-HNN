@@ -33,7 +33,7 @@
                         <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
                         <t t-call="custom_ce_template.custom_external_layout">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page;">
-                                <h2 style="text-align: center; font-family: 'Agency FB', 'Bebas Neue', sans-serif; font-size: 80pt; margin: 20px 0 20px 0; font-weight: bold;">CE</h2>
+                                <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 150px; float: left;margin: 10px 0;"/>
                                 <h2 style="text-align: center; font-size: 16pt; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
                                 <br/>
                                 <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">EL FABRICANTE:</p>
