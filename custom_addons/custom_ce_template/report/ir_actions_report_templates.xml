@@ -4,8 +4,8 @@
     <template id="custom_external_layout" name="Custom External Layout">
         <t t-call="web.html_container">
             <div class="header" style="text-align: center; margin-top: 10px;">
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; float: left;margin: 10px 0;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; float: right;margin: 10px 0;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
