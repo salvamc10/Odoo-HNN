@@ -49,10 +49,8 @@
                                 <p style="margin: 5px 0; font-size: 12pt;">N.º Serie / Año de fabricación: <span t-out="line_data.get('lot_name', 'N/A')"/> / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
                                 <br/>
                                 <p style="margin: 15px 0; font-size: 12pt; font-weight: bold;">CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</p>
-                                <ul style="margin: 10px 0; padding-left: 20px; font-size: 12pt;">
-                                    <li>Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</li>
-                                    <li>Directiva 2014/30/UE sobre compatibilidad electromagnética.</li>
-                                </ul>
+                                <p style="margin: 15px 0; font-size: 12pt;">Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</p>
+                                <p style="margin: 15px 0; font-size: 12pt;">Directiva 2014/30/UE sobre compatibilidad electromagnética.</p>
                                 <br/>
                                 <p style="margin: 10px 0; font-size: 12pt;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else 'N/A'"/></p>
                                 <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">BHIOR INDUSTRIES EUROPE, S.L.U</p>
