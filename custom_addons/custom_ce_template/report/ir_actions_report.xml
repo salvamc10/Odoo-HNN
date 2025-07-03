@@ -5,8 +5,7 @@
         <field name="model">sale.order</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">custom_ce_template.report_simple_saleorder</field>
-        <field name="report_file">custom_ce_template.report_simple_saleorder</field>
-        
+        <field name="report_file">custom_ce_template.report_simple_saleorder</field>        
         <field name="binding_model_id" ref="model_sale_order"/>
         <field name="binding_type">report</field>
     </record>
