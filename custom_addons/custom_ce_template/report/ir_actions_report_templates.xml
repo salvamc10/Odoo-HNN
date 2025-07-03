@@ -3,7 +3,7 @@
     <!-- Personalizar el layout externo -->
     <template id="custom_external_layout" inherit_id="web.external_layout_standard">
         <!-- Reemplazar el encabezado -->
-        <xpath expr="//div[contains(@class, 'header')]" position="replace">
+        <xpath expr="//div[starts-with(@t-attf-class, 'header o_company_')]" position="replace">
             <div class="header" style="text-align: center; margin-bottom: 20px;">
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px;"/>
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 10px;"/>
@@ -11,13 +11,13 @@
         </xpath>
 
         <!-- Reemplazar el pie de página -->
-        <xpath expr="//div[contains(@class, 'footer')]" position="replace">
+        <xpath expr="//div[starts-with(@t-attf-class, 'footer o_company_')]" position="replace">
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 10pt; text-align: center; margin-top: 20px;">
                 <p>BHIOR Industries Europe, S.L.U.</p>
                 <p>CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1</p>
                 <p>Calle Júpiter, 9, 30620 Fortuna, Murcia, España - Tel: +34 868 994 367</p>
                 <p>Web: <a href="https://www.bhior.com">www.bhior.com</a> - Email: comercial@bhior.com</p>
-                <p>Página <span t-out="page"/> de <span t-out="page_count"/></p>
+                <p>Página <span t-out="page"/> de <span t-out="topage"/></p>
             </div>
         </xpath>
     </template>
@@ -45,7 +45,7 @@
                             <br/>
                             <p style="margin: 5px 0;"><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
                             <ul style="margin: 10px 0; padding-left: 20px;">
-                               drop table users; <li>Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</li>
+                                <li>Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</li>
                                 <li>Directiva 2014/30/UE sobre compatibilidad electromagnética.</li>
                             </ul>
                             <br/>
