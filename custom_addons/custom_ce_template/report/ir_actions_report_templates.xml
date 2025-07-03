@@ -14,6 +14,10 @@
                     <t t-if="unit_lines">
                         <t t-foreach="unit_lines" t-as="line_data">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
+                                <div style="text-align: center; margin-top: 20px;">
+                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px;"/>
+                                    <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 10px;"/>
+                                </div>
                                 <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;">DECLARACIÓN DE CONFORMIDAD CE</h2>
                                 <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
                                 <p style="margin: 5px 0;"><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España.</p>
@@ -37,11 +41,7 @@
                                 <p style="margin: 5px 0;">BHIOR INDUSTRIES EUROPE, S.L.U</p>
                                 <p style="font-size: 10pt; margin: 5px 0;">
                                     BHIOR Industries Europe, S.L.U. - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30620 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
-                                </p>
-                                <div style="text-align: center; margin-top: 20px;">
-                                    <img t-att-src="'/custom_ce_template/static/src/img/image3.png'" style="max-width: 150px; margin: 10px;"/>
-                                    <img t-att-src="'/custom_ce_template/static/src/img/image4.svg'" style="max-width: 150px; margin: 10px;"/>
-                                </div>
+                                </p>                                
                             </div>
                         </t>
                     </t>
