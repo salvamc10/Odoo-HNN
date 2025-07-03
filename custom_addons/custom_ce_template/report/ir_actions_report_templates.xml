@@ -63,7 +63,7 @@
                         </t>
                     </t>
                 </t>
-                <t t-else>
+                <t t-else="">
                     <t t-call="custom_ce_template.custom_external_layout">
                         <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
                             <p>No product units available for this order.</p>
