@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Definir un layout externo personalizado -->
-    <template id="custom_external_layout">
+    <template id="custom_external_layout" name="Custom External Layout">
         <t t-call="web.html_container">
             <div class="header" style="text-align: center; margin-bottom: 20px;">
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px;"/>
@@ -21,7 +21,7 @@
     </template>
 
     <!-- Plantilla principal para el informe -->
-    <template id="report_simple_saleorder">
+    <template id="report_simple_saleorder" name="Simple Sale Order Report">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
