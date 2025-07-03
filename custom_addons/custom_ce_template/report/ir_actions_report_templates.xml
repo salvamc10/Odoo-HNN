@@ -7,7 +7,7 @@
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 250px; margin: 10px;"/>
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 250px; margin: 10px;"/>
             </div>
-            <div class="article o_report_layout_standard">
+            <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 10pt; text-align: center; margin-top: 20px;">
@@ -32,29 +32,29 @@
                     <t t-foreach="unit_lines" t-as="line_data">
                         <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
                         <t t-call="custom_ce_template.custom_external_layout">
-                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page; margin-bottom: 20px;">
-                                <h2 style="text-align: center; font-size: 50pt; margin-bottom: 20px;"><strong>CE</strong></h2>
-                                <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;"><strong>DECLARACIÓN DE CONFORMIDAD CE</strong></h2>
-                                <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
-                                <p style="margin: 5px 0;">Dirección: Calle Júpiter, 9, 30629 Fortuna, Murcia, España.</p>
-                                <p style="margin: 5px 0;">Teléfono: +34 868 994 367</p>
-                                <p style="margin: 5px 0;">Email: info@bhior.com</p>
+                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page;">
+                                <h2 style="text-align: center; font-size: 50pt; margin-bottom: 20px 0; font-weight: bold;">CE</h2>
+                                <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
+                                <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">EL FABRICANTE:</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">BHIOR Industries Europe, S.L.U</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Dirección: Calle Júpiter, 9, 30629 Fortuna, Murcia, España</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Teléfono: +34 868 994 367</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Email: info@bhior.com</p>
                                 <br/>
-                                <p style="margin: 10px 0;"><strong>DECLARA QUE:</strong></p>
-                                <p style="margin: 5px 0;">El producto: <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
-                                <p style="margin: 5px 0;">Marca: BHIOR</p>
-                                <p style="margin: 5px 0;">Modelo: <span t-out="line_data.get('default_code', '')"/></p>
-                                <p style="margin: 5px 0;">N.º Serie / Año de fabricación: N/A / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
+                                <p style="margin: 15px 0; font-size: 12pt; font-weight: bold;">DECLARA QUE:</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">El producto: <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Marca: BHIOR</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Modelo: <span t-out="line_data.get('default_code', '')"/></p>
+                                <p style="margin: 5px 0; font-size: 12pt;">N.º Serie / Año de fabricación: N/A / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
                                 <br/>
-                                <p style="margin: 10px 0;"><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
-                                <ul style="margin: 10px 0; padding-left: 20px;">
+                                <p style="margin: 15px 0; font-size: 12pt; font-weight: bold;">CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</p>
+                                <ul style="margin: 10px 0; padding-left: 20px; font-size: 12pt;">
                                     <li>Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</li>
                                     <li>Directiva 2014/30/UE sobre compatibilidad electromagnética.</li>
                                 </ul>
                                 <br/>
-                                <p style="margin: 5px 0;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else 'N/A'"/></p>
-                                <p style="margin: 5px 0;"><strong>BHIOR INDUSTRIES EUROPE, S.L.U</strong></p>
-                                
+                                <p style="margin: 10px 0; font-size: 12pt;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else 'N/A'"/></p>
+                                <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">BHIOR INDUSTRIES EUROPE, S.L.U</p>
                             </div>
                         </t>
                     </t>
