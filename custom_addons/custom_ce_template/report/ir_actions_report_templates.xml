@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Definir un layout externo personalizado -->
+    <template id="custom_external_layout" name="Custom External Layout">
+        <t t-call="web.html_container">
+            <div class="header" style="text-align: center; margin-top: 10px;">
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 100px; float: left;margin: 10px 20px;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; float: right;margin: 10px 20px;"/>
+            </div>
+            <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
+                <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
+            </div>
+            <div class="footer" style="font-family: Arial, sans-serif; font-size: 7pt; text-align: center; margin-top: 5px; margin-bottom: 5px;">
+                 <p>
+                    BHIOR Industries Europe, S.L.U. - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30620 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <!-- Plantilla principal para el informe -->
+    <template id="report_simple_saleorder" name="Simple Sale Order Report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <!-- Depuración: Mostrar el contexto completo -->
+                <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang or 'es_ES')" />
+                <!-- Obtener unit_lines desde el contexto del objeto doc -->
+                <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
+                <!-- Procesar unit_lines -->
+                <t t-if="unit_lines">
+                    <t t-foreach="unit_lines" t-as="line_data">
+                        <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
+                        <t t-call="custom_ce_template.custom_external_layout">
+                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page;">
+                               <div style="text-align: center; margin-bottom: 20px;">
+                                <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 200px;"/>
+                                </div>
+                                <br/><br/>
+                                <h2 style="text-align: center; font-size: 16pt; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
+                                <br/>
+                                <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">EL FABRICANTE:</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">BHIOR Industries Europe, S.L.U</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Dirección: Calle Júpiter, 9, 30629 Fortuna, Murcia, España</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Teléfono: +34 868 994 367</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Email: info@bhior.com</p>
+                                <br/>
+                                <p style="margin: 15px 0; font-size: 12pt; font-weight: bold;">DECLARA QUE:</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">El producto: <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Marca: BHIOR</p>
+                                <p style="margin: 5px 0; font-size: 12pt;">Modelo: <span t-out="line_data.get('default_code', '')"/></p>
+                                <p style="margin: 5px 0; font-size: 12pt;">N.º Serie / Año de fabricación: <span t-out="line_data.get('lot_name', 'N/A')"/> / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
+                                <br/>
+                                <p style="margin: 15px 0; font-size: 12pt; font-weight: bold;">CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</p>
+                                <p style="margin: 15px 0; font-size: 12pt;">Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</p>
+                                <p style="margin: 15px 0; font-size: 12pt;">Directiva 2014/30/UE sobre compatibilidad electromagnética.</p>
+                                <br/>
+                                <p style="margin: 10px 0; font-size: 12pt;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else 'N/A'"/></p>
+                                <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">BHIOR INDUSTRIES EUROPE, S.L.U</p>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+                <t t-else="">
+                    <t t-call="custom_ce_template.custom_external_layout">
+                        <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
+                            <p>No product units available for this order.</p>
+                            <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
+                            <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
