@@ -26,14 +26,15 @@
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
                 <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
-                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang or 'es_ES')" />
                 <!-- Obtener unit_lines desde el contexto del objeto doc -->
                 <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
-                <!-- Depuración: Mostrar unit_lines -->
+                <!-- Procesar unit_lines -->
                 <t t-if="unit_lines">
                     <t t-foreach="unit_lines" t-as="line_data">
+                        <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
                         <t t-call="custom_ce_template.custom_external_layout">
-                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always;">
+                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page; margin-bottom: 20px;">
                                 <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;">DECLARACIÓN DE CONFORMIDAD CE</h2>
                                 <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
                                 <p style="margin: 5px 0;"><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España.</p>
@@ -61,8 +62,10 @@
                             </div>
                         </t>
                     </t>
-                    <t t-else="">
-                        <div class="page">
+                </t>
+                <t t-else>
+                    <t t-call="custom_ce_template.custom_external_layout">
+                        <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
                             <p>No product units available for this order.</p>
                             <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
                             <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
