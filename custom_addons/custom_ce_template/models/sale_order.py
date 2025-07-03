@@ -21,7 +21,7 @@ class SaleOrder(models.Model):
 
     def _send_order_notification_mail(self, mail_template):
         """ Send a mail to the customer with two PDF attachments: the standard sale order report
-        and one custom simple report containing one page per product unit.
+        and one custom simple report containing one page per product unit with lot_ids.
 
         Note: self.ensure_one()
 
@@ -57,22 +57,30 @@ class SaleOrder(models.Model):
         except Exception as e:
             _logger.error("Failed to render standard sale order report for %s: %s", self.name, str(e))
 
-        # Generate one PDF with one page per product unit
+        # Generate one PDF with one page per product unit with lot_ids
         try:
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
             unit_lines = []
-            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
+            # Obtener las entregas asociadas al pedido de venta
+            pickings = self.env['stock.picking'].search([('sale_id', '=', self.id), ('state', '=', 'done')])
+            _logger.info("Pickings for %s: %s", self.name, pickings.mapped('name'))
+            
             for line in self.order_line:
                 if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
-                    qty = int(line.product_uom_qty)  # Convertir a entero para iterar
-                    for i in range(qty):
-                        unit_lines.append({
-                            'index': i + 1,
-                            'name': line.name or 'Unnamed Product',
-                            'price_unit': line.price_unit or 0.0,
-                            'price_subtotal': line.price_unit or 0.0,
-                            'default_code': line.product_id.default_code or '',
-                        })
+                    # Obtener movimientos de inventario asociados a la línea
+                    moves = pickings.mapped('move_ids_without_package').filtered(lambda m: m.sale_line_id == line)
+                    _logger.info("Moves for line %s: %s", line.product_id.name, moves.mapped('id'))
+                    for move in moves:
+                        for lot in move.lot_ids:
+                            # Solo incluir productos con lot_ids
+                            unit_lines.append({
+                                'index': len(unit_lines) + 1,
+                                'name': line.product_id.name or 'Unnamed Product',
+                                'price_unit': line.price_unit or 0.0,
+                                'price_subtotal': line.price_unit or 0.0,
+                                'default_code': line.product_id.default_code or '',
+                                'lot_name': lot.name,  # Número de serie
+                            })
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
@@ -97,7 +105,7 @@ class SaleOrder(models.Model):
                 attachments.append(custom_attachment.id)
                 _logger.info("Generated simple report for %s: %s", self.name, custom_attachment.name)
             else:
-                _logger.warning("No unit lines generated for %s: no valid order lines found", self.name)
+                _logger.warning("No unit lines generated for %s: no valid order lines with lot_ids found", self.name)
         except Exception as e:
             _logger.error("Failed to render custom simple sale order report for %s: %s", self.name, str(e))
 
@@ -117,7 +125,7 @@ class SaleOrder(models.Model):
 
     def action_quotation_send(self):
         """ Opens a wizard to compose an email, with relevant mail template and two PDF attachments
-        (standard report and one simple report with one page per product unit) loaded by default """
+        (standard report and one simple report with one page per product unit with lot_ids) loaded by default """
         self.filtered(lambda so: so.state in ('draft', 'sent')).order_line._validate_analytic_distribution()
         lang = self.env.context.get('lang')
         self.ensure_one()
@@ -142,22 +150,30 @@ class SaleOrder(models.Model):
         except Exception as e:
             _logger.error("Failed to render standard sale order report for %s: %s", self.name, str(e))
 
-        # Generate one PDF with one page per product unit
+        # Generate one PDF with one page per product unit with lot_ids
         try:
             custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
             unit_lines = []
-            _logger.info("Order lines for %s: %s", self.name, [(line.name, line.product_uom_qty, line.price_unit, line.display_type, line.product_id.default_code) for line in self.order_line])
+            # Obtener las entregas asociadas al pedido de venta
+            pickings = self.env['stock.picking'].search([('sale_id', '=', self.id), ('state', '=', 'done')])
+            _logger.info("Pickings for %s: %s", self.name, pickings.mapped('name'))
+            
             for line in self.order_line:
                 if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
-                    qty = int(line.product_uom_qty)  # Convertir a entero para iterar
-                    for i in range(qty):
-                        unit_lines.append({
-                            'index': i + 1,
-                            'name': line.name or 'Unnamed Product',
-                            'price_unit': line.price_unit or 0.0,
-                            'price_subtotal': line.price_unit or 0.0,
-                            'default_code': line.product_id.default_code or '',
-                        })
+                    # Obtener movimientos de inventario asociados a la línea
+                    moves = pickings.mapped('move_ids_without_package').filtered(lambda m: m.sale_line_id == line)
+                    _logger.info("Moves for line %s: %s", line.product_id.name, moves.mapped('id'))
+                    for move in moves:
+                        for lot in move.lot_ids:
+                            # Solo incluir productos con lot_ids
+                            unit_lines.append({
+                                'index': len(unit_lines) + 1,
+                                'name': line.product_id.name or 'Unnamed Product',
+                                'price_unit': line.price_unit or 0.0,
+                                'price_subtotal': line.price_unit or 0.0,
+                                'default_code': line.product_id.default_code or '',
+                                'lot_name': lot.name,  # Número de serie
+                            })
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
@@ -182,7 +198,7 @@ class SaleOrder(models.Model):
                 attachments.append(custom_attachment.id)
                 _logger.info("Generated simple report for %s: %s", self.name, custom_attachment.name)
             else:
-                _logger.warning("No unit lines generated for %s: no valid order lines found", self.name)
+                _logger.warning("No unit lines generated for %s: no valid order lines with lot_ids found", self.name)
         except Exception as e:
             _logger.error("Failed to render custom simple sale order report for %s: %s", self.name, str(e))
 
@@ -285,28 +301,5 @@ class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'
 
     def _render_qweb_pdf_prepare_data(self, res_ids):
-        """ Sobrescribir para añadir unit_lines al contexto para el informe simple """
-        data = super()._render_qweb_pdf_prepare_data(res_ids)
-        if self.report_name == 'custom_ce_template.report_simple_saleorder':
-            records = self.env['sale.order'].browse(res_ids)
-            unit_lines = []
-            for order in records:
-                _logger.info("Preparing unit_lines for report %s, order %s", self.report_name, order.name)
-                for line in order.order_line:
-                    if not line.display_type and line.product_uom_qty > 0:
-                        qty = int(line.product_uom_qty)
-                        for i in range(qty):
-                            unit_lines.append({
-                                'index': i + 1,
-                                'name': line.name or 'Unnamed Product',
-                                'price_unit': line.price_unit or 0.0,
-                                'price_subtotal': line.price_unit or 0.0,
-                                'default_code': line.product_id.default_code or '',
-                            })
-                _logger.info("Unit lines for %s: %s", order.name, unit_lines)
-            if unit_lines:
-                data['context'] = data.get('context', {})
-                data['context']['unit_lines'] = unit_lines
-                data['context']['lang'] = 'es_ES'
-                _logger.info("Updated context with unit_lines for %s: %s", order.name, data['context'])
-        return data
+        """ Sobrescribir para mantener compatibilidad, pero no generar unit_lines aquí """
+        return super()._render_qweb_pdf_prepare_data(res_ids)

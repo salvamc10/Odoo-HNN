@@ -3,14 +3,14 @@
     <!-- Definir un layout externo personalizado -->
     <template id="custom_external_layout" name="Custom External Layout">
         <t t-call="web.html_container">
-            <div class="header" style="text-align: center; margin-bottom: 20px;">
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 250px; margin: 10px;"/>
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 250px; margin: 10px;"/>
+            <div class="header" style="text-align: center; margin-top: 10px;">
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 350px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 350px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
-            <div class="footer" style="font-family: Arial, sans-serif; font-size: 10pt; text-align: center; margin-top: 20px;">
+            <div class="footer" style="font-family: Arial, sans-serif; font-size: 7pt; text-align: center; margin-top: 20px; margin-bottom: 5px;">
                  <p>
                     BHIOR Industries Europe, S.L.U. - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30620 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
                 </p>
@@ -18,7 +18,7 @@
         </t>
     </template>
 
-     <!-- Plantilla principal para el informe -->
+    <!-- Plantilla principal para el informe -->
     <template id="report_simple_saleorder" name="Simple Sale Order Report">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
@@ -33,8 +33,9 @@
                         <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
                         <t t-call="custom_ce_template.custom_external_layout">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page;">
-                                <h2 style="text-align: center; font-size: 50pt; margin-bottom: 20px 0; font-weight: bold;">CE</h2>
-                                <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
+                                <h2 style="text-align: center; font-family: Arial, sans-serif; font-size: 72pt; margin: 30px 0 40px 0; font-weight: bold;">CE</h2>
+                                <h2 style="text-align: center; font-size: 16pt; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
+                                <br/>
                                 <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">EL FABRICANTE:</p>
                                 <p style="margin: 5px 0; font-size: 12pt;">BHIOR Industries Europe, S.L.U</p>
                                 <p style="margin: 5px 0; font-size: 12pt;">Dirección: Calle Júpiter, 9, 30629 Fortuna, Murcia, España</p>
@@ -45,7 +46,7 @@
                                 <p style="margin: 5px 0; font-size: 12pt;">El producto: <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
                                 <p style="margin: 5px 0; font-size: 12pt;">Marca: BHIOR</p>
                                 <p style="margin: 5px 0; font-size: 12pt;">Modelo: <span t-out="line_data.get('default_code', '')"/></p>
-                                <p style="margin: 5px 0; font-size: 12pt;">N.º Serie / Año de fabricación: N/A / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
+                                <p style="margin: 5px 0; font-size: 12pt;">N.º Serie / Año de fabricación: <span t-out="line_data.get('lot_name', 'N/A')"/> / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
                                 <br/>
                                 <p style="margin: 15px 0; font-size: 12pt; font-weight: bold;">CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</p>
                                 <ul style="margin: 10px 0; padding-left: 20px; font-size: 12pt;">
