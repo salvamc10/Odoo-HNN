@@ -76,8 +76,15 @@ class SaleOrder(models.Model):
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
-                self = self.with_context(unit_lines=unit_lines, lang='es_ES')
-                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': 'es_ES'})
+                # Añadir company al contexto
+                context = self.env.context.copy()
+                context.update({
+                    'unit_lines': unit_lines,
+                    'lang': self.partner_id.lang or 'es_ES',
+                    'company': self.env.company,  # Añadir la compañía actual
+                })
+                self = self.with_context(**context)
+                _logger.info("Context for rendering simple report for %s: %s", self.name, context)
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                     custom_report_action.report_name, res_ids=self.ids
                 )
@@ -156,8 +163,15 @@ class SaleOrder(models.Model):
             _logger.info("Unit lines for %s: %s", self.name, unit_lines)
 
             if unit_lines:
-                self = self.with_context(unit_lines=unit_lines, lang='es_ES')
-                _logger.info("Context for rendering simple report for %s: %s", self.name, {'unit_lines': unit_lines, 'lang': 'es_ES'})
+                # Añadir company al contexto
+                context = self.env.context.copy()
+                context.update({
+                    'unit_lines': unit_lines,
+                    'lang': self.partner_id.lang or 'es_ES',
+                    'company': self.env.company,  # Añadir la compañía actual
+                })
+                self = self.with_context(**context)
+                _logger.info("Context for rendering simple report for %s: %s", self.name, context)
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
                     custom_report_action.report_name, res_ids=self.ids
                 )
@@ -298,5 +312,6 @@ class IrActionsReport(models.Model):
                 data['context'] = data.get('context', {})
                 data['context']['unit_lines'] = unit_lines
                 data['context']['lang'] = 'es_ES'
-                _logger.info("Updated context with unit_lines for %s: %s", order.name, data['context'])
+                data['context']['company'] = self.env.company  # Añadir la compañía al contexto
+                _logger.info("Updated context with unit_lines and company for %s: %s", order.name, data['context'])
         return data

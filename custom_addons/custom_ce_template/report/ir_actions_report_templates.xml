@@ -46,7 +46,7 @@
                                 <p style="margin: 5px 0;"><strong>El producto:</strong> <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
                                 <p style="margin: 5px 0;"><strong>Marca:</strong> BHIOR</p>
                                 <p style="margin: 5px 0;"><strong>Modelo:</strong> <span t-out="line_data.get('default_code', '')"/></p>
-                                <p style="margin: 5px 0;"><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.year if doc | t-out='N/A'"/></p>
+                                <p style="margin: 5px 0;"><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
                                 <br/>
                                 <p style="margin: 5px 0;"><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
                                 <ul style="margin: 10px 0; padding-left: 20px;">
@@ -66,7 +66,6 @@
                     <t t-else="">
                         <div class="page">
                             <p>No product units available for this order.</p>
-                            <!-- Depuración: Mostrar el contenido de unit_lines y el contexto -->
                             <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
                             <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
                         </div>
