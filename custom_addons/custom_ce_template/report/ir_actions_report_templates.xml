@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Definir un layout externo personalizado -->
-    <template id="custom_external_layout">
-        <t t-call="web.html_container">
+    <!-- Personalizar el layout externo -->
+    <template id="custom_external_layout" inherit_id="web.external_layout_standard">
+        <!-- Reemplazar el encabezado -->
+        <xpath expr="//div[starts-with(@t-attf-class, 'header o_company_')]" position="replace">
             <div class="header" style="text-align: center; margin-bottom: 20px;">
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px;"/>
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 10px;"/>
             </div>
-            <div class="article o_report_layout_standard">
-                <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
-            </div>
+        </xpath>
+
+        <!-- Reemplazar el pie de página -->
+        <xpath expr="//div[starts-with(@t-attf-class, 'footer o_company_')]" position="replace">
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 10pt; text-align: center; margin-top: 20px;">
                 <p>BHIOR Industries Europe, S.L.U.</p>
                 <p>CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1</p>
@@ -17,7 +19,7 @@
                 <p>Web: <a href="https://www.bhior.com">www.bhior.com</a> - Email: comercial@bhior.com</p>
                 <p>Página <span t-out="page"/> de <span t-out="topage"/></p>
             </div>
-        </t>
+        </xpath>
     </template>
 
     <!-- Plantilla principal para el informe -->
@@ -44,7 +46,7 @@
                                 <p style="margin: 5px 0;"><strong>El producto:</strong> <span t-out="line_data['name'] or 'Unnamed Product'"/></p>
                                 <p style="margin: 5px 0;"><strong>Marca:</strong> BHIOR</p>
                                 <p style="margin: 5px 0;"><strong>Modelo:</strong> <span t-out="line_data.get('default_code', '')"/></p>
-                                <p style="margin: 5px 0;"><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.strftime('%Y') if doc.date_order else 'N/A'"/></p>
+                                <p style="margin: 5px 0;"><strong>N.º Serie / Año de fabricación:</strong> N/A / <t t-out="doc.date_order.year if doc | t-out='N/A'"/></p>
                                 <br/>
                                 <p style="margin: 5px 0;"><strong>CUMPLE CON LAS SIGUIENTES DISPOSICIONES LEGALES:</strong></p>
                                 <ul style="margin: 10px 0; padding-left: 20px;">
@@ -64,6 +66,7 @@
                     <t t-else="">
                         <div class="page">
                             <p>No product units available for this order.</p>
+                            <!-- Depuración: Mostrar el contenido de unit_lines y el contexto -->
                             <p>Debug: unit_lines = <t t-out="str(unit_lines)"/></p>
                             <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
                         </div>
