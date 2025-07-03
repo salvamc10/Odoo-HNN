@@ -4,13 +4,13 @@
     <template id="custom_external_layout" name="Custom External Layout">
         <t t-call="web.html_container">
             <div class="header" style="text-align: center; margin-top: 10px;">
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 50px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 50px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 250px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 250px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
-            <div class="footer" style="font-family: Arial, sans-serif; font-size: 7pt; text-align: center; margin-top: 20px; margin-bottom: 5px;">
+            <div class="footer" style="font-family: Arial, sans-serif; font-size: 7pt; text-align: center; margin-top: 5px; margin-bottom: 5px;">
                  <p>
                     BHIOR Industries Europe, S.L.U. - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30620 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
                 </p>
