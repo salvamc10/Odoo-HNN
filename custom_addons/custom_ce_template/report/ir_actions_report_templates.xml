@@ -4,8 +4,8 @@
     <template id="custom_external_layout" name="Custom External Layout">
         <t t-call="web.html_container">
             <div class="header" style="text-align: center; margin-top: 10px;">
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 350px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
-                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 350px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 50px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 50px; margin: 10px 30px; display: inline-block; vertical-align: middle;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
@@ -33,7 +33,7 @@
                         <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
                         <t t-call="custom_ce_template.custom_external_layout">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always; break-after: page;">
-                                <h2 style="text-align: center; font-family: Agency FB, sans-serif; font-size: 80pt; margin: 30px 0 40px 0; font-weight: bold;">CE</h2>
+                                <h2 style="text-align: center; font-family: DASHBOX BOX, sans-serif; font-size: 80pt; margin: 30px 0 40px 0; font-weight: bold;">CE</h2>
                                 <h2 style="text-align: center; font-size: 16pt; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
                                 <br/>
                                 <p style="margin: 10px 0; font-size: 12pt; font-weight: bold;">EL FABRICANTE:</p>
