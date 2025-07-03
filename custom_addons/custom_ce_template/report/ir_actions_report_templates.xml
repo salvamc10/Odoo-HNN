@@ -26,14 +26,14 @@
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
                 <t t-set="debug_context" t-value="'Context: ' + str(doc.env.context)"/>
-                <t t-call="custom_ce_template.custom_external_layout">
-                    <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
-                    <!-- Obtener unit_lines desde el contexto del objeto doc -->
-                    <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
-                    <!-- Depuración: Mostrar unit_lines -->
-                    <t t-if="unit_lines">
-                        <t t-foreach="unit_lines" t-as="line_data">
-                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5;">
+                <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)" />
+                <!-- Obtener unit_lines desde el contexto del objeto doc -->
+                <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
+                <!-- Depuración: Mostrar unit_lines -->
+                <t t-if="unit_lines">
+                    <t t-foreach="unit_lines" t-as="line_data">
+                        <t t-call="custom_ce_template.custom_external_layout">
+                            <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; page-break-after: always;">
                                 <h2 style="text-align: center; font-size: 16pt; margin-bottom: 20px;">DECLARACIÓN DE CONFORMIDAD CE</h2>
                                 <p style="margin: 5px 0;"><strong>EL FABRICANTE:</strong> BHIOR Industries Europe, S.L.U</p>
                                 <p style="margin: 5px 0;"><strong>Dirección:</strong> Calle Júpiter, 9, 30629 Fortuna, Murcia, España.</p>
