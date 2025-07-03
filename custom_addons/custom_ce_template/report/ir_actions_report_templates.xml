@@ -54,9 +54,7 @@
                             <p>Debug: doc.env.context = <t t-out="str(doc.env.context)"/></p>
                         </div>
                     </t>
-                </t>
-            </t>
-        </t>
-        </xpath>
+                 </t>
+         </xpath>
     </template>
 </odoo>
