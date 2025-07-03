@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Personalizar el layout externo -->
-    <template id="custom_external_layout" inherit_id="web.external_layout_standard">
-        <!-- Reemplazar el encabezado -->
-        <xpath expr="//div[starts-with(@t-attf-class, 'header o_company_')]" position="replace">
+    <!-- Definir un layout externo personalizado -->
+    <template id="custom_external_layout">
+        <t t-call="web.html_container">
             <div class="header" style="text-align: center; margin-bottom: 20px;">
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 150px; margin: 10px;"/>
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; margin: 10px;"/>
             </div>
-        </xpath>
-
-        <!-- Reemplazar el pie de página -->
-        <xpath expr="//div[starts-with(@t-attf-class, 'footer o_company_')]" position="replace">
+            <div class="article o_report_layout_standard">
+                <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
+            </div>
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 10pt; text-align: center; margin-top: 20px;">
                 <p>BHIOR Industries Europe, S.L.U.</p>
                 <p>CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1</p>
@@ -19,7 +17,7 @@
                 <p>Web: <a href="https://www.bhior.com">www.bhior.com</a> - Email: comercial@bhior.com</p>
                 <p>Página <span t-out="page"/> de <span t-out="topage"/></p>
             </div>
-        </xpath>
+        </t>
     </template>
 
     <!-- Plantilla principal para el informe -->
