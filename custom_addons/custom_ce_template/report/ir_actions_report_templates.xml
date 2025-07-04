@@ -10,7 +10,7 @@
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
-            <div class="footer" style="font-family: Arial, sans-serif; font-size: 8pt; text-align: center; margin: 10mm 24mm 24mm 24mm;">
+            <div class="footer" style="font-family: Arial, sans-serif; font-size: 8pt; text-align: center; margin: 10mm 20mm 20mm 20mm;">
                     <p>
                     BHIOR Industries Europe, S.L.U. - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30620 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
                 </p>
