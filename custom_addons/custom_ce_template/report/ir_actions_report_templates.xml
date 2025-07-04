@@ -27,6 +27,12 @@
                 <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang or 'es_ES')" />
                 <!-- Obtener unit_lines desde el contexto del objeto doc -->
                 <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
+                <t t-set="order_date" t-value="doc.date_order or False"/>
+                <t t-set="months_es" t-value="{
+                    '01': 'enero', '02': 'febrero', '03': 'marzo', '04': 'abril',
+                    '05': 'mayo', '06': 'junio', '07': 'julio', '08': 'agosto',
+                    '09': 'septiembre', '10': 'octubre', '11': 'noviembre', '12': 'diciembre'
+                }"/>
                 <!-- Procesar unit_lines -->
                 <t t-if="unit_lines">
                     <t t-foreach="unit_lines" t-as="line_data">
@@ -55,7 +61,7 @@
                                 <p style="margin: 15px 0; font-size: 12pt; line-height: 1.2;">Directiva 2006/42/CE del Parlamento Europeo y del Consejo, relativa a las máquinas.</p>
                                 <p style="margin: 15px 0; font-size: 12pt; line-height: 1.2;">Directiva 2014/30/UE sobre compatibilidad electromagnética.</p>
                                 <br/>
-                                <p style="margin: 10px 0; font-size: 12pt; line-height: 1;">Fortuna (España), <t t-out="doc.date_order.strftime('%d de %B de %Y') if doc.date_order else 'N/A'"/></p>
+                                <p style="margin: 10px 0; font-size: 12pt; line-height: 1;">Fortuna, Murcia (España), <t t-out="order_date.strftime('%d de {month} de %Y').format(month=months_es.get(order_date.strftime('%m'), 'N/A')) if order_date else 'N/A'"/></p>
                                 <p style="margin: 10px 0; font-size: 12pt; font-weight: bold; line-height: 1;">BHIOR INDUSTRIES EUROPE, S.L.U</p>
                                 <br/>
                             </div>
