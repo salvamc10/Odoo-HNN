@@ -5,7 +5,7 @@
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'category': 'Sales/CRM',
-    'depends': ['base', 'sale', 'stock', 'web'],
+    'depends': ['base', 'sale', 'stock', 'web', 'account'],
     "data": [
         "report/ir_actions_report_templates.xml",
         "report/ir_actions_report.xml",
