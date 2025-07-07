@@ -1,0 +1,25 @@
+<odoo>
+    <record id="mail_activity_schedule_view_form_custom" model="ir.ui.view">
+        <field name="name">mail.activity.schedule.view.form.custom</field>
+        <field name="model">mail.activity.schedule</field>
+        <field name="inherit_id" ref="mail.mail_activity_schedule_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Renombrar botón "Abrir calendario" a "Programar en calendario" -->
+            <xpath expr="//button[@name='action_create_calendar_event']" position="attributes">
+                <attribute name="string">Programar en calendario</attribute>
+            </xpath>
+
+            <!-- Renombrar botón "Programar y marcar como hecho" a "Hecho" -->
+            <xpath expr="//button[@name='action_schedule_activities_done']" position="attributes">
+                <attribute name="string">Hecho</attribute>
+            </xpath>
+
+            <!-- Renombrar botón "Programar" a "Programar solo vencimiento" -->
+            <xpath expr="//button[@name='action_schedule_activities']" position="attributes">
+                <attribute name="string">Programar solo vencimiento</attribute>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

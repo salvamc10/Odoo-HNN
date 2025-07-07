@@ -1,0 +1,61 @@
+<odoo>
+    <!-- Acción para mostrar Oportunidades desde Partner -->
+    <record id="action_crm_lead_opportunity_from_partner" model="ir.actions.act_window">
+        <field name="name">Oportunidades</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('type', '=', 'opportunity'), ('partner_id', '=', active_id)]</field>
+        <field name="context">{'default_type': 'opportunity', 'default_partner_id': active_id}</field>
+    </record>
+
+    <!-- Acción para mostrar Leads desde Partner -->
+    <record id="action_crm_lead_lead_from_partner" model="ir.actions.act_window">
+        <field name="name">Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('type', '=', 'lead'), ('partner_id', '=', active_id)]</field>
+        <field name="context">{'default_type': 'lead', 'default_partner_id': active_id}</field>
+    </record>
+
+    <!-- Vista personalizada del formulario de Partner con botones -->
+    <record id="view_partner_form_inherit_leads_opportunities_buttons" model="ir.ui.view">
+        <field name="name">res.partner.form.custom.leads.opps</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+
+                <!-- Botón de Oportunidades -->
+                <button name="%(action_crm_lead_opportunity_from_partner)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-star"
+                        context="{'default_type': 'opportunity', 'default_partner_id': id}"
+                        string="Oportunidades">
+                    <field name="x_opportunity_count" widget="statinfo"/>
+                </button>
+
+                <!-- Botón de Leads -->
+                <button name="%(action_crm_lead_lead_from_partner)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-bolt"
+                        context="{'default_type': 'lead', 'default_partner_id': id}"
+                        string="Leads">
+                    <field name="x_lead_count" widget="statinfo"/>
+                </button>
+
+                <!-- Botón de Actividades pendientes -->
+                <button name="action_view_pending_activities"
+                        type="object"
+                        icon="fa-briefcase"
+                        class="oe_stat_button"
+                        string="Actividades"
+                        context="{'search_default_filter_my_activities': 1}">
+                    <field name="x_pending_activity_count" widget="statinfo"/>
+                </button>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>
