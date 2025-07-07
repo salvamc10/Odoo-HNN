@@ -14,7 +14,14 @@ class AccountMove(models.Model):
         lang = self.env.context.get('lang')
         mail_template = self._find_invoice_mail_template()
 
-        attachments = []
+          
+        attachments = self.env['ir.attachment']
+
+        for line in self.invoice_line_ids:
+            product_template = line.product_id.product_tmpl_id
+            if product_template.invoice_attachment_id:
+                attachments |= product_template.invoice_attachment_id
+                
         try:
             # Render the standard invoice report
             report_action = self.env.ref('account.account_invoices')
