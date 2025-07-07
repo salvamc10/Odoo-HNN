@@ -1,16 +1,17 @@
 {
-    'name': 'Hoja CE por producto en pedido de venta',
-    'summary': 'Genera una hoja CE individual por producto o lote en cada pedido de venta',
+    'name': 'Hoja CE y manual por producto en factura',
+    'summary': 'Genera una hoja CE individual por producto o lote junto con su manual en cada factura',
     'description': """
-    Este módulo genera una hoja CE individual por producto o lote en cada pedido de venta.
-    Permite a los usuarios imprimir una hoja CE que incluye información detallada del producto,
-    como el nombre del producto, la cantidad, el lote y otros detalles relevantes.
+    Este módulo permite generar una hoja CE individual por cada producto o lote en las facturas,
+    incluyendo un manual específico para cada producto. La hoja CE se adjunta como un documento PDF
+    en la factura, facilitando el cumplimiento de normativas y la entrega de información relevante al
+    cliente.
     """,
     'version': '18.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'category': 'Sales/CRM',
-    'depends': ['base', 'sale', 'stock', 'web'],
+    'depends': ['base', 'sale', 'stock', 'web', 'account', 'product'],
     "data": [
         "report/ir_actions_report_templates.xml",
         "report/ir_actions_report.xml",
