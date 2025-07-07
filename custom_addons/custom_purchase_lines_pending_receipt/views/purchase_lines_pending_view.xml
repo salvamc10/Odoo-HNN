@@ -117,5 +117,5 @@
                   sequence="25"
                   groups="purchase.group_purchase_user"/>
 
-    </data>
+  </data>
 </odoo>

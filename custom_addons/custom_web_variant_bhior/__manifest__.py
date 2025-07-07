@@ -1,4 +1,3 @@
-
 {
     'name': 'Web Variant Selector BHior',
     'version': '18.0.1.0',
