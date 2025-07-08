@@ -215,4 +215,3 @@ class AccountMove(models.Model):
                 )
                 _logger.info("Sent invoice email without attachments for invoice %s", self.name)
             except Exception as e:
-                _logger.error("Failed to send invoice email without attachments for %s: %s", self.name, str(e))
