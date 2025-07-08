@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista árbol -->
+    <record id="view_product_template_tree_stock_min_gap" model="ir.ui.view">
+        <field name="name">product.template.tree.stock.min.gap</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="qty_available" position="after">
+                <field name="stock_below_minimum_qty"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Vista formulario -->
+    <record id="view_product_template_form_stock_marked_date" model="ir.ui.view">
+        <field name="name">product.template.form.stock.marked.date</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="stock_counted"/>
+                <field name="stock_count_marked_date" readonly="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>
