@@ -15,7 +15,7 @@ class ProductTemplate(models.Model):
     )
 
     stock_count_marked_date = fields.Datetime(
-        string='Fecha de marcado recuento',
+        string='Fecha último recuento',
         readonly=True
     )
 
