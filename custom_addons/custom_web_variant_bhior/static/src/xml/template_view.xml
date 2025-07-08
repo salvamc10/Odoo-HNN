@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="my_module.VariantSelector">
+        <div t-if="props.category === 'recambios/bhior'">
+            <select t-on-change="onVariantChange">
+                <option value="">Seleccione una variante</option>
+                <t t-foreach="variants" t-as="variant">
+                    <option t-att-value="variant.id"><t t-esc="variant.name"/></option>
+                </t>
+            </select>
+            <button t-if="state.showAddToCart" class="btn btn-primary">Añadir al carrito</button>
+        </div>
+    </t>
+</templates>
