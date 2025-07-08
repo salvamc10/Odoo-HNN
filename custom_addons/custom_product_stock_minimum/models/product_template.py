@@ -15,8 +15,7 @@ class ProductTemplate(models.Model):
     )
 
     stock_count_marked_date = fields.Datetime(
-        string='Fecha último recuento',
-        readonly=True
+        string='Fecha último recuento'
     )
 
     @api.depends('product_variant_ids.qty_available')
