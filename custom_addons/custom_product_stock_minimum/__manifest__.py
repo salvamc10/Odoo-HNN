@@ -15,6 +15,6 @@
     'application': False,
     'auto_install': False,
     'data': [
-        'views/product_views.xml',
+        'views/product_template_views.xml',
     ],
 }
