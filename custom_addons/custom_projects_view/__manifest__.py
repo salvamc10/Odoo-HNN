@@ -9,7 +9,7 @@
     'category': 'Project',
     'version': '18.0.1.0',
     'license': 'LGPL-3',
-    'depends': ['project', 'hr'],
+    'depends': ['project', 'hr', 'project', 'project_enterprise'],
     'data': [
         'views/project_views.xml',
         'views/project_kanban.xml',

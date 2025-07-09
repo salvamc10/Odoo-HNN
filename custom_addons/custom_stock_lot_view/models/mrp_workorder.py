@@ -48,6 +48,4 @@ class MrpWorkorder(models.Model):
                         "⚠️ No se puede finalizar la operación.\n"
                         "Hay controles de calidad sin aprobar y no se ha registrado ninguna alerta de calidad que lo justifique."
                     )
-
-
             return super().button_finish()
