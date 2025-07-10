@@ -1,19 +1,21 @@
-# -*- coding: utf-8 -*-
 {
-    'name': 'Asignación de número de máquina',
-    'summary': 'Asigna un número de máquina a todos los productos que pertenecen a las categorías declaradas', 
-    'description': '''
-    Este módulo reemplaza una automatización de Odoo Studio.  
-    Asigna automáticamente un número de máquina mediante una secuencia personalizada, a todos los productos que pertenecen a las categorías declaradas.
-    Es importante que la secuencia personalizada esté configurada correctamente para evitar problemas de duplicación de números de máquina.
-    El nombre técnico de la secuencia personalizada es 'machine.sequence'.
-    ''',
-    'author': 'Salva M',
+    'name': 'Asignación automática de número de máquina',
     'version': '18.0.1.0',
-    'category': 'Warehouse',
+    'author': 'Salva M',
     'license': 'LGPL-3',
-    'depends': ['stock'],
-    'data': [],
+    'summary': 'Asigna un número de máquina con formato personalizado usando secuencia',
+    'description': """
+    Este módulo asigna automáticamente un número de máquina a los lotes (números de serie)
+    cuando se crean, usando una secuencia con prefijo "B" y formato de 6 dígitos.
+    Solo se aplica a productos en categorías válidas.
+    """,
+    'category': 'Inventory/Stock',
+    'depends': ['stock', 'mrp'],
     'installable': True,
     'application': False,
+    'auto_install': False,
+    'data': [
+        'data/ir_sequence.xml',
+        'views/stock_production_lot_views.xml',
+    ],
 }
