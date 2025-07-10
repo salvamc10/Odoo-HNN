@@ -10,11 +10,12 @@
     Solo se aplica a productos en categorías válidas.
     """,
     'category': 'Inventory/Stock',
-    'depends': ['stock'],
+    'depends': ['stock', 'mrp'],
     'installable': True,
     'application': False,
     'auto_install': False,
     'data': [
         'data/ir_sequence.xml',
+        'views/stock_production_lot_views.xml',
     ],
 }
