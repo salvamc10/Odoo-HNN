@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_form_hello_world" model="ir.ui.view">
+        <field name="name">custom.hello.world.form</field>
+        <field name="model">custom.hello.world</field>
+        <field name="arch" type="xml">
+            <form string="Hello World">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_tree_hello_world" model="ir.ui.view">
+        <field name="name">custom.hello.world.list</field>
+        <field name="model">custom.hello.world</field>
+        <field name="arch" type="xml">
+            <list string="Hello World">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hello_world" model="ir.actions.act_window">
+        <field name="name">Hello World</field>
+        <field name="res_model">custom.hello.world</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_hello_world_root" name="Hello World"/>
+    <menuitem id="menu_hello_world" name="Hello World" parent="menu_hello_world_root" action="action_hello_world"/>
+</odoo>
