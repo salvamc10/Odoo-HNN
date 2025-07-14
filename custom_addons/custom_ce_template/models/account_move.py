@@ -56,9 +56,15 @@ class AccountMove(models.Model):
             if not sale_orders and self.invoice_origin:
                 sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             for sale_order in sale_orders:
-                _logger.info("Attempting to generate Certificado CE for sale order %s", sale_order.name)
+                # Preparar unit_lines con los datos de las líneas del pedido
+                unit_lines = [{
+                    'name': line.product_id.name,
+                    'default_code': line.product_id.default_code or '',
+                    'lot_name': line.lot_id.name if line.lot_id else 'N/A'
+                } for line in sale_order.order_line if line.product_id]
+                _logger.info("Attempting to generate Certificado CE for sale order %s with unit_lines: %s", sale_order.name, unit_lines)
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                    'custom_ce_template.report_simple_saleorder', res_ids=sale_order.ids
+                    'custom_ce_template.report_simple_saleorder', res_ids=sale_order.ids, data={'unit_lines': unit_lines}
                 )
                 custom_attachment = self.env['ir.attachment'].create({
                     'name': f"Certificado CE - {sale_order.name}.pdf",
@@ -74,7 +80,6 @@ class AccountMove(models.Model):
             _logger.exception("Failed to generate Certificado CE for invoice %s, sale order %s",
                               self.name, sale_order.name)
             raise UserError(_("No se pudo generar el Certificado CE: %s") % str(e))
-
         ctx = {
             'default_model': 'account.move',
             'default_res_ids': self.ids,
@@ -110,7 +115,7 @@ class AccountMove(models.Model):
 
     def _find_invoice_mail_template(self):
         self.ensure_one()
-        return self.env.ref('accounting.email_template_edi_invoice', raise_if_not_found=False)
+        return self.env.ref('account.email_template_edi_invoice', raise_if_not_found=False)
 
     def _send_invoice_notification_mail(self, mail_template):
         self.ensure_one()
@@ -158,9 +163,15 @@ class AccountMove(models.Model):
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
             for sale_order in sale_orders:
-                _logger.info("Attempting to generate Certificado CE for sale order %s", sale_order.name)
+                # Preparar unit_lines con los datos de las líneas del pedido
+                unit_lines = [{
+                    'name': line.product_id.name,
+                    'default_code': line.product_id.default_code or '',
+                    'lot_name': line.lot_id.name if line.lot_id else 'N/A'
+                } for line in sale_order.order_line if line.product_id]
+                _logger.info("Attempting to generate Certificado CE for sale order %s with unit_lines: %s", sale_order.name, unit_lines)
                 custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                    'custom_ce_template.report_simple_saleorder', res_ids=sale_order.ids
+                    'custom_ce_template.report_simple_saleorder', res_ids=sale_order.ids, data={'unit_lines': unit_lines}
                 )
                 custom_attachment = self.env['ir.attachment'].create({
                     'name': f"Certificado CE - {sale_order.name}.pdf",
