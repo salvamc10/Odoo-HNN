@@ -8,7 +8,7 @@
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; float: right;margin: 10px 20px;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
-                <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
+                <t t-out="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 8pt; text-align: center; margin: 10mm 20mm 20mm 20mm;">
                     <p>

@@ -1,8 +1,9 @@
-from odoo import models, api, SUPERUSER_ID
+from odoo import models, SUPERUSER_ID
 import base64
 import logging
 
 _logger = logging.getLogger(__name__)
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -11,9 +12,10 @@ class AccountMove(models.Model):
         """ Opens a wizard to compose an email, with relevant mail template and PDF attachments
         (standard invoice report, custom simple report from the associated sale order, and product-specific attachments from product_template.invoice_attachment_id) loaded by default """
         self.ensure_one()
-        lang = self.env.context.get('lang')
+        if self.env.su:
+            self = self.with_user(SUPERUSER_ID)
+        lang = self.env.context.get('lang', self.partner_id.lang or 'es_ES')
         mail_template = self._find_invoice_mail_template()
-
         attachments = []
         # Generate the standard invoice report
         try:
@@ -52,13 +54,16 @@ class AccountMove(models.Model):
         # Find the custom simple report from the associated sale order
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
+            if not sale_orders:
+                # Intenta buscar la orden de venta a través de invoice_origin
+                sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             if sale_orders:
                 for sale_order in sale_orders:
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', '=', f"{sale_order.name}_simple_order.pdf"),
-                        ('mimetype', '=', 'application/pdf'),
+                        ('name', 'like', f"{sale_order.name}%simple%.pdf"),
+                        ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
                         if custom_attachment.id not in attachments:
@@ -87,8 +92,6 @@ class AccountMove(models.Model):
                 'default_template_id': mail_template.id,
                 'mark_invoice_as_sent': True,
             })
-            if mail_template.lang:
-                lang = mail_template._render_lang(self.ids)[self.id]
         else:
             _logger.warning("No mail template found for invoice %s", self.name)
 
@@ -151,7 +154,8 @@ class AccountMove(models.Model):
                 'mimetype': 'application/pdf',
             })
             attachments.append(attachment.id)
-            _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name)
+            _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name, attachment.id)
+            self.env.cr.commit()
         except Exception as e:
             _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
 
@@ -162,11 +166,13 @@ class AccountMove(models.Model):
                 if product_template.invoice_attachment_id:
                     if product_template.invoice_attachment_id.id not in attachments:
                         attachments.append(product_template.invoice_attachment_id.id)
-                        _logger.info("Added product-specific attachment for product %s: %s", 
-                                     product_template.name, product_template.invoice_attachment_id.name)
+                        _logger.info("Added product-specific attachment for product %s: %s (ID: %s)", 
+                                     product_template.name, product_template.invoice_attachment_id.name, 
+                                     product_template.invoice_attachment_id.id)
                 else:
                     _logger.debug("No invoice_attachment_id found for product %s in invoice %s", 
                                   product_template.name, self.name)
+            self.env.cr.commit()  # Forzar commit
         except Exception as e:
             _logger.error("Failed to retrieve product-specific attachments for invoice %s: %s", self.name, str(e))
 
@@ -175,21 +181,24 @@ class AccountMove(models.Model):
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
             if sale_orders:
                 for sale_order in sale_orders:
+                    _logger.info("Checking attachments for sale order %s (ID: %s)", sale_order.name, sale_order.id)
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', '=', f"{sale_order.name}_simple_order.pdf"),
-                        ('mimetype', '=', 'application/pdf'),
+                        ('name', 'like', f"{sale_order.name}%simple%.pdf"),
+                        ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
                         if custom_attachment.id not in attachments:
                             attachments.append(custom_attachment.id)
-                            _logger.info("Found custom simple report for sale order %s: %s", 
-                                         sale_order.name, custom_attachment.name)
+                            _logger.info("Found custom simple report for sale order %s: %s (ID: %s)", 
+                                         sale_order.name, custom_attachment.name, custom_attachment.id)
                     else:
-                        _logger.warning("No custom simple report found for sale order %s", sale_order.name)
+                        _logger.warning("No custom simple report found for sale order %s (ID: %s)", 
+                                        sale_order.name, sale_order.id)
             else:
                 _logger.warning("No sale orders found for invoice %s", self.name)
+            self.env.cr.commit()  # Forzar commit
         except Exception as e:
             _logger.error("Failed to retrieve custom simple report for invoice %s: %s", self.name, str(e))
 

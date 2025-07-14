@@ -1,12 +1,20 @@
-from odoo import models, api, SUPERUSER_ID
+from odoo import models, SUPERUSER_ID
 from odoo.exceptions import UserError
 import base64
 import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
+
+    def action_confirm(self):
+        res = super(SaleOrder, self).action_confirm()
+        for order in self:
+            if order.state == 'sale':
+                order._send_order_confirmation_mail()
+        return res
 
     def _send_order_confirmation_mail(self):
         """ Send a mail to the SO customer to inform them that their order has been confirmed.
@@ -53,59 +61,28 @@ class SaleOrder(models.Model):
                 'mimetype': 'application/pdf',
             })
             attachments.append(attachment.id)
-            _logger.info("Generated standard report for %s: %s", self.name, attachment.name)
+            _logger.info("Generated standard report for %s: %s (ID: %s)", self.name, attachment.name, attachment.id)
+            self.env.cr.commit()
         except Exception as e:
             _logger.error("Failed to render standard sale order report for %s: %s", self.name, str(e))
 
-        # Generate one PDF with one page per product unit with lot_ids
+        # Generate one PDF with one page per product unit
         try:
-            custom_report_action = self.env.ref('custom_ce_template.action_report_simple_saleorder')
-            unit_lines = []
-            # Obtener las entregas asociadas al pedido de venta
-            pickings = self.env['stock.picking'].search([('sale_id', '=', self.id), ('state', '=', 'done')])
-            _logger.info("Pickings for %s: %s", self.name, pickings.mapped('name'))
-            
-            for line in self.order_line:
-                if not line.display_type and line.product_uom_qty > 0:  # Excluir líneas de tipo display y con cantidad 0
-                    # Obtener movimientos de inventario asociados a la línea
-                    moves = pickings.mapped('move_ids_without_package').filtered(lambda m: m.sale_line_id == line)
-                    _logger.info("Moves for line %s: %s", line.product_id.name, moves.mapped('id'))
-                    for move in moves:
-                        for lot in move.lot_ids:
-                            # Solo incluir productos con lot_ids
-                            unit_lines.append({
-                                'index': len(unit_lines) + 1,
-                                'name': line.product_id.name or 'Unnamed Product',
-                                'price_unit': line.price_unit or 0.0,
-                                'price_subtotal': line.price_unit or 0.0,
-                                'default_code': line.product_id.default_code or '',
-                                'lot_name': lot.name,  # Número de serie
-                            })
-            _logger.info("Unit lines for %s: %s", self.name, unit_lines)
-
-            if unit_lines:
-                context = self.env.context.copy()
-                context.update({
-                    'unit_lines': unit_lines,
-                    'lang': self.partner_id.lang or 'es_ES',
-                })
-                self = self.with_context(**context)
-                _logger.info("Context for rendering simple report for %s: %s", self.name, context)
-                custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                    custom_report_action.report_name, res_ids=self.ids
-                )
-                custom_attachment = self.env['ir.attachment'].create({
-                    'name': f"{self.name}_simple_order.pdf",
-                    'type': 'binary',
-                    'datas': base64.b64encode(custom_pdf_content),
-                    'res_model': self._name,
-                    'res_id': self.id,
-                    'mimetype': 'application/pdf',
-                })
-                attachments.append(custom_attachment.id)
-                _logger.info("Generated simple report for %s: %s", self.name, custom_attachment.name)
-            else:
-                _logger.warning("No unit lines generated for %s: no valid order lines with lot_ids found", self.name)
+            # Usar directamente la plantilla QWeb
+            custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                'custom_ce_template.report_simple_saleorder', res_ids=self.ids
+            )
+            custom_attachment = self.env['ir.attachment'].create({
+                'name': f"Declaración CE - {self.name}.pdf",
+                'type': 'binary',
+                'datas': base64.b64encode(custom_pdf_content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            attachments.append(custom_attachment.id)
+            _logger.info("Generated simple report for %s: %s (ID: %s)", self.name, custom_attachment.name, custom_attachment.id)
+            self.env.cr.commit()
         except Exception as e:
             _logger.error("Failed to render custom simple sale order report for %s: %s", self.name, str(e))
 
@@ -296,6 +273,7 @@ class SaleOrder(models.Model):
             order.message_subscribe(partner_ids=order.partner_id.ids)
 
         self.write({'state': 'sent'})
+        
 
 class IrActionsReport(models.Model):
     _inherit = 'ir.actions.report'
