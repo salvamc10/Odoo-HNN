@@ -19,23 +19,23 @@ class AccountMove(models.Model):
         mail_template = self._find_invoice_mail_template()
         attachments = []
         # # Generate the standard invoice report
-        # try:
-        #     report_action = self.env.ref('account.account_invoices')
-        #     pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-        #         report_action.report_name, res_ids=self.ids
-        #     )
-        #     attachment = self.env['ir.attachment'].create({
-        #         'name': f"{self.name}_invoice.pdf",
-        #         'type': 'binary',
-        #         'datas': base64.b64encode(pdf_content),
-        #         'res_model': self._name,
-        #         'res_id': self.id,
-        #         'mimetype': 'application/pdf',
-        #     })
-        #     attachments.append(attachment.id)
-        #     _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name)
-        # except Exception as e:
-        #     _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
+        try:
+            report_action = self.env.ref('account.account_invoices')
+            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                report_action.report_name, res_ids=self.ids
+            )
+            attachment = self.env['ir.attachment'].create({
+                'name': f"{self.name}_invoice.pdf",
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            attachments.append(attachment.id)
+            _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name)
+        except Exception as e:
+            _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
 
         # Add product-specific attachments from product_template.invoice_attachment_id
         try:
@@ -141,24 +141,24 @@ class AccountMove(models.Model):
 
         attachments = []
         # # Generate the standard invoice report
-        # try:
-        #     report_action = self.env.ref('account.account_invoices')
-        #     pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-        #         report_action.report_name, res_ids=self.ids
-        #     )
-        #     attachment = self.env['ir.attachment'].create({
-        #         'name': f"{self.name}_invoice.pdf",
-        #         'type': 'binary',
-        #         'datas': base64.b64encode(pdf_content),
-        #         'res_model': self._name,
-        #         'res_id': self.id,
-        #         'mimetype': 'application/pdf',
-        #     })
-        #     attachments.append(attachment.id)
-        #     _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name, attachment.id)
-        #     self.env.cr.commit()
-        # except Exception as e:
-        #     _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
+        try:
+            report_action = self.env.ref('account.account_invoices')
+            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                report_action.report_name, res_ids=self.ids
+            )
+            attachment = self.env['ir.attachment'].create({
+                'name': f"{self.name}_invoice.pdf",
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            attachments.append(attachment.id)
+            _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name, attachment.id)
+            self.env.cr.commit()
+        except Exception as e:
+            _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
 
         # Add product-specific attachments from product_template.invoice_attachment_id
         try:
