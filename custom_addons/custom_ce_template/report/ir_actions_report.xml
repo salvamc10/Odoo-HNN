@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="action_report_simple_saleorder" model="ir.actions.report">
-        <field name="name">Declaración de Conformidad CE</field>
+        <field name="name">Certificado CE</field>
         <field name="model">sale.order</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">custom_ce_template.report_simple_saleorder</field>
         <field name="report_file">custom_ce_template.report_simple_saleorder</field>
-        <field name="print_report_name">('Declaración CE - %s' % object.name)</field>
+        <field name="print_report_name">('Certificado CE - %s' % object.name)</field>
     </record>
 </odoo>

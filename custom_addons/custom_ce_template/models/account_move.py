@@ -5,12 +5,11 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
     def action_invoice_sent(self):
-        """ Abre el wizard de envío de factura, con PDF estándar, informe personalizado (de SO) y adjuntos específicos del producto. """
+        """ Abre el wizard de envío de factura, con PDF estándar, Certificado CE (de SO) y adjuntos específicos del producto. """
         self.ensure_one()
         if self.env.su:
             self = self.with_user(SUPERUSER_ID)
@@ -51,24 +50,30 @@ class AccountMove(models.Model):
             _logger.exception("Failed to retrieve product-specific attachments for invoice %s", self.name)
             raise UserError(_("No se pudieron obtener los adjuntos de producto."))
 
-        # Informe simple asociado a la orden de venta
+        # Generar Certificado CE asociado al pedido de venta
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
             if not sale_orders and self.invoice_origin:
                 sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             for sale_order in sale_orders:
-                custom_attachment = self.env['ir.attachment'].search([
-                    ('res_model', '=', 'sale.order'),
-                    ('res_id', '=', sale_order.id),
-                    ('name', 'like', f"{sale_order.name}%simple%.pdf"),
-                    ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
-                ], limit=1)
-                if custom_attachment and custom_attachment.id not in attachments:
-                    attachments.append(custom_attachment.id)
-                    _logger.info("Found custom simple report for sale order %s: %s", sale_order.name, custom_attachment.name)
+                _logger.info("Attempting to generate Certificado CE for sale order %s", sale_order.name)
+                custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                    'custom_ce_template.report_simple_saleorder', res_ids=sale_order.ids
+                )
+                custom_attachment = self.env['ir.attachment'].create({
+                    'name': f"Certificado CE - {sale_order.name}.pdf",
+                    'type': 'binary',
+                    'datas': base64.b64encode(custom_pdf_content),
+                    'res_model': 'sale.order',
+                    'res_id': sale_order.id,
+                    'mimetype': 'application/pdf',
+                })
+                attachments.append(custom_attachment.id)
+                _logger.info("Generated Certificado CE for sale order %s: %s", sale_order.name, custom_attachment.name)
         except Exception as e:
-            _logger.exception("Failed to retrieve custom simple report for invoice %s", self.name)
-            raise UserError(_("No se pudo recuperar el informe simple del pedido asociado."))
+            _logger.exception("Failed to generate Certificado CE for invoice %s, sale order %s",
+                              self.name, sale_order.name)
+            raise UserError(_("No se pudo generar el Certificado CE: %s") % str(e))
 
         ctx = {
             'default_model': 'account.move',
@@ -105,7 +110,7 @@ class AccountMove(models.Model):
 
     def _find_invoice_mail_template(self):
         self.ensure_one()
-        return self.env.ref('account.email_template_edi_invoice', raise_if_not_found=False)
+        return self.env.ref('accounting.email_template_edi_invoice', raise_if_not_found=False)
 
     def _send_invoice_notification_mail(self, mail_template):
         self.ensure_one()
@@ -153,19 +158,25 @@ class AccountMove(models.Model):
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
             for sale_order in sale_orders:
-                custom_attachment = self.env['ir.attachment'].search([
-                    ('res_model', '=', 'sale.order'),
-                    ('res_id', '=', sale_order.id),
-                    ('name', 'like', f"{sale_order.name}%simple%.pdf"),
-                    ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
-                ], limit=1)
-                if custom_attachment and custom_attachment.id not in attachments:
-                    attachments.append(custom_attachment.id)
-                    _logger.info("Found custom simple report for sale order %s: %s (ID: %s)",
-                                 sale_order.name, custom_attachment.name, custom_attachment.id)
+                _logger.info("Attempting to generate Certificado CE for sale order %s", sale_order.name)
+                custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                    'custom_ce_template.report_simple_saleorder', res_ids=sale_order.ids
+                )
+                custom_attachment = self.env['ir.attachment'].create({
+                    'name': f"Certificado CE - {sale_order.name}.pdf",
+                    'type': 'binary',
+                    'datas': base64.b64encode(custom_pdf_content),
+                    'res_model': 'sale.order',
+                    'res_id': sale_order.id,
+                    'mimetype': 'application/pdf',
+                })
+                attachments.append(custom_attachment.id)
+                _logger.info("Generated Certificado CE for sale order %s: %s (ID: %s)",
+                             sale_order.name, custom_attachment.name, custom_attachment.id)
         except Exception as e:
-            _logger.exception("Failed to retrieve custom simple report for invoice %s", self.name)
-            raise UserError(_("No se pudo recuperar el informe simple del pedido asociado."))
+            _logger.exception("Failed to generate Certificado CE for invoice %s, sale order %s",
+                              self.name, sale_order.name)
+            raise UserError(_("No se pudo generar el Certificado CE: %s") % str(e))
 
         try:
             self.with_context(mail_send=True).message_post_with_source(

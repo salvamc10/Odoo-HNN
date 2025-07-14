@@ -19,7 +19,7 @@
     </template>
 
     <!-- Plantilla principal para el informe -->
-    <template id="report_simple_saleorder" name="Simple Sale Order Report">
+    <template id="report_simple_saleorder" name="Certificado CE">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
