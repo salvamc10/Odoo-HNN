@@ -30,25 +30,29 @@ class SaleOrder(models.Model):
                     _logger.info("Generated standard report for %s: %s (ID: %s)", order.name, attachment.name, attachment.id)
                     self.env.cr.commit()
 
+                    existing = self.env['ir.attachment'].search([
+                        ('res_model', '=', 'sale.order'),
+                        ('res_id', '=', order.id),
+                        ('name', 'ilike', 'Certificado CE%')
+                    ], limit=1)
+
+                    if existing:
+                        _logger.info("Certificado CE ya existe para %s. No se volverá a generar.", order.name)
+                        continue
+
                     # Generar el informe personalizado solo si hay lot_ids
                     unit_lines = []
+                    
                     pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'done')])
                     _logger.info("Pickings for %s: %s", order.name, pickings.mapped('name'))
+                    
                     if not pickings:
                         _logger.warning("No done pickings found for %s", order.name)
+                    
                     for line in order.order_line:
                         if not line.display_type and line.product_uom_qty > 0:
-                            _logger.info("Processing line %s (product: %s, tracking: %s, sale_line_id: %s)", 
-                                         line.id, line.product_id.name, line.product_id.tracking, line.id)
                             moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
-                            _logger.info("Moves for line %s (product: %s): %s", 
-                                         line.id, line.product_id.name, moves.mapped('id'))
-                            if not moves:
-                                _logger.info("No moves found for line %s (product: %s)", 
-                                             line.id, line.product_id.name)
                             for move in moves:
-                                _logger.info("Move %s: product=%s, sale_line_id=%s, lot_ids=%s", 
-                                             move.id, move.product_id.name, move.sale_line_id.id, move.lot_ids.mapped('name'))
                                 if move.lot_ids:
                                     for lot in move.lot_ids:
                                         unit_lines.append({
@@ -59,10 +63,6 @@ class SaleOrder(models.Model):
                                             'default_code': line.product_id.default_code or '',
                                             'lot_name': lot.name,
                                         })
-                                else:
-                                    _logger.info("No lot_ids found for move %s (product: %s)", 
-                                                 move.id, line.product_id.name)
-                    _logger.info("Unit lines for %s: %s", order.name, unit_lines)
 
                     if unit_lines:  # Solo generar el certificado si hay unit_lines
                         context = self.env.context.copy()
@@ -104,11 +104,18 @@ class SaleOrder(models.Model):
             self = self.with_user(SUPERUSER_ID)
 
         try:
+            custom_attachment = self.env['ir.attachment'].search([
+                ('res_model', '=', 'sale.order'),
+                ('res_id', '=', self.id),
+                ('name', 'ilike', 'Certificado CE%'),
+                ('mimetype', 'in', ['application/pdf']),
+            ], limit=1)
+
             self.with_context(mail_send=True).message_post_with_source(
                 mail_template,
                 email_layout_xmlid='mail.mail_notification_layout_with_responsible_signature',
                 subtype_xmlid='mail.mt_comment',
-                attachment_ids=[],
+                attachment_ids=[custom_attachment.id] if custom_attachment else [],
             )
             _logger.info("Sent confirmation email without attachments for sale order %s", self.name)
         except Exception as e:
