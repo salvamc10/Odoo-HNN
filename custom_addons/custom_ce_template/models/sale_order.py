@@ -32,7 +32,7 @@ class SaleOrder(models.Model):
 
                     # Generar el informe personalizado solo si hay lot_ids
                     unit_lines = []
-                    pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'done')])
+                    pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'sale')])
                     _logger.info("Pickings for %s: %s", order.name, pickings.mapped('name'))
                     for line in order.order_line:
                         if not line.display_type and line.product_uom_qty > 0:
