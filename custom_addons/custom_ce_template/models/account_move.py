@@ -63,7 +63,7 @@ class AccountMove(models.Model):
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', 'ilike', f"Declaración CE - {sale_order.name}%"),
+                        ('name', 'ilike', f"Certificado CE - {sale_order.name}%"),
                         ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
@@ -172,7 +172,7 @@ class AccountMove(models.Model):
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', 'ilike', f"Declaración CE - {sale_order.name}%"),
+                        ('name', 'ilike', f"Certificado CE - {sale_order.name}%"),
                         ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:

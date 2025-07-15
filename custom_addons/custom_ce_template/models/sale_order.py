@@ -51,7 +51,7 @@ class SaleOrder(models.Model):
                 'custom_ce_template.report_simple_saleorder', res_ids=self.ids
             )
             custom_attachment = self.env['ir.attachment'].create({
-                'name': f"Declaración CE - {self.name}.pdf",
+                'name': f"Certificado CE - {self.name}.pdf",
                 'type': 'binary',
                 'datas': base64.b64encode(custom_pdf_content),
                 'res_model': self._name,
