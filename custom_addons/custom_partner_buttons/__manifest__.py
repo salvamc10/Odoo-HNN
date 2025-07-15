@@ -18,6 +18,7 @@
         'views/mail_activity_views.xml',
         'views/crm_lead_view.xml',
         'data/ir_rules.xml',
+        'data/ir_cron.xml',
     ],
     'installable': True,
     'application': False,
