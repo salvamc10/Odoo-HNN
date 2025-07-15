@@ -172,3 +172,58 @@ class AccountMove(models.Model):
         """ Get the appropriate mail template for the current invoice """
         self.ensure_one()
         return self.env.ref('account.email_template_edi_invoice', raise_if_not_found=False)
+
+    def action_post(self):
+        res = super().action_post()
+        for invoice in self:
+            if invoice.move_type != 'out_invoice':
+                continue
+
+            sale_order = invoice.invoice_line_ids.mapped('sale_line_ids.order_id')
+            if not sale_order:
+                continue
+
+            for order in sale_order:
+                # Recopilar datos de lotes y productos
+                pickings = self.env['stock.picking'].search([
+                    ('sale_id', '=', order.id),
+                    ('state', '=', 'done')
+                ])
+                unit_lines = []
+                for line in order.order_line:
+                    moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
+                    for move in moves:
+                        for lot in move.lot_ids:
+                            unit_lines.append({
+                                'index': len(unit_lines) + 1,
+                                'name': line.product_id.name,
+                                'price_unit': line.price_unit,
+                                'price_subtotal': line.price_subtotal,
+                                'default_code': line.product_id.default_code,
+                                'lot_name': lot.name,
+                            })
+
+                # Si hay datos válidos, generar y adjuntar el reporte
+                if unit_lines:
+                    context = self.env.context.copy()
+                    context.update({
+                        'unit_lines': unit_lines,
+                        'lang': invoice.partner_id.lang or 'es_ES',
+                    })
+                    pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
+                        'custom_ce_template.report_simple_saleorder',
+                        res_ids=order.ids
+                    )
+                    attachment = self.env['ir.attachment'].create({
+                        'name': f"Certificado CE - {order.name}.pdf",
+                        'type': 'binary',
+                        'datas': base64.b64encode(pdf_content),
+                        'res_model': 'account.move',
+                        'res_id': invoice.id,
+                        'mimetype': 'application/pdf',
+                    })
+                    _logger.info("Adjuntado certificado CE a factura %s (ID adjunto: %s)", invoice.name, attachment.id)
+                else:
+                    _logger.warning("No se generó certificado CE para %s: No hay lotes válidos.", order.name)
+
+        return res
