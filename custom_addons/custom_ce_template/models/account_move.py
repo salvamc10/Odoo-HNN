@@ -1,4 +1,4 @@
-from odoo import models, SUPERUSER_ID
+from odoo import models, api, SUPERUSER_ID
 import base64
 import logging
 
@@ -19,14 +19,16 @@ class AccountMove(models.Model):
             sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
 
         for so in sale_orders:
+            # Buscar directamente en la factura
             cert = self.env['ir.attachment'].search([
-                ('res_model', '=', 'sale.order'),
-                ('res_id', '=', so.id),
+                ('res_model', '=', 'account.move'),
+                ('res_id', '=', self.id),
                 ('name', 'ilike', 'Certificado CE%'),
                 ('mimetype', '=', 'application/pdf'),
             ], limit=1)
             if cert:
                 attachments.append(cert.id)
+
 
         # Generar contexto del wizard de correo
         ctx = {
@@ -173,6 +175,27 @@ class AccountMove(models.Model):
         self.ensure_one()
         return self.env.ref('account.email_template_edi_invoice', raise_if_not_found=False)
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        moves = super().create(vals_list)
+        for move in moves:
+            sale_order = move.invoice_origin and self.env['sale.order'].search([('name', '=', move.invoice_origin)], limit=1)
+            if sale_order:
+                # Buscar el Certificado CE adjunto al pedido
+                ce_attachment = self.env['ir.attachment'].search([
+                    ('res_model', '=', 'sale.order'),
+                    ('res_id', '=', sale_order.id),
+                    ('name', 'ilike', 'Certificado CE'),
+                ], limit=1)
+                if ce_attachment:
+                    # Copiar el adjunto a la factura
+                    new_attach = ce_attachment.copy({
+                        'res_model': 'account.move',
+                        'res_id': move.id,
+                    })
+                    _logger.info("Adjuntado certificado CE a la factura %s desde el pedido %s", move.name, sale_order.name)
+        return moves
+    
     def action_post(self):
         res = super().action_post()
         for invoice in self:
