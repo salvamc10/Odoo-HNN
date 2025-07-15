@@ -34,6 +34,8 @@ class SaleOrder(models.Model):
                     unit_lines = []
                     pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'done')])
                     _logger.info("Pickings for %s: %s", order.name, pickings.mapped('name'))
+                    if not pickings:
+                        _logger.warning("No done pickings found for %s", order.name)
                     for line in order.order_line:
                         if not line.display_type and line.product_uom_qty > 0:
                             _logger.info("Processing line %s (product: %s, tracking: %s, sale_line_id: %s)", 
@@ -41,6 +43,9 @@ class SaleOrder(models.Model):
                             moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
                             _logger.info("Moves for line %s (product: %s): %s", 
                                          line.id, line.product_id.name, moves.mapped('id'))
+                            if not moves:
+                                _logger.info("No moves found for line %s (product: %s)", 
+                                             line.id, line.product_id.name)
                             for move in moves:
                                 _logger.info("Move %s: product=%s, sale_line_id=%s, lot_ids=%s", 
                                              move.id, move.product_id.name, move.sale_line_id.id, move.lot_ids.mapped('name'))
