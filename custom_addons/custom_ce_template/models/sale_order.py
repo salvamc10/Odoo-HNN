@@ -30,42 +30,50 @@ class SaleOrder(models.Model):
                     _logger.info("Generated standard report for %s: %s (ID: %s)", order.name, attachment.name, attachment.id)
                     self.env.cr.commit()
 
-                    # Generar el informe personalizado
+                    # Generar el informe personalizado solo si hay lot_ids
                     unit_lines = []
                     pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'done')])
+                    _logger.info("Pickings for %s: %s", order.name, pickings.mapped('name'))
                     for line in order.order_line:
                         if not line.display_type and line.product_uom_qty > 0:
-                            moves = pickings.mapped('move_ids_without_package').filtered(lambda m: m.sale_line_id == line)
+                            moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id == line)
+                            _logger.info("Moves for line %s (product: %s): %s", line.id, line.product_id.name, moves.mapped('id'))
                             for move in moves:
-                                for lot in move.lot_ids:
-                                    unit_lines.append({
-                                        'index': len(unit_lines) + 1,
-                                        'name': line.product_id.name or 'Unnamed Product',
-                                        'price_unit': line.price_unit or 0.0,
-                                        'price_subtotal': line.price_unit or 0.0,
-                                        'default_code': line.product_id.default_code or '',
-                                        'lot_name': lot.name,
-                                    })
+                                if move.lot_ids:
+                                    for lot in move.lot_ids:
+                                        unit_lines.append({
+                                            'index': len(unit_lines) + 1,
+                                            'name': line.product_id.name or 'Unnamed Product',
+                                            'price_unit': line.price_unit or 0.0,
+                                            'price_subtotal': line.price_subtotal or 0.0,
+                                            'default_code': line.product_id.default_code or '',
+                                            'lot_name': lot.name,
+                                        })
+                                else:
+                                    _logger.info("No lot_ids found for move %s (product: %s)", move.id, line.product_id.name)
                     _logger.info("Unit lines for %s: %s", order.name, unit_lines)
 
-                    context = self.env.context.copy()
-                    context.update({
-                        'unit_lines': unit_lines,
-                        'lang': order.partner_id.lang or 'es_ES',
-                    })
-                    custom_pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
-                        'custom_ce_template.report_simple_saleorder', res_ids=order.ids
-                    )
-                    custom_attachment = self.env['ir.attachment'].create({
-                        'name': f"Certificado CE - {order.name}.pdf",
-                        'type': 'binary',
-                        'datas': base64.b64encode(custom_pdf_content),
-                        'res_model': order._name,
-                        'res_id': order.id,
-                        'mimetype': 'application/pdf',
-                    })
-                    _logger.info("Generated custom CE report for %s: %s (ID: %s)", order.name, custom_attachment.name, custom_attachment.id)
-                    self.env.cr.commit()
+                    if unit_lines:  # Solo generar el certificado si hay unit_lines
+                        context = self.env.context.copy()
+                        context.update({
+                            'unit_lines': unit_lines,
+                            'lang': order.partner_id.lang or 'es_ES',
+                        })
+                        custom_pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
+                            'custom_ce_template.report_simple_saleorder', res_ids=order.ids
+                        )
+                        custom_attachment = self.env['ir.attachment'].create({
+                            'name': f"Certificado CE - {order.name}.pdf",
+                            'type': 'binary',
+                            'datas': base64.b64encode(custom_pdf_content),
+                            'res_model': order._name,
+                            'res_id': order.id,
+                            'mimetype': 'application/pdf',
+                        })
+                        _logger.info("Generated custom CE report for %s: %s (ID: %s)", order.name, custom_attachment.name, custom_attachment.id)
+                        self.env.cr.commit()
+                    else:
+                        _logger.warning("No custom CE report generated for %s: No valid unit lines found", order.name)
                 except Exception as e:
                     _logger.error("Failed to generate reports for %s: %s", order.name, str(e))
                 order._send_order_notification_mail(order._get_confirmation_template())
