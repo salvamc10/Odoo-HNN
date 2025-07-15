@@ -48,6 +48,25 @@ class AccountMove(models.Model):
         if attachments:
             ctx['default_attachment_ids'] = [(6, 0, attachments)]
 
+        try:
+            report_action = self.env.ref('account.account_invoices')
+            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                report_action.report_name, res_ids=[self.id]
+            )
+            invoice_attachment = self.env['ir.attachment'].create({
+                'name': f"{self.name}_invoice.pdf",
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            attachments.append(invoice_attachment.id)
+            _logger.info("Factura PDF adjuntada: %s", invoice_attachment.name)
+        except Exception as e:
+            _logger.error("Error al generar el PDF de la factura %s: %s", self.name, str(e))
+            
+
         return {
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
