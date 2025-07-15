@@ -32,13 +32,18 @@ class SaleOrder(models.Model):
 
                     # Generar el informe personalizado solo si hay lot_ids
                     unit_lines = []
-                    pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'sale')])
+                    pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'done')])
                     _logger.info("Pickings for %s: %s", order.name, pickings.mapped('name'))
                     for line in order.order_line:
                         if not line.display_type and line.product_uom_qty > 0:
-                            moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id == line)
-                            _logger.info("Moves for line %s (product: %s): %s", line.id, line.product_id.name, moves.mapped('id'))
+                            _logger.info("Processing line %s (product: %s, tracking: %s, sale_line_id: %s)", 
+                                         line.id, line.product_id.name, line.product_id.tracking, line.id)
+                            moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
+                            _logger.info("Moves for line %s (product: %s): %s", 
+                                         line.id, line.product_id.name, moves.mapped('id'))
                             for move in moves:
+                                _logger.info("Move %s: product=%s, sale_line_id=%s, lot_ids=%s", 
+                                             move.id, move.product_id.name, move.sale_line_id.id, move.lot_ids.mapped('name'))
                                 if move.lot_ids:
                                     for lot in move.lot_ids:
                                         unit_lines.append({
@@ -50,7 +55,8 @@ class SaleOrder(models.Model):
                                             'lot_name': lot.name,
                                         })
                                 else:
-                                    _logger.info("No lot_ids found for move %s (product: %s)", move.id, line.product_id.name)
+                                    _logger.info("No lot_ids found for move %s (product: %s)", 
+                                                 move.id, line.product_id.name)
                     _logger.info("Unit lines for %s: %s", order.name, unit_lines)
 
                     if unit_lines:  # Solo generar el certificado si hay unit_lines
@@ -70,12 +76,14 @@ class SaleOrder(models.Model):
                             'res_id': order.id,
                             'mimetype': 'application/pdf',
                         })
-                        _logger.info("Generated custom CE report for %s: %s (ID: %s)", order.name, custom_attachment.name, custom_attachment.id)
+                        _logger.info("Generated custom CE report for %s: %s (ID: %s)", 
+                                     order.name, custom_attachment.name, custom_attachment.id)
                         self.env.cr.commit()
                     else:
                         _logger.warning("No custom CE report generated for %s: No valid unit lines found", order.name)
                 except Exception as e:
                     _logger.error("Failed to generate reports for %s: %s", order.name, str(e))
+                    raise
                 order._send_order_notification_mail(order._get_confirmation_template())
         return res
 
@@ -197,5 +205,5 @@ class SaleOrder(models.Model):
         if existing_invoices:
             _logger.warning("Invoice already exists for sale order %s: %s", self.name, existing_invoices.mapped('name'))
             return existing_invoices.ids
-        _logger.info("Creating invoice for sale order %s (ID: %s)", self.name, self.id)
+        _logger.info("No existing invoices found for sale order %s (ID: %s). Creating new invoice.", self.name, self.id)
         return super(SaleOrder, self).action_invoice_create(grouped=grouped, final=final, date=date)
