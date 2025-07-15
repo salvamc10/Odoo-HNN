@@ -1,10 +1,8 @@
-
 from odoo import models, SUPERUSER_ID
 import base64
 import logging
 
 _logger = logging.getLogger(__name__)
-
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -53,17 +51,18 @@ class AccountMove(models.Model):
         except Exception as e:
             _logger.error("Failed to retrieve product-specific attachments for invoice %s: %s", self.name, str(e))
 
-        # Find the custom simple report from the associated sale order
+        # Find the custom CE report from the associated sale order
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
             if not sale_orders and self.invoice_origin:
                 sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             if sale_orders:
                 for sale_order in sale_orders:
+                    _logger.info("Searching custom CE report for sale order %s (ID: %s)", sale_order.name, sale_order.id)
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', 'ilike', f"Certificado CE - {sale_order.name}%"),
+                        ('name', 'ilike', 'Certificado CE%'),
                         ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
@@ -72,8 +71,14 @@ class AccountMove(models.Model):
                             _logger.info("Found custom CE report for sale order %s: %s (ID: %s)", 
                                          sale_order.name, custom_attachment.name, custom_attachment.id)
                     else:
-                        _logger.warning("No custom CE report found for sale order %s (ID: %s)", 
+                        _logger.warning("No custom CE report found for sale order %s (ID: %s). Checking all attachments...", 
                                         sale_order.name, sale_order.id)
+                        all_attachments = self.env['ir.attachment'].search([
+                            ('res_model', '=', 'sale.order'),
+                            ('res_id', '=', sale_order.id),
+                        ])
+                        _logger.info("All attachments for sale order %s: %s", 
+                                     sale_order.name, [(att.name, att.id, att.mimetype) for att in all_attachments])
             else:
                 _logger.warning("No sale orders found for invoice %s", self.name)
         except Exception as e:
@@ -169,10 +174,11 @@ class AccountMove(models.Model):
                 sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             if sale_orders:
                 for sale_order in sale_orders:
+                    _logger.info("Searching custom CE report for sale order %s (ID: %s)", sale_order.name, sale_order.id)
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', 'ilike', f"Certificado CE - {sale_order.name}%"),
+                        ('name', 'ilike', 'Certificado CE%'),
                         ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
@@ -181,8 +187,14 @@ class AccountMove(models.Model):
                             _logger.info("Found custom CE report for sale order %s: %s (ID: %s)", 
                                          sale_order.name, custom_attachment.name, custom_attachment.id)
                     else:
-                        _logger.warning("No custom CE report found for sale order %s (ID: %s)", 
+                        _logger.warning("No custom CE report found for sale order %s (ID: %s). Checking all attachments...", 
                                         sale_order.name, sale_order.id)
+                        all_attachments = self.env['ir.attachment'].search([
+                            ('res_model', '=', 'sale.order'),
+                            ('res_id', '=', sale_order.id),
+                        ])
+                        _logger.info("All attachments for sale order %s: %s", 
+                                     sale_order.name, [(att.name, att.id, att.mimetype) for att in all_attachments])
             else:
                 _logger.warning("No sale orders found for invoice %s", self.name)
             self.env.cr.commit()

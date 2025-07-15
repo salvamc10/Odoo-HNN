@@ -5,18 +5,74 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    def action_confirm(self):
+        """ Override action_confirm to generate PDF reports """
+        res = super(SaleOrder, self).action_confirm()
+        for order in self:
+            if order.state == 'sale':
+                try:
+                    # Generar el informe estándar
+                    report_action = self.env.ref('sale.action_report_saleorder')
+                    pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                        report_action.report_name, res_ids=order.ids
+                    )
+                    attachment = self.env['ir.attachment'].create({
+                        'name': f"{order.name}_order.pdf",
+                        'type': 'binary',
+                        'datas': base64.b64encode(pdf_content),
+                        'res_model': order._name,
+                        'res_id': order.id,
+                        'mimetype': 'application/pdf',
+                    })
+                    _logger.info("Generated standard report for %s: %s (ID: %s)", order.name, attachment.name, attachment.id)
+                    self.env.cr.commit()
+
+                    # Generar el informe personalizado
+                    unit_lines = []
+                    pickings = self.env['stock.picking'].search([('sale_id', '=', order.id), ('state', '=', 'done')])
+                    for line in order.order_line:
+                        if not line.display_type and line.product_uom_qty > 0:
+                            moves = pickings.mapped('move_ids_without_package').filtered(lambda m: m.sale_line_id == line)
+                            for move in moves:
+                                for lot in move.lot_ids:
+                                    unit_lines.append({
+                                        'index': len(unit_lines) + 1,
+                                        'name': line.product_id.name or 'Unnamed Product',
+                                        'price_unit': line.price_unit or 0.0,
+                                        'price_subtotal': line.price_unit or 0.0,
+                                        'default_code': line.product_id.default_code or '',
+                                        'lot_name': lot.name,
+                                    })
+                    _logger.info("Unit lines for %s: %s", order.name, unit_lines)
+
+                    context = self.env.context.copy()
+                    context.update({
+                        'unit_lines': unit_lines,
+                        'lang': order.partner_id.lang or 'es_ES',
+                    })
+                    custom_pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
+                        'custom_ce_template.report_simple_saleorder', res_ids=order.ids
+                    )
+                    custom_attachment = self.env['ir.attachment'].create({
+                        'name': f"Certificado CE - {order.name}.pdf",
+                        'type': 'binary',
+                        'datas': base64.b64encode(custom_pdf_content),
+                        'res_model': order._name,
+                        'res_id': order.id,
+                        'mimetype': 'application/pdf',
+                    })
+                    _logger.info("Generated custom CE report for %s: %s (ID: %s)", order.name, custom_attachment.name, custom_attachment.id)
+                    self.env.cr.commit()
+                except Exception as e:
+                    _logger.error("Failed to generate reports for %s: %s", order.name, str(e))
+                order._send_order_notification_mail(order._get_confirmation_template())
+        return res
+
     def _send_order_notification_mail(self, mail_template):
-        """ Send a mail to the customer without attachments. Generate and store the PDFs for later use in the invoice.
-
-        Note: self.ensure_one()
-
-        :param mail.template mail_template: the template used to generate the mail
-        :return: None
-        """
+        """ Send a mail to the customer without attachments """
         self.ensure_one()
 
         if not mail_template:
@@ -26,44 +82,6 @@ class SaleOrder(models.Model):
         if self.env.su:
             self = self.with_user(SUPERUSER_ID)
 
-        # Generate and store the standard sale order report
-        try:
-            report_action = self.env.ref('sale.action_report_saleorder')
-            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                report_action.report_name, res_ids=self.ids
-            )
-            attachment = self.env['ir.attachment'].create({
-                'name': f"{self.name}_order.pdf",
-                'type': 'binary',
-                'datas': base64.b64encode(pdf_content),
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/pdf',
-            })
-            _logger.info("Generated standard report for %s: %s (ID: %s)", self.name, attachment.name, attachment.id)
-            self.env.cr.commit()
-        except Exception as e:
-            _logger.error("Failed to render standard sale order report for %s: %s", self.name, str(e))
-
-        # Generate and store the custom CE report
-        try:
-            custom_pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                'custom_ce_template.report_simple_saleorder', res_ids=self.ids
-            )
-            custom_attachment = self.env['ir.attachment'].create({
-                'name': f"Certificado CE - {self.name}.pdf",
-                'type': 'binary',
-                'datas': base64.b64encode(custom_pdf_content),
-                'res_model': self._name,
-                'res_id': self.id,
-                'mimetype': 'application/pdf',
-            })
-            _logger.info("Generated simple report for %s: %s (ID: %s)", self.name, custom_attachment.name, custom_attachment.id)
-            self.env.cr.commit()
-        except Exception as e:
-            _logger.error("Failed to render custom simple sale order report for %s: %s", self.name, str(e))
-
-        # Send email without attachments
         try:
             self.with_context(mail_send=True).message_post_with_source(
                 mail_template,
@@ -161,9 +179,15 @@ class SaleOrder(models.Model):
 
         self.write({'state': 'sent'})
 
-class IrActionsReport(models.Model):
-    _inherit = 'ir.actions.report'
-
-    def _render_qweb_pdf_prepare_data(self, res_ids):
-        """ Sobrescribir para mantener compatibilidad, pero no generar unit_lines aquí """
-        return super()._render_qweb_pdf_prepare_data(res_ids)
+    def action_invoice_create(self, grouped=False, final=False, date=None):
+        """ Prevent duplicate invoices """
+        self.ensure_one()
+        existing_invoices = self.env['account.move'].search([
+            ('invoice_origin', '=', self.name),
+            ('state', '!=', 'cancel'),
+        ])
+        if existing_invoices:
+            _logger.warning("Invoice already exists for sale order %s: %s", self.name, existing_invoices.mapped('name'))
+            return existing_invoices.ids
+        _logger.info("Creating invoice for sale order %s (ID: %s)", self.name, self.id)
+        return super(SaleOrder, self).action_invoice_create(grouped=grouped, final=final, date=date)
