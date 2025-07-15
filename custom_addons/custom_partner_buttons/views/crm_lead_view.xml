@@ -19,7 +19,7 @@
         <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="attributes">
-                <attribute name="width">300</attribute>
+                <attribute name="width">200</attribute>
             </xpath>
         </field>
     </record>

@@ -7,7 +7,7 @@
 
             <!-- Ancho fijo al campo complete_name -->
             <xpath expr="//list/field[@name='complete_name']" position="attributes">
-                <attribute name="width">300</attribute>
+                <attribute name="width">230</attribute>
             </xpath>
 
             <!-- Campos adicionales -->
