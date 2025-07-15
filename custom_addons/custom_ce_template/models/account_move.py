@@ -10,15 +10,15 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     def action_invoice_sent(self):
-        """ Opens a wizard to compose an email, with relevant mail template and PDF attachments
-        (standard invoice report, custom simple report from the associated sale order, and product-specific attachments from product_template.invoice_attachment_id) loaded by default """
+        """ Opens a wizard to compose an email with PDF attachments """
         self.ensure_one()
         if self.env.su:
             self = self.with_user(SUPERUSER_ID)
         lang = self.env.context.get('lang', self.partner_id.lang or 'es_ES')
         mail_template = self._find_invoice_mail_template()
         attachments = []
-        # # Generate the standard invoice report
+
+        # Generate the standard invoice report
         try:
             report_action = self.env.ref('account.account_invoices')
             pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
@@ -33,7 +33,7 @@ class AccountMove(models.Model):
                 'mimetype': 'application/pdf',
             })
             attachments.append(attachment.id)
-            _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name)
+            _logger.info("Generated standard invoice report for %s: %s (ID: %s)", self.name, attachment.name, attachment.id)
         except Exception as e:
             _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
 
@@ -44,8 +44,9 @@ class AccountMove(models.Model):
                 if product_template.invoice_attachment_id:
                     if product_template.invoice_attachment_id.id not in attachments:
                         attachments.append(product_template.invoice_attachment_id.id)
-                        _logger.info("Added product-specific attachment for product %s: %s", 
-                                     product_template.name, product_template.invoice_attachment_id.name)
+                        _logger.info("Added product-specific attachment for product %s: %s (ID: %s)", 
+                                     product_template.name, product_template.invoice_attachment_id.name, 
+                                     product_template.invoice_attachment_id.id)
                 else:
                     _logger.debug("No invoice_attachment_id found for product %s in invoice %s", 
                                   product_template.name, self.name)
@@ -55,28 +56,28 @@ class AccountMove(models.Model):
         # Find the custom simple report from the associated sale order
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
-            if not sale_orders:
-                # Intenta buscar la orden de venta a través de invoice_origin
+            if not sale_orders and self.invoice_origin:
                 sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             if sale_orders:
                 for sale_order in sale_orders:
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', 'like', f"{sale_order.name}%certificado%.pdf"),
+                        ('name', 'ilike', f"Declaración CE - {sale_order.name}%"),
                         ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
                         if custom_attachment.id not in attachments:
                             attachments.append(custom_attachment.id)
-                            _logger.info("Found custom simple report for sale order %s: %s", 
-                                         sale_order.name, custom_attachment.name)
+                            _logger.info("Found custom CE report for sale order %s: %s (ID: %s)", 
+                                         sale_order.name, custom_attachment.name, custom_attachment.id)
                     else:
-                        _logger.warning("No custom simple report found for sale order %s", sale_order.name)
+                        _logger.warning("No custom CE report found for sale order %s (ID: %s)", 
+                                        sale_order.name, sale_order.id)
             else:
                 _logger.warning("No sale orders found for invoice %s", self.name)
         except Exception as e:
-            _logger.error("Failed to retrieve custom simple report for invoice %s: %s", self.name, str(e))
+            _logger.error("Failed to retrieve custom CE report for invoice %s: %s", self.name, str(e))
 
         ctx = {
             'default_model': 'account.move',
@@ -112,24 +113,8 @@ class AccountMove(models.Model):
             'context': ctx,
         }
 
-    def _find_invoice_mail_template(self):
-        """ Get the appropriate mail template for the current invoice.
-
-        :return: The correct mail template for the invoice
-        :rtype: record of `mail.template` or `None` if not found
-        """
-        self.ensure_one()
-        return self.env.ref('account.email_template_edi_invoice', raise_if_not_found=False)
-
     def _send_invoice_notification_mail(self, mail_template):
-        """ Send a mail to the customer with PDF attachments: the standard invoice report,
-        the custom simple report from the associated sale order, and product-specific attachments from product_template.invoice_attachment_id.
-
-        Note: self.ensure_one()
-
-        :param mail.template mail_template: the template used to generate the mail
-        :return: None
-        """
+        """ Send a mail to the customer with PDF attachments """
         self.ensure_one()
 
         if not mail_template:
@@ -140,7 +125,7 @@ class AccountMove(models.Model):
             self = self.with_user(SUPERUSER_ID)
 
         attachments = []
-        # # Generate the standard invoice report
+        # Generate the standard invoice report
         try:
             report_action = self.env.ref('account.account_invoices')
             pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
@@ -155,7 +140,7 @@ class AccountMove(models.Model):
                 'mimetype': 'application/pdf',
             })
             attachments.append(attachment.id)
-            _logger.info("Generated standard invoice report for %s: %s", self.name, attachment.name, attachment.id)
+            _logger.info("Generated standard invoice report for %s: %s (ID: %s)", self.name, attachment.name, attachment.id)
             self.env.cr.commit()
         except Exception as e:
             _logger.error("Failed to render standard invoice report for %s: %s", self.name, str(e))
@@ -173,56 +158,67 @@ class AccountMove(models.Model):
                 else:
                     _logger.debug("No invoice_attachment_id found for product %s in invoice %s", 
                                   product_template.name, self.name)
-            self.env.cr.commit()  # Forzar commit
+            self.env.cr.commit()
         except Exception as e:
             _logger.error("Failed to retrieve product-specific attachments for invoice %s: %s", self.name, str(e))
 
-        # Find the custom simple report from the associated sale order
+        # Find the custom CE report from the associated sale order
         try:
             sale_orders = self.line_ids.mapped('sale_line_ids.order_id')
+            if not sale_orders and self.invoice_origin:
+                sale_orders = self.env['sale.order'].search([('name', '=', self.invoice_origin)], limit=1)
             if sale_orders:
                 for sale_order in sale_orders:
-                    _logger.info("Checking attachments for sale order %s (ID: %s)", sale_order.name, sale_order.id)
                     custom_attachment = self.env['ir.attachment'].search([
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', sale_order.id),
-                        ('name', 'like', f"{sale_order.name}%certificado%.pdf"),
+                        ('name', 'ilike', f"Declaración CE - {sale_order.name}%"),
                         ('mimetype', 'in', ['application/pdf', 'application/x-pdf']),
                     ], limit=1)
                     if custom_attachment:
                         if custom_attachment.id not in attachments:
                             attachments.append(custom_attachment.id)
-                            _logger.info("Found custom certificado report for sale order %s: %s (ID: %s)", 
+                            _logger.info("Found custom CE report for sale order %s: %s (ID: %s)", 
                                          sale_order.name, custom_attachment.name, custom_attachment.id)
                     else:
-                        _logger.warning("No custom certificado report found for sale order %s (ID: %s)", 
+                        _logger.warning("No custom CE report found for sale order %s (ID: %s)", 
                                         sale_order.name, sale_order.id)
             else:
                 _logger.warning("No sale orders found for invoice %s", self.name)
-            self.env.cr.commit()  # Forzar commit
+            self.env.cr.commit()
         except Exception as e:
-            _logger.error("Failed to retrieve custom simple report for invoice %s: %s", self.name, str(e))
+            _logger.error("Failed to retrieve custom CE report for invoice %s: %s", self.name, str(e))
 
         if attachments:
             try:
-                self.with_context(mail_send=True).message_post_with_source(
+                message = self.with_context(
+                    mail_send=True,
+                    default_attachment_ids=[(6, 0, attachments)]
+                ).message_post_with_source(
                     mail_template,
                     email_layout_xmlid='mail.mail_notification_layout_with_responsible_signature',
                     subtype_xmlid='mail.mt_comment',
                     attachment_ids=attachments,
                 )
-                _logger.info("Sent invoice email with attachments for invoice %s: %s", self.name, attachments)
+                _logger.info("Sent invoice email with attachments for invoice %s: %s, Message ID: %s", 
+                             self.name, attachments, message.id)
             except Exception as e:
                 _logger.error("Failed to send invoice email for %s: %s", self.name, str(e))
         else:
             _logger.warning("No attachments generated for invoice %s, sending email without attachments", self.name)
             try:
-                self.with_context(mail_send=True).message_post_with_source(
+                message = self.with_context(mail_send=True).message_post_with_source(
                     mail_template,
                     email_layout_xmlid='mail.mail_notification_layout_with_responsible_signature',
                     subtype_xmlid='mail.mt_comment',
                     attachment_ids=[],
                 )
-                _logger.info("Sent invoice email without attachments for invoice %s", self.name)
+                _logger.info("Sent invoice email without attachments for invoice %s, Message ID: %s", 
+                             self.name, message.id)
             except Exception as e:
                 _logger.error("Failed to send invoice email without attachments for %s: %s", self.name, str(e))
+
+    def _find_invoice_mail_template(self):
+        """ Get the appropriate mail template for the current invoice """
+        self.ensure_one()
+        return self.env.ref('account.email_template_edi_invoice', raise_if_not_found=False)
