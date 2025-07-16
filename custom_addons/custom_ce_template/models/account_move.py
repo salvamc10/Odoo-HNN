@@ -76,7 +76,6 @@ class AccountMove(models.Model):
             'context': ctx,
         }
 
-
     def _send_invoice_notification_mail(self, mail_template):
         """ Send a mail to the customer with PDF attachments """
         self.ensure_one()
@@ -215,58 +214,138 @@ class AccountMove(models.Model):
                     _logger.info("Adjuntado certificado CE a la factura %s desde el pedido %s", move.name, sale_order.name)
         return moves
     
+    # def action_post(self):
+    #     res = super().action_post()
+    #     for invoice in self:
+    #         if invoice.move_type != 'out_invoice':
+    #             continue
+
+    #         sale_order = invoice.invoice_line_ids.mapped('sale_line_ids.order_id')
+    #         if not sale_order:
+    #             continue
+
+    #         for order in sale_order:
+    #             # Recopilar datos de lotes y productos
+    #             pickings = self.env['stock.picking'].search([
+    #                 ('sale_id', '=', order.id),
+    #                 ('state', '=', 'done')
+    #             ])
+    #             unit_lines = []
+    #             for line in order.order_line:
+    #                 if line.product_id.tracking != 'none':
+    #                     moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
+    #                     for move in moves:
+    #                         for lot in move.lot_ids:
+    #                             unit_lines.append({
+    #                                 'index': len(unit_lines) + 1,
+    #                                 'name': line.product_id.name,
+    #                                 'price_unit': line.price_unit,
+    #                                 'price_subtotal': line.price_subtotal,
+    #                                 'default_code': line.product_id.default_code,
+    #                                 'lot_name': lot.name,
+    #                             })
+
+    #             # Si hay datos válidos, generar y adjuntar el reporte
+    #             if unit_lines:
+    #                 context = self.env.context.copy()
+    #                 context.update({
+    #                     'unit_lines': unit_lines,
+    #                     'lang': invoice.partner_id.lang or 'es_ES',
+    #                 })
+    #                 pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
+    #                     'custom_ce_template.report_simple_saleorder',
+    #                     res_ids=order.ids
+    #                 )
+    #                 attachment = self.env['ir.attachment'].create({
+    #                     'name': f"Certificado CE - {order.name}.pdf",
+    #                     'type': 'binary',
+    #                     'datas': base64.b64encode(pdf_content),
+    #                     'res_model': 'account.move',
+    #                     'res_id': invoice.id,
+    #                     'mimetype': 'application/pdf',
+    #                 })
+    #                 _logger.info("Adjuntado certificado CE a factura %s (ID adjunto: %s)", invoice.name, attachment.id)
+    #             else:
+    #                 _logger.warning("No se generó certificado CE para %s: No hay lotes válidos.", order.name)
+
+    #     return res
+
     def action_post(self):
         res = super().action_post()
         for invoice in self:
             if invoice.move_type != 'out_invoice':
                 continue
 
-            sale_order = invoice.invoice_line_ids.mapped('sale_line_ids.order_id')
-            if not sale_order:
-                continue
+            attachments = []
 
-            for order in sale_order:
-                # Recopilar datos de lotes y productos
+            # 1. Siempre adjuntar la factura en PDF
+            try:
+                report_action = self.env.ref('account.account_invoices')
+                pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                    report_action.report_name, res_ids=invoice.ids
+                )
+                invoice_attachment = self.env['ir.attachment'].create({
+                    'name': f"{invoice.name}_invoice.pdf",
+                    'type': 'binary',
+                    'datas': base64.b64encode(pdf_content),
+                    'res_model': 'account.move',
+                    'res_id': invoice.id,
+                    'mimetype': 'application/pdf',
+                })
+                attachments.append(invoice_attachment.id)
+                _logger.info("Adjuntado PDF de factura %s", invoice.name)
+            except Exception as e:
+                _logger.error("Error generando factura PDF %s: %s", invoice.name, str(e))
+
+            # 2. Si tiene productos con serie, generar certificado CE
+            sale_orders = invoice.invoice_line_ids.mapped('sale_line_ids.order_id')
+            for order in sale_orders:
                 pickings = self.env['stock.picking'].search([
                     ('sale_id', '=', order.id),
                     ('state', '=', 'done')
                 ])
                 unit_lines = []
                 for line in order.order_line:
-                    if line.product_id.tracking != 'none':
-                        moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
-                        for move in moves:
-                            for lot in move.lot_ids:
-                                unit_lines.append({
-                                    'index': len(unit_lines) + 1,
-                                    'name': line.product_id.name,
-                                    'price_unit': line.price_unit,
-                                    'price_subtotal': line.price_subtotal,
-                                    'default_code': line.product_id.default_code,
-                                    'lot_name': lot.name,
-                                })
+                    moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
+                    for move in moves:
+                        for lot in move.lot_ids:
+                            unit_lines.append({
+                                'index': len(unit_lines) + 1,
+                                'name': line.product_id.name,
+                                'price_unit': line.price_unit,
+                                'price_subtotal': line.price_subtotal,
+                                'default_code': line.product_id.default_code,
+                                'lot_name': lot.name,
+                            })
 
-                # Si hay datos válidos, generar y adjuntar el reporte
                 if unit_lines:
                     context = self.env.context.copy()
                     context.update({
                         'unit_lines': unit_lines,
                         'lang': invoice.partner_id.lang or 'es_ES',
                     })
-                    pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
-                        'custom_ce_template.report_simple_saleorder',
-                        res_ids=order.ids
-                    )
-                    attachment = self.env['ir.attachment'].create({
-                        'name': f"Certificado CE - {order.name}.pdf",
-                        'type': 'binary',
-                        'datas': base64.b64encode(pdf_content),
-                        'res_model': 'account.move',
-                        'res_id': invoice.id,
-                        'mimetype': 'application/pdf',
-                    })
-                    _logger.info("Adjuntado certificado CE a factura %s (ID adjunto: %s)", invoice.name, attachment.id)
-                else:
-                    _logger.warning("No se generó certificado CE para %s: No hay lotes válidos.", order.name)
+                    try:
+                        ce_pdf_content, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
+                            'custom_ce_template.report_simple_saleorder',
+                            res_ids=order.ids
+                        )
+                        ce_attachment = self.env['ir.attachment'].create({
+                            'name': f"Certificado CE - {order.name}.pdf",
+                            'type': 'binary',
+                            'datas': base64.b64encode(ce_pdf_content),
+                            'res_model': 'account.move',
+                            'res_id': invoice.id,
+                            'mimetype': 'application/pdf',
+                        })
+                        attachments.append(ce_attachment.id)
+                        _logger.info("Adjuntado certificado CE a factura %s", invoice.name)
+                    except Exception as e:
+                        _logger.error("Error generando certificado CE para %s: %s", invoice.name, str(e))
+
+            # 3. Registrar los attachments (si deseas usarlos en el correo, puedes guardarlos en el contexto o usarlos en message_post)
+            invoice.message_post(
+                body="Documentos adjuntos generados automáticamente.",
+                attachment_ids=attachments
+            )
 
         return res
