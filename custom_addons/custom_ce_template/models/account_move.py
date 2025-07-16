@@ -233,17 +233,18 @@ class AccountMove(models.Model):
                 ])
                 unit_lines = []
                 for line in order.order_line:
-                    moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
-                    for move in moves:
-                        for lot in move.lot_ids:
-                            unit_lines.append({
-                                'index': len(unit_lines) + 1,
-                                'name': line.product_id.name,
-                                'price_unit': line.price_unit,
-                                'price_subtotal': line.price_subtotal,
-                                'default_code': line.product_id.default_code,
-                                'lot_name': lot.name,
-                            })
+                    if line.product_id.tracking != 'none':
+                        moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
+                        for move in moves:
+                            for lot in move.lot_ids:
+                                unit_lines.append({
+                                    'index': len(unit_lines) + 1,
+                                    'name': line.product_id.name,
+                                    'price_unit': line.price_unit,
+                                    'price_subtotal': line.price_subtotal,
+                                    'default_code': line.product_id.default_code,
+                                    'lot_name': lot.name,
+                                })
 
                 # Si hay datos válidos, generar y adjuntar el reporte
                 if unit_lines:
