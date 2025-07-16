@@ -1,4 +1,5 @@
 <odoo>
+    <!-- Vista lista personalizada con el campo lead_type -->
     <record id="view_mail_activity_list_with_lead_type" model="ir.ui.view">
         <field name="name">mail.activity.list.with.lead.type</field>
         <field name="model">mail.activity</field>
@@ -12,11 +13,11 @@
                 <field name="user_id"/>
                 <field name="state"/>
                 <button type="action"
-                    name="calendar.action_calendar_event"
-                    string=""
-                    icon="fa-calendar"
-                    class="btn-link"
-                    title="Abrir calendario"/>
+                        name="calendar.action_calendar_event"
+                        string=""
+                        icon="fa-calendar"
+                        class="btn-link"
+                        title="Abrir calendario"/>
             </list>
         </field>
     </record>

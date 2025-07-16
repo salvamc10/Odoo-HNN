@@ -6,7 +6,7 @@
     'author': 'Pedro M.',
     'website': '',
     'category': 'Manufacturing',
-    'depends': ['base', 'mrp', 'stock'],
+    'depends': ['mrp', 'stock'],
     "data": [        
     ],    
     'application': True,

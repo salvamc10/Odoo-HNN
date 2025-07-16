@@ -1,5 +1,5 @@
 {
-    'name': 'Botones y contadores de Leads y Oportunidades en Contactos',
+    'name': 'Botones y contadores de leads y oportunidades en contactos',
     'version': '18.0.1.0',
     'summary': 'Botones separados para Leads y Oportunidades desde contactos con sus respectivos contadores',
     'description': """
@@ -18,6 +18,7 @@
         'views/mail_activity_views.xml',
         'views/crm_lead_view.xml',
         'data/ir_rules.xml',
+        'data/ir_cron.xml',
     ],
     'installable': True,
     'application': False,

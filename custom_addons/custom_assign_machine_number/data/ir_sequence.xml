@@ -5,7 +5,6 @@
             <field name="code">custom.machine.number</field>
             <field name="prefix">B</field>
             <field name="padding">5</field>
-            <field name="number_next">4544</field>
             <field name="number_increment">1</field>
             <field name="company_id" ref="base.main_company"/>
         </record>

@@ -1,5 +1,5 @@
-from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo import models, fields, api # type: ignore
+from odoo.exceptions import UserError # type: ignore
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
@@ -55,9 +55,22 @@ class CrmLead(models.Model):
     def write(self, vals):
         result = super().write(vals)
         for lead in self:
+            # Actualizar nombre automático si cambia partner o tipo
             if 'partner_id' in vals or 'type' in vals:
                 lead._set_automatic_name()
+
+            # Archivar si se mueve a la etapa 'Descartado' (ID = 6)
+            if 'stage_id' in vals and lead.stage_id.id == 6:
+                lead.active = False  # archivar
         return result
+    
+    @api.model
+    def delete_archived_discarded_leads(self):
+        leads_to_delete = self.search([
+            ('stage_id', '=', 6),  # etapa 'Descartado'
+            ('active', '=', False)
+        ])
+        leads_to_delete.unlink()
 
     def _set_automatic_name(self):
         """ Asigna automáticamente un nombre si hay partner y tipo """
