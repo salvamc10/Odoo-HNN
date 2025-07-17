@@ -152,7 +152,6 @@ class AccountMove(models.Model):
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', order.id),
                         ('name', 'ilike', 'Certificado CE'),
-                        ('mimetype', '=', 'application/pdf'),
                     ], limit=1)
                     if cert:
                         cert.copy({
@@ -203,7 +202,16 @@ class AccountMove(models.Model):
                 ])
                 unit_lines = []
                 for line in order.order_line:
-                    if line.product_id.type == 'product':
+                    if line.product_id.type == 'service' and not line.display_type and line.price_subtotal:
+                        unit_lines.append({
+                            'index': len(unit_lines) + 1,
+                            'name': line.product_id.name,
+                            'price_unit': line.price_unit,
+                            'price_subtotal': line.price_subtotal,
+                            'default_code': line.product_id.default_code or '',
+                            'lot_name': 'N/A',
+                        })
+                    else:
                         moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
                         for move in moves:
                             for lot in move.lot_ids:
@@ -227,39 +235,18 @@ class AccountMove(models.Model):
                             'custom_ce_template.report_simple_saleorder',
                             res_ids=order.ids
                         )
-                        # ce_attach = self.env['ir.attachment'].create({
-                        #     'name': f"Certificado CE - {order.name}.pdf",
-                        #     'type': 'binary',
-                        #     'datas': base64.b64encode(ce_pdf),
-                        #     'res_model': 'account.move',
-                        #     'res_id': invoice.id,
-                        #     'mimetype': 'application/pdf',
-                        # })
-                        # attachments.append(ce_attach.id)
-                        # _logger.info("Adjuntado certificado CE a %s", invoice.name)
+                        ce_attach = self.env['ir.attachment'].create({
+                            'name': f"Certificado CE - {order.name}.pdf",
+                            'type': 'binary',
+                            'datas': base64.b64encode(ce_pdf),
+                            'res_model': 'account.move',
+                            'res_id': invoice.id,
+                            'mimetype': 'application/pdf',
+                        })
+                        attachments.append(ce_attach.id)
+                        _logger.info("Adjuntado certificado CE a %s", invoice.name)
                     except Exception as e:
-                        if 'ConnectionRefusedError' in str(e):
-                            _logger.warning("Error de conexión al generar CE %s. Reintentando...", invoice.name)
-                            import time
-                            time.sleep(2)
-                            ce_pdf, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
-                                'custom_ce_template.report_simple_saleorder',
-                                res_ids=order.ids
-                            )
-                        else:
-                            _logger.error("Error generando CE para %s: %s", invoice.name, str(e))
-                            continue
-
-                    ce_attach = self.env['ir.attachment'].create({
-                        'name': f"Certificado CE - {order.name}.pdf",
-                        'type': 'binary',
-                        'datas': base64.b64encode(ce_pdf),
-                        'res_model': 'account.move',
-                        'res_id': invoice.id,
-                        'mimetype': 'application/pdf',
-                    })
-                    attachments.append(ce_attach.id)
-                    _logger.info("Adjuntado certificado CE a %s", invoice.name)
+                        _logger.error("Error generando CE para %s: %s", invoice.name, str(e))
 
             if attachments:
                 invoice.message_post(
