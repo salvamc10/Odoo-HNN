@@ -152,6 +152,7 @@ class AccountMove(models.Model):
                         ('res_model', '=', 'sale.order'),
                         ('res_id', '=', order.id),
                         ('name', 'ilike', 'Certificado CE'),
+                        ('mimetype', '=', 'application/pdf'),
                     ], limit=1)
                     if cert:
                         cert.copy({
