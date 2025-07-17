@@ -4,8 +4,8 @@
     <template id="custom_external_layout" name="Custom External Layout">
         <t t-call="web.html_container">
             <div class="header" style="text-align: center; margin-top: 10px;">
-                <img t-att-src="static('/custom_ce_template/static/src/img/bhior.jpg')" style="max-width: 120px; float: left;margin: 10px 20px;"/>
-                <img t-att-src="static('/custom_ce_template/static/src/img/bhior2.jpg')" style="max-width: 150px; float: right;margin: 10px 20px;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior.jpg'" style="max-width: 120px; float: left;margin: 10px 20px;"/>
+                <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; float: right;margin: 10px 20px;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
                 <t t-out="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
@@ -40,7 +40,7 @@
                         <t t-call="custom_ce_template.custom_external_layout">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; page-break-after: always; break-after: page;">
                                <div style="text-align: center; margin-bottom: 20px; line-height: 1.5;">
-                                <img t-att-src="static('/custom_ce_template/static/src/img/ce.jpg')" style="max-width: 200px;"/>
+                                <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 200px;"/>
                                 </div>
                                 <br/>
                                 <h2 style="text-align: center; font-size: 16pt; line-height: 1.5; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
