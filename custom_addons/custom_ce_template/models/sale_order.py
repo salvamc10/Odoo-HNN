@@ -20,6 +20,7 @@ class SaleOrder(models.Model):
             _logger.warning("Factura ya existe para %s: %s", self.name, existing_invoices.mapped('name'))
             return existing_invoices.ids
 
+
         # 2. Crear factura
         invoice_ids = super().action_invoice_create(grouped=grouped, final=final, date=date)
         invoices = self.env['account.move'].browse(invoice_ids)
