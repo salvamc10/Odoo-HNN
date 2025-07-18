@@ -224,6 +224,14 @@ class AccountMove(models.Model):
                     })
                     try:
                         report = self.env['ir.actions.report'].with_context(**context).sudo()
+
+                        # Log HTML antes de renderizar a PDF
+                        html = report._render_qweb(
+                            'custom_ce_template.report_simple_saleorder',
+                            res_ids=order.ids
+                        )[0]
+                        _logger.warning("HTML generado para CE (%s): %s", invoice.name, html[:1000])
+
                         ce_pdf, _ = report._render_qweb_pdf(
                             'custom_ce_template.report_simple_saleorder',
                             res_ids=order.ids
