@@ -2,9 +2,9 @@
 <odoo>
     <template id="inherit_product_template_description" inherit_id="website_sale.product">
         <!-- Ocultar el campo description_ecommerce -->
-        <xpath expr="//*[@id='product_details']/div[1]" position="attributes">
+        <!-- <xpath expr="//*[@id='product_details']/div[1]" position="attributes">
             <attribute name="style">display: none;</attribute>
-        </xpath>
+        </xpath> -->
 
         <!-- Insertar el campo x_studio_descripcion_1 justo después -->
         <xpath expr="//*[@id='o_wsale_cta_wrapper']" position="before">
