@@ -20,6 +20,7 @@
         'web.report_assets_common': [
             'custom_ce_template/static/src/img/bhior.jpg',
             'custom_ce_template/static/src/img/bhior2.jpg',
+            'custom_ce_template/static/src/img/ce.jpg',
         ],
     },
     'installable': True,
