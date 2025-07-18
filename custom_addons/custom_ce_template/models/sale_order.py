@@ -46,7 +46,7 @@ class SaleOrder(models.Model):
                         })
                         attachments.append(copied.id)
                         _logger.info("Adjunto '%s' copiado a factura %s desde producto %s",
-                                     copied.name, invoice.name, product_template.name)
+                                    copied.name, invoice.name, product_template.name)
             if attachments:
                 invoice.message_post(
                     body="Documentos del producto añadidos automáticamente desde product.template.",

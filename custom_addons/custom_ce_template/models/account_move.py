@@ -216,38 +216,20 @@ class AccountMove(models.Model):
                                     'lot_name': lot.name,
                                 })
 
-                if unit_lines:
-                    context = self.env.context.copy()
-                    context.update({
-                        'unit_lines': unit_lines,
-                        'lang': invoice.partner_id.lang or 'es_ES',
-                    })
-                    try:
-                        report = self.env['ir.actions.report'].with_context(**context).sudo()
-
-                        # Log HTML antes de renderizar a PDF
-                        html = report._render_qweb(
-                            'custom_ce_template.report_simple_saleorder',
-                            res_ids=order.ids
-                        )[0]
-                        _logger.warning("HTML generado para CE (%s): %s", invoice.name, html[:1000])
-
-                        ce_pdf, _ = report._render_qweb_pdf(
-                            'custom_ce_template.report_simple_saleorder',
-                            res_ids=order.ids
-                        )
-                        ce_attach = self.env['ir.attachment'].create({
-                            'name': f"Certificado CE - {order.name}.pdf",
-                            'type': 'binary',
-                            'datas': base64.b64encode(ce_pdf),
-                            'res_model': 'account.move',
-                            'res_id': invoice.id,
-                            'mimetype': 'application/pdf',
-                        })
-                        attachments.append(ce_attach.id)
-                        _logger.info("Adjuntado certificado CE a %s", invoice.name)
-                    except Exception as e:
-                        _logger.error("Error generando CE para %s: %s", invoice.name, str(e))
+                context = self.env.context.copy()
+                context.update({
+                    'unit_lines': unit_lines,
+                    'lang': invoice.partner_id.lang or 'es_ES',
+                })
+                try:
+                    report = self.env['ir.actions.report'].with_context(**context).sudo()
+                    html = report._render_qweb(
+                        'custom_ce_template.report_simple_saleorder',
+                        res_ids=order.ids
+                    )[0]
+                    _logger.warning("HTML generado para CE (%s): %s", invoice.name, html[:1000])
+                except Exception as e:
+                    _logger.error("Error generando HTML previo para CE (%s): %s", invoice.name, str(e))
 
             if attachments:
                 invoice.message_post(
