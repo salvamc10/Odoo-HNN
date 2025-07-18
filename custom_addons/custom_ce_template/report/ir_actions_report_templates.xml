@@ -8,7 +8,7 @@
                 <img t-att-src="'/custom_ce_template/static/src/img/bhior2.jpg'" style="max-width: 150px; float: right;margin: 10px 20px;"/>
             </div>
             <div class="article o_report_layout_standard" style="margin: 20mm 20mm 20mm 20mm;">
-                <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
+                <t t-out="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 8pt; text-align: center; margin: 10mm 20mm 20mm 20mm;">
                     <p>
@@ -19,7 +19,7 @@
     </template>
 
     <!-- Plantilla principal para el informe -->
-    <template id="report_simple_saleorder" name="Simple Sale Order Report">
+    <template id="report_simple_saleorder" name="Certificado CE">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
@@ -28,11 +28,11 @@
                 <!-- Obtener unit_lines desde el contexto del objeto doc -->
                 <t t-set="unit_lines" t-value="doc.env.context.get('unit_lines', [])"/>
                 <t t-set="order_date" t-value="doc.date_order or False"/>
-                <t t-set="months_es" t-value="{
-                    '01': 'enero', '02': 'febrero', '03': 'marzo', '04': 'abril',
-                    '05': 'mayo', '06': 'junio', '07': 'julio', '08': 'agosto',
-                    '09': 'septiembre', '10': 'octubre', '11': 'noviembre', '12': 'diciembre'
-                }"/>
+                    <t t-set="months_es" t-value="{
+                        '01': 'enero', '02': 'febrero', '03': 'marzo', '04': 'abril',
+                        '05': 'mayo', '06': 'junio', '07': 'julio', '08': 'agosto',
+                        '09': 'septiembre', '10': 'octubre', '11': 'noviembre', '12': 'diciembre'
+                    }"/>
                 <!-- Procesar unit_lines -->
                 <t t-if="unit_lines">
                     <t t-foreach="unit_lines" t-as="line_data">
@@ -40,7 +40,7 @@
                         <t t-call="custom_ce_template.custom_external_layout">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; page-break-after: always; break-after: page;">
                                 <div style="text-align: center; margin-bottom: 20px; line-height: 1.5;">
-                                <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 200px;"/>
+                                    <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 200px;"/>
                                 </div>
                                 <br/>
                                 <h2 style="text-align: center; font-size: 16pt; line-height: 1.5; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>

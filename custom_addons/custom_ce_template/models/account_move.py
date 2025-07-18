@@ -8,13 +8,12 @@ _logger = logging.getLogger(__name__)
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-   
     def action_invoice_sent(self):
         self.ensure_one()
         lang = self.env.context.get('lang', self.partner_id.lang or 'es_ES')
         mail_template = self._find_invoice_mail_template()
         attachments = []
-    
+
         # PDF estándar de la factura
         try:
             report_action = self.env.ref('account.account_invoices')
@@ -32,7 +31,7 @@ class AccountMove(models.Model):
             attachments.append(invoice_attachment.id)
         except Exception as e:
             _logger.error("Error generando PDF de factura %s: %s", self.name, str(e))
-    
+
         # Certificado CE (ya copiado a account.move)
         ce_attach = self.env['ir.attachment'].search([
             ('res_model', '=', 'account.move'),
@@ -42,13 +41,13 @@ class AccountMove(models.Model):
         ], limit=1)
         if ce_attach:
             attachments.append(ce_attach.id)
-    
+
         # Archivos desde product.template (invoice_attachment_id)
         for line in self.invoice_line_ids:
             attach = line.product_id.product_tmpl_id.invoice_attachment_id
             if attach and attach.id not in attachments:
                 attachments.append(attach.id)
-    
+
         ctx = {
             'default_model': 'account.move',
             'default_res_ids': self.ids,
@@ -58,16 +57,16 @@ class AccountMove(models.Model):
             'force_email': True,
             'model_description': self.with_context(lang=lang).type_name,
         }
-    
+
         if mail_template:
             ctx.update({
                 'default_template_id': mail_template.id,
                 'mark_invoice_as_sent': True,
             })
-    
+
         if attachments:
             ctx['default_attachment_ids'] = [(6, 0, attachments)]
-    
+
         return {
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
@@ -76,19 +75,19 @@ class AccountMove(models.Model):
             'target': 'new',
             'context': ctx,
         }
-    
+
     def _send_invoice_notification_mail(self, mail_template):
         self.ensure_one()
-    
+
         if not mail_template:
             _logger.warning("No mail template provided for invoice %s", self.name)
             return
-    
+
         if self.env.su:
             self = self.with_user(SUPERUSER_ID)
-    
+
         attachments = []
-    
+
         # PDF estándar
         try:
             report_action = self.env.ref('account.account_invoices')
@@ -106,7 +105,7 @@ class AccountMove(models.Model):
             attachments.append(attachment.id)
         except Exception as e:
             _logger.error("Error generando PDF factura %s: %s", self.name, str(e))
-    
+
         # CE
         ce_attach = self.env['ir.attachment'].search([
             ('res_model', '=', 'account.move'),
@@ -116,13 +115,13 @@ class AccountMove(models.Model):
         ], limit=1)
         if ce_attach:
             attachments.append(ce_attach.id)
-    
+
         # Archivos desde invoice_attachment_id
         for line in self.invoice_line_ids:
             attach = line.product_id.product_tmpl_id.invoice_attachment_id
             if attach and attach.id not in attachments:
                 attachments.append(attach.id)
-    
+
         try:
             message = self.with_context(
                 mail_send=True,
@@ -224,7 +223,8 @@ class AccountMove(models.Model):
                         'lang': invoice.partner_id.lang or 'es_ES',
                     })
                     try:
-                        ce_pdf, _ = self.env['ir.actions.report'].with_context(**context)._render_qweb_pdf(
+                        report = self.env['ir.actions.report'].with_context(**context).sudo()
+                        ce_pdf, _ = report._render_qweb_pdf(
                             'custom_ce_template.report_simple_saleorder',
                             res_ids=order.ids
                         )
