@@ -11,7 +11,7 @@
                 <t t-raw="0"/> <!-- Aquí se inserta el contenido de la plantilla hija -->
             </div>
             <div class="footer" style="font-family: Arial, sans-serif; font-size: 8pt; text-align: center; margin: 10mm 20mm 20mm 20mm;">
-                    <p>
+                <p>
                     BHIOR Industries Europe, S.L.U. - CIF: ESB13652730 - Insc. Reg. Merc. Murcia - Tomo 3631 - Folio 101 - Hoja nº MU-110221 Inscripción 1 - Calle Júpiter, 9, 30620 Fortuna – Murcia - Tel: +34 868 994 367 – w: https://www.bhior.com – M: comercial@bhior.com
                 </p>
             </div>
@@ -19,7 +19,7 @@
     </template>
 
     <!-- Plantilla principal para el informe -->
-    <template id="report_simple_saleorder" name="Simple Sale Order Report">
+    <template id="report_simple_saleorder" name="Certificado CE">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
                 <!-- Depuración: Mostrar el contexto completo -->
@@ -39,8 +39,8 @@
                         <!-- Llamar al layout para cada línea, asegurando header y footer por página -->
                         <t t-call="custom_ce_template.custom_external_layout">
                             <div class="page" style="font-family: Arial, sans-serif; font-size: 12pt; page-break-after: always; break-after: page;">
-                               <div style="text-align: center; margin-bottom: 20px; line-height: 1.5;">
-                                <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 200px;"/>
+                                <div style="text-align: center; margin-bottom: 20px; line-height: 1.5;">
+                                    <img t-att-src="'/custom_ce_template/static/src/img/ce.jpg'" style="max-width: 200px;"/>
                                 </div>
                                 <br/>
                                 <h2 style="text-align: center; font-size: 16pt; line-height: 1.5; margin: 0 0 20px 0; font-weight: bold;">DECLARACIÓN DE CONFORMIDAD CE</h2>
