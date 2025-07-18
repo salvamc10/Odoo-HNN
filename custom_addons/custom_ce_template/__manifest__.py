@@ -11,7 +11,7 @@
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'category': 'Sales/CRM',
-    'depends': ['sale', 'stock', 'web', 'account', 'product'],
+    'depends': ['base', 'sale', 'stock', 'web', 'account', 'product'],
     "data": [
         "report/ir_actions_report_templates.xml",
         "report/ir_actions_report.xml",
@@ -20,7 +20,6 @@
         'web.report_assets_common': [
             'custom_ce_template/static/src/img/bhior.jpg',
             'custom_ce_template/static/src/img/bhior2.jpg',
-            'custom_ce_template/static/src/img/ce.jpg',
         ],
     },
     'installable': True,
