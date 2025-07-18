@@ -203,14 +203,6 @@ class AccountMove(models.Model):
                 unit_lines = []
                 for line in order.order_line:
                     if line.product_id.type == 'service' and not line.display_type and line.price_subtotal:
-                        # unit_lines.append({
-                        #     'index': len(unit_lines) + 1,
-                        #     'name': line.product_id.name,
-                        #     'price_unit': line.price_unit,
-                        #     'price_subtotal': line.price_subtotal,
-                        #     'default_code': line.product_id.default_code or '',
-                        #     'lot_name': 'N/A',
-                        # })
                         continue
                     else:
                         moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
