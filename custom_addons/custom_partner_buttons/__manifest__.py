@@ -1,7 +1,7 @@
 {
     'name': 'Botones y contadores de leads y oportunidades en contactos',
     'version': '18.0.1.0',
-    'summary': 'Botones separados para Leads y Oportunidades desde contactos con sus respectivos contadores',
+    'summary': 'Botones separados para leads y oportunidades desde contactos con sus respectivos contadores',
     'description': """
     Este módulo permite mostrar en el formulario de contactos dos botones separados:
     uno para oportunidades y otro para leads. Además, incluye contadores individuales
