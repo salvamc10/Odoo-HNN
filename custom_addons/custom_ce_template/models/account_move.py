@@ -149,44 +149,6 @@ class AccountMove(models.Model):
                 ('mimetype', '=', 'application/pdf'),
             ], limit=1)
 
-<<<<<<< HEAD
-            try:
-                report_action = self.env.ref('account.account_invoices')
-                pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                    report_action.report_name, res_ids=invoice.ids
-                )
-                attach = self.env['ir.attachment'].create({
-                    'name': f"{invoice.name}_invoice.pdf",
-                    'type': 'binary',
-                    'datas': base64.b64encode(pdf_content),
-                    'res_model': 'account.move',
-                    'res_id': invoice.id,
-                    'mimetype': 'application/pdf',
-                })
-                attachments.append(attach.id)
-                _logger.info("Adjuntado PDF a factura %s", invoice.name)
-            except Exception as e:
-                _logger.error("Error generando PDF %s: %s", invoice.name, str(e))
-
-            for line in invoice.invoice_line_ids:
-                tmpl = line.product_id.product_tmpl_id
-                attach = tmpl.invoice_attachment_id
-                if attach and attach.id not in attachments:
-                    attachments.append(attach.id)
-                    _logger.info("Adjuntado manual %s para producto %s", attach.name, tmpl.name)
-
-            sale_orders = invoice.invoice_line_ids.mapped('sale_line_ids.order_id')
-            for order in sale_orders:
-                pickings = self.env['stock.picking'].search([
-                    ('sale_id', '=', order.id),
-                    ('state', '=', 'done')
-                ])
-                unit_lines = []
-                for line in order.order_line:
-                    if line.product_id.type == 'service' and not line.display_type and line.price_subtotal:
-                        continue
-                    else:
-=======
             if not existing_ce:
                 sale_orders = invoice.invoice_line_ids.mapped('sale_line_ids.order_id')
                 for order in sale_orders:
@@ -198,7 +160,6 @@ class AccountMove(models.Model):
                     for line in order.order_line:
                         if line.product_id.type == 'service' and not line.display_type and line.price_subtotal:
                             continue
->>>>>>> fix/CE_warnings
                         moves = pickings.mapped('move_ids').filtered(lambda m: m.sale_line_id.id == line.id)
                         for move in moves:
                             for lot in move.lot_ids:
