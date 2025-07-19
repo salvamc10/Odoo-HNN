@@ -9,4 +9,3 @@ class ProductTemplate(models.Model):
         string='Documento a adjuntar en factura',
         domain="[('res_model', '=', 'product.template')]"
     )
-    
