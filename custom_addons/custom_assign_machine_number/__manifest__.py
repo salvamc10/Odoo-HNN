@@ -3,7 +3,7 @@
     'version': '18.0.1.0',
     'author': 'Salva M',
     'license': 'LGPL-3',
-    'summary': 'Asigna un número de máquina con formato personalizado usando secuencia',
+    'summary': 'Asigna un número de máquina con formato personalizado usando una secuencia',
     'description': """
     Este módulo asigna automáticamente un número de máquina a los lotes (números de serie)
     cuando se crean, usando una secuencia con prefijo "B" y formato de 6 dígitos.
