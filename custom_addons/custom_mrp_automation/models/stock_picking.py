@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError
+from odoo import models, _
 
 _logger = logging.getLogger(__name__)
 
@@ -25,6 +24,12 @@ class StockPicking(models.Model):
         return res
 
     def _run_mrp_automation(self):
+        existing_mos = self.env['mrp.production'].search([('origin', '=', self.name)])
+        if existing_mos:
+            self.message_post(body="⚠️ Ya existen órdenes de fabricación asociadas a esta recepción: {}".format(
+                ", ".join(existing_mos.mapped('name'))))
+            return
+
         self.message_post(body="🔄 Iniciando automatización de órdenes de fabricación...")
 
         # Recopilar TODOS los componentes recibidos (con y sin números de serie)
@@ -141,14 +146,13 @@ class StockPicking(models.Model):
                         available_text += '...'
                     self.message_post(body="✅ {}: Componentes disponibles: {}".format(bom.display_name, available_text))
 
-                    # DECIDIR: ¿Crear órdenes solo si tenemos TODOS los componentes o permitir parciales?
                     # OPCIÓN 1: Requiere todos los componentes
                     if missing_components:
                         self.message_post(body="⚠️ {}: Saltando BOM - faltan componentes requeridos".format(bom.display_name))
-                        continue  # Comentar esta línea si quieres permitir órdenes parciales
+                        continue 
 
                     # Calcular cuántas unidades podemos fabricar
-                    max_units = 999999  # Valor muy alto inicial
+                    max_units = 999999  
                     for comp_id, required_qty in bom_components.items():
                         if comp_id in received_components:
                             available_qty = len(received_components[comp_id])
@@ -175,18 +179,19 @@ class StockPicking(models.Model):
                                 # Crear la orden de fabricación
                                 product = bom.product_tmpl_id.product_variant_id
 
-                                mo = mrp_model.create({
+                                mo = mrp_model.with_context(no_create_moves=True, skip_auto_confirm=True).create({
                                     'product_id': product.id,
                                     'product_qty': 1,
                                     'product_uom_id': product.uom_id.id,
                                     'bom_id': bom.id,
-                                    'origin': self.name,
+                                    'origin': self.name,                                    
                                 })
 
-                                # Confirmar la orden
-                                mo.action_confirm()
-                                mo.action_assign()
-
+                                mo.write({
+                                        'state': 'draft',
+                                        'product_qty': 1,
+                                    })
+                                                                
                                 orders_created += 1
 
                                 # Asignar números de serie/lotes a los componentes que los tengan
@@ -202,7 +207,7 @@ class StockPicking(models.Model):
                                             if temp_components[comp_id] and assigned_qty < required_qty:
                                                 component_data = temp_components[comp_id].pop(0)
 
-                                                # Si el move_raw tiene líneas de movimiento, asignar allí
+                                                # # Si el move_raw tiene líneas de movimiento, asignar allí
                                                 if move_raw.move_line_ids:
                                                     for move_line in move_raw.move_line_ids:
                                                         if move_line.quantity > assigned_qty:
@@ -224,15 +229,14 @@ class StockPicking(models.Model):
                                                         'product_id': comp_id,
                                                         'lot_id': component_data['lot_id'] if component_data['has_lot'] else False,
                                                         'quantity': 1,
-                                                        'qty_done': 1,
+                                                        'qty_done': 0,
                                                         'product_uom_id': component_data['uom_id'],
                                                         'location_id': move_raw.location_id.id,
                                                         'location_dest_id': move_raw.location_dest_id.id,
                                                     })
                                                     assigned_qty += 1
 
-                                self.message_post(body="✅ Orden {} creada: {}".format(unit_num + 1, mo.name))
-
+                               
                             except Exception as e:
                                 error_msg = str(e)
                                 self.message_post(body="❌ Error creando orden {}: {}".format(unit_num + 1, error_msg))
@@ -248,6 +252,4 @@ class StockPicking(models.Model):
                 else:
                     self.message_post(body="⚠️ No se pudieron crear órdenes de fabricación")
                     self.message_post(body="🔍 Posibles causas: BOMs requieren componentes no recibidos, cantidades insuficientes, o configuración de BOMs incorrecta")
-    # else:
-    #     # Debug para condiciones no cumplidas
-    #     self.message_post(body="ℹ️ Automatización no ejecutada - Tipo: {}, Estado: {}".format(self.picking_type_id.code, self.state))
+   
