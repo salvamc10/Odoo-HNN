@@ -3,70 +3,64 @@
 Módulo: custom_sale_sequence
 
 Este módulo personaliza la numeración de pedidos de venta en función de la plantilla seleccionada.
-Cuando el pedido se encuentra en estado 'draft', 'sent' o 'cancel', y su nombre empieza por 'S',
-se le asigna una nueva secuencia personalizada según la plantilla de presupuesto utilizada.
-
-Reemplaza automatizaciones previas realizadas con Odoo Studio.
+También detecta si el presupuesto proviene de una reparación para asignar automáticamente
+la plantilla y secuencia correspondiente.
 
 Autor: Salva M
-Fecha: abril 2025
+Fecha: julio 2025
 """
 
-from odoo import models, api
-
+from odoo import models, api, fields
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     @api.model_create_multi
     def create(self, vals_list):
-        records = super().create(vals_list)
-        records._apply_custom_sequence()
-        return records
+        sequence_mapping = {
+            'Alquiler': 'sequence_alquiler',
+            'Maquina': 'sequence_maquina',
+            'Recambio': 'sequence_recambio',
+            'Reparacion': 'sequence_reparacion',
+        }
+
+        for vals in vals_list:
+            # Si viene de reparación, asignar plantilla automáticamente
+            if not vals.get('sale_order_template_id') and vals.get('origin'):
+                repair = self.env['repair.order'].sudo().search([('name', '=', vals['origin'])], limit=1)
+                if repair:
+                    template = self.env.ref('custom_sale_template_reparacion', raise_if_not_found=False)
+                    if template:
+                        vals['sale_order_template_id'] = template.id
+
+            # Asignar secuencia al crear, según plantilla
+            template_id = vals.get('sale_order_template_id')
+            if template_id:
+                template = self.env['sale.order.template'].browse(template_id)
+                sequence_code = sequence_mapping.get(template.name)
+                if sequence_code:
+                    vals['name'] = self.env['ir.sequence'].sudo().next_by_code(sequence_code)
+
+        return super().create(vals_list)
 
     def write(self, vals):
-        """
-        Aplica la lógica de secuencia personalizada también al modificar un pedido.
-        Es compatible con escrituras en lote (recordsets múltiples).
-        """
-        if self.env.context.get('no_sequence'):
-            return super().write(vals)
-    
-        result = super().write(vals)
-        for record in self:
-            record._apply_custom_sequence()
-        return result
+        sequence_mapping = {
+            'Alquiler': 'sequence_alquiler',
+            'Maquina': 'sequence_maquina',
+            'Recambio': 'sequence_recambio',
+            'Reparacion': 'sequence_reparacion',
+        }
 
-    def _apply_custom_sequence(self):
-        """
-        Aplica una secuencia personalizada al pedido de venta según su plantilla.
+        # Detectar si se ha cambiado la plantilla y si el pedido sigue siendo borrador
+        if 'sale_order_template_id' in vals:
+            for order in self:
+                if order.state in ['draft', 'sent']:
+                    new_template = self.env['sale.order.template'].browse(vals['sale_order_template_id'])
+                    sequence_code = sequence_mapping.get(new_template.name)
+                    if sequence_code:
+                        new_seq = self.env['ir.sequence'].sudo().next_by_code(sequence_code)
+                        if new_seq:
+                            vals['name'] = new_seq
 
-        Condiciones:
-            - El pedido debe estar en estado 'draft', 'sent' o 'cancel'.
-            - El nombre del pedido debe comenzar por 'S'.
-            - Debe haber una plantilla de presupuesto válida vinculada.
-            - La plantilla debe estar mapeada a una secuencia definida en ir.sequence.
-
-        Efecto:
-            - El campo `origin` toma el valor actual del nombre.
-            - El campo `name` se reemplaza por la nueva secuencia.
-        """
-        for record in self:
-            if record.state in ['draft', 'sent', 'cancel'] and record.name.startswith('S'):
-                sequence_mapping = {
-                    'Alquiler': 'sequence_alquiler',
-                    'Maquina': 'sequence_maquina',
-                    'Recambio': 'sequence_recambio',
-                    'Reparacion': 'sequence_reparacion',
-                }
-
-                template_name = record.sale_order_template_id.name if record.sale_order_template_id else False
-                sequence_id = sequence_mapping.get(template_name)
-
-                if sequence_id:
-                    sequence = self.env['ir.sequence'].sudo().next_by_code(sequence_id)
-                    if sequence:
-                        record.with_context(no_sequence=True).write({
-                            'origin': record.name,
-                            'name': sequence,
-                        })
+        return super().write(vals)
+        
