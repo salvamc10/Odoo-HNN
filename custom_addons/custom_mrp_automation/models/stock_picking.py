@@ -24,10 +24,10 @@ class StockPicking(models.Model):
         return res
 
     def _run_mrp_automation(self):
-        existing_mos = self.env['mrp.production'].search([('origin', '=', self.name)])
+        existing_mos = self.env['mrp.production'].search([('origin', '=', self.origin)])
         if existing_mos:
-            self.message_post(body="⚠️ Ya existen órdenes de fabricación asociadas a esta recepción: {}".format(
-                ", ".join(existing_mos.mapped('name'))))
+            self.message_post(body="⚠️ Ya existen órdenes de fabricación asociadas a la orden de compra '{}': {}".format(
+                self.origin, ", ".join(existing_mos.mapped('name'))))
             return
 
         self.message_post(body="🔄 Iniciando automatización de órdenes de fabricación...")        
@@ -47,11 +47,9 @@ class StockPicking(models.Model):
             for line in picking.move_line_ids:
                 if line.qty_done > 0:
                     total_components += 1
-                    product_id = line.product_id.id
-        
+                    product_id = line.product_id.id        
                     if product_id not in received_components:
-                        received_components[product_id] = []
-        
+                        received_components[product_id] = []        
                     if line.lot_id:
                         components_with_lots += 1
                         for _ in range(int(line.qty_done)):
@@ -93,8 +91,7 @@ class StockPicking(models.Model):
 
             self.message_post(body=debug_msg)
 
-            # Buscar BOMs que contengan alguno de los componentes recibidos
-            bom_model = env['mrp.bom']
+            # Buscar BOMs que contengan alguno de los componentes recibidos          
             mrp_model = env['mrp.production']
 
             # Buscar BOMs que contengan los productos recibidos como componentes
