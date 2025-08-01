@@ -107,15 +107,15 @@ class StockPicking(models.Model):
                 comp_id = move_raw.product_id.id
                 if comp_id not in used_components:
                     used_components[comp_id] = 0
-                used_components[comp_id] += move_raw.product_qty
+                used_components[comp_id] += int(move_raw.product_qty)
 
         # Calcular componentes disponibles restando los ya utilizados
         available_components = {}
         for product_id, components in received_components.items():
-            available_qty = len(components) - used_components.get(product_id, 0)
+            available_qty = max(0, len(components) - used_components.get(product_id, 0))
             if available_qty > 0:
-                available_components[product_id] = components[:available_qty]
-
+                available_components[product_id] = components[:int(available_qty)]
+                
         if not available_components:
             self.message_post(body="⚠️ No hay componentes disponibles para nuevas órdenes de fabricación (todos ya utilizados).")
             return
