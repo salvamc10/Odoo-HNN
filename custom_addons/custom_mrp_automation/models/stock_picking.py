@@ -30,42 +30,46 @@ class StockPicking(models.Model):
                 ", ".join(existing_mos.mapped('name'))))
             return
 
-        self.message_post(body="🔄 Iniciando automatización de órdenes de fabricación...")
-
-        # Recopilar TODOS los componentes recibidos (con y sin números de serie)
+        self.message_post(body="🔄 Iniciando automatización de órdenes de fabricación...")        
+        related_pickings = self.env['stock.picking'].search([
+            ('picking_type_id.code', '=', 'incoming'),
+            ('state', '=', 'done'),
+            ('origin', '=', self.origin),
+        ])
+        
+        # Recopilar TODOS los componentes recibidos (con y sin números serie)
         received_components = {}
         total_components = 0
         components_with_lots = 0
         components_without_lots = 0
 
-        for line in self.move_line_ids:
-            if line.qty_done > 0:
-                total_components += 1
-                product_id = line.product_id.id
-
-                if product_id not in received_components:
-                    received_components[product_id] = []
-
-                # Agregar componentes CON números de lote/serie
-                if line.lot_id:
-                    components_with_lots += 1
-                    for i in range(int(line.qty_done)):
-                        received_components[product_id].append({
-                            'lot_id': line.lot_id.id,
-                            'product_id': product_id,
-                            'uom_id': line.product_uom_id.id,
-                            'has_lot': True
-                        })
-                else:
-                    # Agregar componentes SIN números de lote/serie
-                    components_without_lots += 1
-                    for i in range(int(line.qty_done)):
-                        received_components[product_id].append({
-                            'lot_id': False,
-                            'product_id': product_id,
-                            'uom_id': line.product_uom_id.id,
-                            'has_lot': False
-                        })
+        for picking in related_pickings:
+            for line in picking.move_line_ids:
+                if line.qty_done > 0:
+                    total_components += 1
+                    product_id = line.product_id.id
+        
+                    if product_id not in received_components:
+                        received_components[product_id] = []
+        
+                    if line.lot_id:
+                        components_with_lots += 1
+                        for _ in range(int(line.qty_done)):
+                            received_components[product_id].append({
+                                'lot_id': line.lot_id.id,
+                                'product_id': product_id,
+                                'uom_id': line.product_uom_id.id,
+                                'has_lot': True,
+                            })
+                    else:
+                        components_without_lots += 1
+                        for _ in range(int(line.qty_done)):
+                            received_components[product_id].append({
+                                'lot_id': False,
+                                'product_id': product_id,
+                                'uom_id': line.product_uom_id.id,
+                                'has_lot': False,
+                            })
 
         if not received_components:
             self.message_post(body="❌ No se encontraron componentes recibidos")
@@ -184,14 +188,13 @@ class StockPicking(models.Model):
                                     'product_qty': 1,
                                     'product_uom_id': product.uom_id.id,
                                     'bom_id': bom.id,
-                                    'origin': self.name,                                    
+                                    'origin': self.name,
                                 })
 
                                 mo.write({
                                         'state': 'draft',
                                         'product_qty': 1,
                                     })
-                                                                
                                 orders_created += 1
 
                                 # Asignar números de serie/lotes a los componentes que los tengan
@@ -235,7 +238,6 @@ class StockPicking(models.Model):
                                                         'location_dest_id': move_raw.location_dest_id.id,
                                                     })
                                                     assigned_qty += 1
-
                                
                             except Exception as e:
                                 error_msg = str(e)
@@ -251,5 +253,4 @@ class StockPicking(models.Model):
                     self.message_post(body="✅ Automatización completada: {} órdenes de fabricación creadas".format(orders_created))
                 else:
                     self.message_post(body="⚠️ No se pudieron crear órdenes de fabricación")
-                    self.message_post(body="🔍 Posibles causas: BOMs requieren componentes no recibidos, cantidades insuficientes, o configuración de BOMs incorrecta")
-   
+                    self.message_post(body="🔍 Posibles causas: BOMs requieren componentes no recibidos, cantidades insuficientes, o configuración de BOMs incorrecta")   
