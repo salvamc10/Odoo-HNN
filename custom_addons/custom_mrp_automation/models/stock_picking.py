@@ -24,10 +24,17 @@ class StockPicking(models.Model):
         return res
 
     def _run_mrp_automation(self):
-        existing_mos = self.env['mrp.production'].search([('origin', '=', self.origin)])
+        purchase_orders = self.move_lines.mapped('purchase_line_id.order_id')
+        if not purchase_orders:
+            self.message_post(body="⚠️ No se pudo determinar la orden de compra asociada a esta recepción.")
+            return
+
+        existing_mos = self.env['mrp.production'].search([('origin', 'in', purchase_orders.mapped('name'))])
         if existing_mos:
             self.message_post(body="⚠️ Ya existen órdenes de fabricación asociadas a la orden de compra '{}': {}".format(
-                self.origin, ", ".join(existing_mos.mapped('name'))))
+                ", ".join(purchase_orders.mapped('name')),
+                ", ".join(existing_mos.mapped('name'))
+            ))
             return
 
         self.message_post(body="🔄 Iniciando automatización de órdenes de fabricación...")        
