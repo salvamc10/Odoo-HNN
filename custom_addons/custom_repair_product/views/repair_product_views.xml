@@ -1,49 +1,49 @@
 <odoo>
-    <!-- Vista tipo lista -->
-    <record id="view_repair_product_line_list" model="ir.ui.view">
-        <field name="name">repair.product.line.list</field>
-        <field name="model">repair.product.line</field>
+    <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
+    <record id="view_stock_move_repair_list" model="ir.ui.view">
+        <field name="name">stock.move.repair.list</field>
+        <field name="model">stock.move</field>
         <field name="arch" type="xml">
-            <list string="Líneas de productos en reparaciones">
+            <list string="Productos en reparaciones" create="false" delete="false">
                 <field name="repair_id"/>
                 <field name="product_id"/>
                 <field name="product_uom_qty"/>
-                <field name="quantity"/>
+                <field name="quantity_done"/>
                 <field name="repair_line_type"/>
+                <field name="forecast_availability"/>
                 <field name="picked"/>
+                <!-- Botón Forecast condicional -->
+                <button type="object"
+                        name="action_product_forecast_report"
+                        icon="fa-area-chart text-danger"
+                        attrs="{
+                            'invisible': [
+                                '|', '|',
+                                ('repair_id', '=', False),
+                                ('repair_line_type', '!=', 'add'),
+                                ('forecast_availability', '>=', 0)
+                            ]
+                        }"/>
             </list>
         </field>
     </record>
 
-    <!-- Vista de búsqueda -->
-    <record id="view_repair_product_line_search" model="ir.ui.view">
-        <field name="name">repair.product.line.search</field>
-        <field name="model">repair.product.line</field>
-        <field name="arch" type="xml">
-            <search string="Buscar Productos en Reparaciones">
-                <field name="repair_id"/>
-                <field name="product_id"/>
-                <field name="picked"/>
-                <filter string="No recogidos" domain="[('picked', '=', False)]"/>
-                <filter string="Recogidos" domain="[('picked', '=', True)]"/>
-            </search>
-        </field>
-    </record>
-
     <!-- Acción de ventana -->
-    <record id="action_repair_product_line" model="ir.actions.act_window">
+    <record id="action_stock_move_repair_list" model="ir.actions.act_window">
         <field name="name">Productos en Reparaciones</field>
-        <field name="res_model">repair.product.line</field>
-        <field name="view_mode">list</field>        
+        <field name="res_model">stock.move</field>
+        <field name="view_mode">list"/>
+        <field name="view_id" ref="view_stock_move_repair_list"/>
+        <field name="domain">[('repair_id', '!=', False)]</field>
         <field name="help" type="html">
-            <p>Aquí puedes consultar todos los productos incluidos en órdenes de reparación.</p>
+            <p>Aquí puedes consultar todos los productos que se han añadido o retirado en las órdenes de reparación.</p>
         </field>
     </record>
 
-    <!-- Menú directamente en el menú raíz de Reparaciones -->
-    <menuitem id="menu_repair_product_line"
+    <!-- Menú bajo Reparaciones -->
+    <menuitem id="menu_stock_move_repair_list"
               name="Productos en Reparaciones"
               parent="repair.menu_repair_order"
-              action="action_repair_product_line"
+              action="action_stock_move_repair_list"
               sequence="50"/>
 </odoo>
