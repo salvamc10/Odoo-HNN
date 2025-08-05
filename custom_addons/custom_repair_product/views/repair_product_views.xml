@@ -1,0 +1,43 @@
+<odoo>
+    <record id="view_repair_product_line_tree" model="ir.ui.view">
+        <field name="name">repair.product.line.tree</field>
+        <field name="model">repair.product.line</field>
+        <field name="arch" type="xml">
+            <tree string="Líneas de productos en reparaciones">
+                <field name="repair_id"/>
+                <field name="product_id"/>
+                <field name="product_uom_qty"/>
+                <field name="location_id"/>
+                <field name="lot_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_repair_product_line_search" model="ir.ui.view">
+        <field name="name">repair.product.line.search</field>
+        <field name="model">repair.product.line</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Productos en Reparaciones">
+                <field name="repair_id"/>
+                <field name="product_id"/>
+                <field name="state"/>
+                <filter string="En Reparación" domain="[('state', '=', 'in_repair')]"/>
+                <filter string="Completadas" domain="[('state', '=', 'done')]"/>
+            </search>
+        </field>
+
+    <record id="action_repair_product_line" model="ir.actions.act_window">
+        <field name="name">Productos en Reparaciones</field>
+        <field name="res_model">repair.product.line</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p>Aquí puedes consultar todos los productos incluidos en órdenes de reparación.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_repair_product_line_root" name="Reparaciones" sequence="10"/>
+    <menuitem id="menu_repair_product_line" name="Productos en Reparaciones"
+              parent="menu_repair_product_line_root"
+              action="action_repair_product_line" sequence="20"/>
+</odoo>
