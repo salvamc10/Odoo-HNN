@@ -26,6 +26,7 @@
                 <filter string="Completadas" domain="[('state', '=', 'done')]"/>
             </search>
         </field>
+    </record>
 
     <record id="action_repair_product_line" model="ir.actions.act_window">
         <field name="name">Productos en Reparaciones</field>
