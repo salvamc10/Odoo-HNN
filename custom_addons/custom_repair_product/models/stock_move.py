@@ -5,4 +5,5 @@ from odoo import api, fields, models
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    
+    repair_state = fields.Selection(related='repair_id.state', store=True, string="Estado reparación")
+2. 
