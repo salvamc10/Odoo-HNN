@@ -37,8 +37,9 @@
         </field>
     </record>
 
-    <menuitem id="menu_repair_product_line_root" name="Reparaciones" sequence="10"/>
-    <menuitem id="menu_repair_product_line" name="Productos en Reparaciones"
-              parent="menu_repair_product_line_root"
-              action="action_repair_product_line" sequence="20"/>
+   <menuitem id="menu_repair_product_line"
+          name="Productos en Reparaciones"
+          parent="repair_order_menu"
+          action="action_repair_product_line"
+          sequence="50"/>
 </odoo>
