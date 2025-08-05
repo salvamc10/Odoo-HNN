@@ -13,8 +13,26 @@
             </list>
         </field>
     </record>
+   
+    <record id="action_repair_product_line" model="ir.actions.act_window">
+        <field name="name">Productos en Reparaciones</field>
+        <field name="res_model">repair.product.line</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p>Aquí puedes consultar todos los productos incluidos en órdenes de reparación.</p>
+        </field>
+    </record>
 
-    <!-- <record id="view_repair_product_line_search" model="ir.ui.view">
+   <menuitem id="menu_repair_product_line"
+          name="Productos en Reparaciones"
+          parent="repair.repair_order_menu"
+          action="action_repair_product_line"
+          sequence="50"/>
+</odoo>
+
+
+
+ <!-- <record id="view_repair_product_line_search" model="ir.ui.view">
         <field name="name">repair.product.line.search</field>
         <field name="model">repair.product.line</field>
         <field name="arch" type="xml">
@@ -27,19 +45,3 @@
             </search>
         </field>
     </record> -->
-
-    <record id="action_repair_product_line" model="ir.actions.act_window">
-        <field name="name">Productos en Reparaciones</field>
-        <field name="res_model">repair.product.line</field>
-        <field name="view_mode">list</field>
-        <field name="help" type="html">
-            <p>Aquí puedes consultar todos los productos incluidos en órdenes de reparación.</p>
-        </field>
-    </record>
-
-   <menuitem id="menu_repair_product_line"
-          name="Productos en Reparaciones"
-          parent="repair_order_menu"
-          action="action_repair_product_line"
-          sequence="50"/>
-</odoo>
