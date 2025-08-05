@@ -5,7 +5,7 @@
         <field name="model">stock.move</field>
         <field name="arch" type="xml">
             <list string="Productos en reparaciones" create="false" delete="false">
-                <field name="repair_state" invisible="1" />
+                <field name="repair_state"/>
                 <field name="repair_id"/>
                 <field name="product_id"/>
                 <field name="product_uom_qty"/>
@@ -13,9 +13,9 @@
                 <field name="repair_line_type"/>
                 <field name="forecast_availability"/>
                 <field name="picked"/>
-                <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart" column_invisible="repair_state != 'draft'" invisible="forecast_availability &lt; 0 and repair_line_type == 'add'"/>
-                <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart text-danger" column_invisible="repair_state != 'draft'" invisible="forecast_availability &gt;= 0 or repair_line_type != 'add'"/>
-                <field name="forecast_availability" string="Forecasted" column_invisible="repair_state in ('draft', 'done')" widget="forecast_widget"/>
+                <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart" invisible="forecast_availability &lt; 0 and repair_line_type == 'add'"/>
+                <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart text-danger" invisible="forecast_availability &gt;= 0 or repair_line_type != 'add'"/>
+                <field name="forecast_availability" string="Forecasted"  widget="forecast_widget"/>
             </list>
         </field>
     </record>
