@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+custom_repair_product.access_repair_product_line,access_repair_product_line,custom_repair_product.model_repair_product_line,base.group_user,1,1,1,1 

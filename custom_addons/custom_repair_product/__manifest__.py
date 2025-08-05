@@ -15,7 +15,8 @@
         'product',
         'stock',
     ],
-    'data': [       
+    'data': [   
+       'security/ir.model.access.csv',         
        'views/repair_product_views.xml',      
     ],
     'installable': True,
