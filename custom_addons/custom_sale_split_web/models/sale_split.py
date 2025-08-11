@@ -16,6 +16,8 @@ class SaleOrder(models.Model):
 
     split_done = fields.Boolean(default=False, copy=False)
 
+    # --- helpers ---
+
     def _product_is_recambio(self, product):
         root = self.website_id.recambios_root_public_categ_id
         if not root:
@@ -29,9 +31,11 @@ class SaleOrder(models.Model):
         return 'recambios' if self._product_is_recambio(line.product_id) else 'maquinas'
 
     def _apply_template_by_group(self, group_key):
+        # Usa los nombres de plantilla que has confirmado: "Maquina" y "Recambio"
         name_map = {'maquinas': 'Maquina', 'recambios': 'Recambio'}
         tmpl = self.env['sale.order.template'].search([('name', '=', name_map[group_key])], limit=1)
         if tmpl and self.state in ('draft', 'sent'):
+            # Tu write() reasigna la secuencia según la plantilla
             self.write({'sale_order_template_id': tmpl.id})
 
     def _create_child_order_for_group(self, group_key):
@@ -49,6 +53,8 @@ class SaleOrder(models.Model):
         }
         return self.sudo().create(vals)
 
+    # --- validaciones ---
+
     @api.constrains('order_line')
     def _check_web_categ_on_published_products(self):
         for order in self:
@@ -61,7 +67,13 @@ class SaleOrder(models.Model):
                 raise ValidationError(_("Productos publicados sin categoría web: %s") %
                                       ", ".join(bad.mapped('product_id.display_name')))
 
+    # --- núcleo del split ---
+
     def split_web_cart_by_category(self):
+        """Reutiliza el carrito para Máquinas. Crea pedido Recambios si procede.
+        Mueve líneas, aplica plantillas y marca como dividido.
+        Devuelve dict {'maquinas': so?, 'recambios': so?}.
+        """
         self.ensure_one()
         if self.split_done:
             return {'maquinas': self}
@@ -73,7 +85,6 @@ class SaleOrder(models.Model):
         if not groups['recambios'] or not self.website_id.split_by_web_category:
             self._apply_template_by_group('maquinas')
             self.split_done = True
-            self._amount_all()
             return {'maquinas': self}
 
         orders = {}
@@ -87,14 +98,15 @@ class SaleOrder(models.Model):
         other = 'recambios' if 'maquinas' in orders else 'maquinas'
         orders[other] = orders.get(other) or self._create_child_order_for_group(other)
 
+        # mover líneas al pedido objetivo
         for grp, line_ids in groups.items():
             if not line_ids:
                 continue
             target = orders[grp]
             self.env['sale.order.line'].browse(line_ids).write({'order_id': target.id})
 
+        # marcar como dividido (los importes se recalculan vía dependencias)
         for so in orders.values():
-            so._amount_all()
             so.split_done = True
 
         return orders
