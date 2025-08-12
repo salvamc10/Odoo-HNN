@@ -1,0 +1,29 @@
+<odoo>
+  <!-- Form de documentos de plantilla -->
+  <record id="custom_view_sale_order_template_document_form" model="ir.ui.view">
+    <field name="name">sale.order.template.document.form.inherit.auto.attach</field>
+    <field name="model">sale.order.template.document</field>
+    <field name="inherit_id" ref="sale.sale_order_template_document_form_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='attachment_id']" position="after">
+        <group string="Adjuntado automático" colspan="2">
+          <field name="attach_on_quotation"/>
+          <field name="attach_on_order"/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+
+  <!-- Tree de documentos para ver flags a simple vista -->
+  <record id="custom_view_sale_order_template_document_tree" model="ir.ui.view">
+    <field name="name">sale.order.template.document.tree.inherit.auto.attach</field>
+    <field name="model">sale.order.template.document</field>
+    <field name="inherit_id" ref="sale.sale_order_template_document_tree_view"/>
+    <field name="arch" type="xml">
+      <xpath expr="//tree/field[@name='attachment_id']" position="after">
+        <field name="attach_on_quotation" widget="boolean_toggle"/>
+        <field name="attach_on_order" widget="boolean_toggle"/>
+      </xpath>
+    </field>
+  </record>
+</odoo>
