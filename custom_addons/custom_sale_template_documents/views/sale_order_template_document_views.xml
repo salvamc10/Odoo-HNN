@@ -6,11 +6,11 @@
     <field name="arch" type="xml">
       <xpath expr="//field[@name='quotation_document_ids']" position="after">
         <field name="custom_auto_document_ids">
-          <tree editable="bottom">
-            <field name="document_id" required="1"/>
-            <field name="attach_on_quotation" widget="boolean_toggle"/>
-            <field name="attach_on_order" widget="boolean_toggle"/>
-          </tree>
+          <list editable="bottom">
+            <field name="document_id"/>
+            <field name="attach_on_quotation"/>
+            <field name="attach_on_order"/>
+          </list>
           <form>
             <group>
               <field name="document_id"/>
