@@ -1,0 +1,21 @@
+<odoo>
+  <record id="view_sale_order_template_form_inherit_default_docs" model="ir.ui.view">
+    <field name="name">sale.order.template.form.default.docs</field>
+    <field name="model">sale.order.template</field>
+    <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//page[@name='quotation_builder' or @string='Creador de presupuestos']" position="inside">
+        <group string="Documentos por defecto">
+          <field name="custom_template_doc_ids" context="{'default_template_id': active_id}">
+            <tree editable="bottom">
+              <field name="sequence"/>
+              <field name="document_id"/>
+              <field name="required"/>
+            </tree>
+          </field>
+          <label string="Los 'Obligatorios' se preseleccionan al elegir la plantilla. El resto quedan opcionales."/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+</odoo>
