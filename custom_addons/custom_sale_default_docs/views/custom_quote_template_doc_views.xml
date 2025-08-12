@@ -1,0 +1,29 @@
+<odoo>
+    <!-- Vista LIST del modelo hijo -->
+    <record id="view_custom_quote_template_doc_list" model="ir.ui.view">
+        <field name="name">custom.quote.template.doc.list</field>
+        <field name="model">custom.quote.template.doc</field>
+        <field name="arch" type="xml">
+        <list string="Documentos por defecto" editable="bottom">
+            <field name="sequence"/>
+            <field name="document_id"/>
+            <field name="required"/>
+        </list>
+        </field>
+    </record>
+
+    <!-- Vista FORM del modelo hijo -->
+    <record id="view_custom_quote_template_doc_form" model="ir.ui.view">
+        <field name="name">custom.quote.template.doc.form</field>
+        <field name="model">custom.quote.template.doc</field>
+        <field name="arch" type="xml">
+        <form string="Documento por defecto">
+            <group>
+            <field name="sequence"/>
+            <field name="document_id"/>
+            <field name="required"/>
+            </group>
+        </form>
+        </field>
+    </record>
+</odoo>

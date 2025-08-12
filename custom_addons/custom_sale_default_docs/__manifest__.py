@@ -17,6 +17,7 @@
     """,
     'data': [
         'security/ir.model.access.csv',
+        'views/custom_quote_template_doc_views.xml',
         'views/sale_order_template_views.xml',
     ],
     'installable': True,
