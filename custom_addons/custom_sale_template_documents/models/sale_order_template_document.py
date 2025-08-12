@@ -1,13 +1,10 @@
 from odoo import fields, models
 
-class SaleOrderTemplateDocument(models.Model):
-    _inherit = 'sale.order.template.document'
+class SaleOrderTemplate(models.Model):
+    _inherit = 'sale.order.template'
 
-    attach_on_quotation = fields.Boolean(
-        string='Adjuntar en presupuesto',
-        help='Si está activo, se adjuntará siempre al crear el presupuesto.'
-    )
-    attach_on_order = fields.Boolean(
-        string='Adjuntar en pedido',
-        help='Si está activo, se adjuntará siempre al confirmar el pedido.'
+    custom_auto_document_ids = fields.One2many(
+        'custom.template.auto.document',
+        'template_id',
+        string="Documentos automáticos"
     )

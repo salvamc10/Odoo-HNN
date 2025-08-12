@@ -12,7 +12,7 @@
     Se mantiene la selección manual existente para el resto.
     """,
     'category': 'Sales',
-    'depends': ['sale_management'],
+    'depends': ['sale_management', 'sale_pdf_quote_builder'],
     'data': [
         'views/sale_order_template_document_views.xml',
     ],
