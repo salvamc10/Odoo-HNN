@@ -1,7 +1,7 @@
 {
     "name": "Documentos adjuntos por defecto en presupuestos/pedidos",
     "version": "18.0.1.0",
-    "Author": "Salva M",
+    "author": "Salva M",
     "license": "LGPL-3",
     "summary": "Este módulo permite adjuntar documentos por defecto en presupuestos y pedidos.",
     "description": "Este módulo añade la funcionalidad de adjuntar documentos de forma predeterminada "
