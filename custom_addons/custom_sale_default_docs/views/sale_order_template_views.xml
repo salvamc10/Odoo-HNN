@@ -4,7 +4,8 @@
     <field name="model">sale.order.template</field>
     <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
     <field name="arch" type="xml">
-      <xpath expr="//page[@name='quotation_builder' or @string='Creador de presupuestos']" position="inside">
+      <!-- Insertar justo después del selector M2M que ya existe -->
+      <xpath expr="//field[@name='quotation_document_ids']" position="after">
         <group string="Documentos por defecto">
           <field name="custom_template_doc_ids" context="{'default_template_id': active_id}">
             <tree editable="bottom">
@@ -12,6 +13,13 @@
               <field name="document_id"/>
               <field name="required"/>
             </tree>
+            <form>
+              <group>
+                <field name="sequence"/>
+                <field name="document_id"/>
+                <field name="required"/>
+              </group>
+            </form>
           </field>
           <label string="Los 'Obligatorios' se preseleccionan al elegir la plantilla. El resto quedan opcionales."/>
         </group>

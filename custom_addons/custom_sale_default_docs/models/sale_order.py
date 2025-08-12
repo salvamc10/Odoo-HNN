@@ -4,6 +4,7 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def _load_default_quotation_documents(self):
+        """Carga en el pedido los documentos obligatorios de la plantilla."""
         for order in self:
             if not order.template_id:
                 order.quotation_document_ids = [(5, 0, 0)]
@@ -12,7 +13,8 @@ class SaleOrder(models.Model):
             order.quotation_document_ids = [(6, 0, required_docs.ids)]
 
     @api.onchange("template_id")
-    def _onchange_template_id_docs_defaults(self):
+    def _onchange_template_id(self):
+        """Encadena el onchange estándar y luego aplica los documentos por defecto."""
         res = super()._onchange_template_id()
         self._load_default_quotation_documents()
         return res
