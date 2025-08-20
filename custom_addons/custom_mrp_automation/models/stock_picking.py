@@ -104,6 +104,37 @@ class StockPicking(models.Model):
             debug_msg += "<br/>"
         self.message_post(body=debug_msg)
 
+        # Buscar órdenes de fabricación existentes para esta orden de compra
+        existing_mos = self.env['mrp.production'].search([('origin', '=', purchase_order.name)])
+        used_components = {}
+        
+        # Rastrear componentes ya utilizados en órdenes de fabricación existentes
+        for mo in existing_mos:
+            for move_raw in mo.move_raw_ids:
+                comp_id = move_raw.product_id.id
+                if comp_id not in used_components:
+                    used_components[comp_id] = 0
+                # Asegurarse de que la cantidad sea un entero
+                used_components[comp_id] += int(move_raw.product_qty)
+
+        # Calcular componentes disponibles restando los ya utilizados
+        available_components = {}
+        for product_id, components in received_components.items():
+            available_qty = max(0, len(components) - used_components.get(product_id, 0))
+            if available_qty > 0:
+                available_components[product_id] = components[:int(available_qty)]
+
+        if not available_components:
+            self.message_post(body="⚠️ No hay componentes disponibles para nuevas órdenes de fabricación (todos ya utilizados).")
+            return
+
+        # Mostrar componentes disponibles para depuración
+        debug_msg = "🔍 Componentes disponibles después de restar utilizados:<br/>"
+        for prod_id, components in available_components.items():
+            product_name = env['product.product'].browse(prod_id).name
+            debug_msg += "• {}: {} unidades<br/>".format(product_name, len(components))
+        self.message_post(body=debug_msg)
+        
         # Buscar BOMs que contengan alguno de los componentes recibidos
         matching_boms = []
         for product_id in received_components.keys():
