@@ -17,7 +17,8 @@
     ],
     'data': [   
        'security/ir.model.access.csv',         
-       'views/repair_product_views.xml',      
+       'views/repair_product_views.xml',
+       'views/repair_order_views.xml',     
     ],
     'installable': True,
     'application': False,
