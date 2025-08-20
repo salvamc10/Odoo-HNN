@@ -27,7 +27,7 @@
         <field name="model">repair.order</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <list string="Consultas" create="false" delete="false">
+            <list string="Consultas" create="true" delete="false">
                <field name="activity_summary" string="Piezas a consultar"/> 
             </list>
         </field>
