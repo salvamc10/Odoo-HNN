@@ -5,10 +5,12 @@ on:
     branches:
       - test
       - main
+      - dev
   pull_request:
     branches:
       - test
       - main
+      - dev
 
 jobs:
   odoo-tests:

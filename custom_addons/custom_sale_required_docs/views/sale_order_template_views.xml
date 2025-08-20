@@ -1,0 +1,19 @@
+<odoo>
+  <record id="view_sale_order_template_form_inherit_required_docs" model="ir.ui.view">
+    <field name="name">sale.order.template.form.required.docs</field>
+    <field name="model">sale.order.template</field>
+    <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//field[@name='quotation_document_ids']" position="after">
+        <group>
+          <field name="required_quotation_document_ids"
+                domain="[('id','in', quotation_document_ids)]"
+                widget="many2many_tags"/>
+          <div class="o_form_label">
+            Solo se preseleccionan los marcados aquí. El resto quedan opcionales.
+          </div>
+        </group>
+      </xpath>
+    </field>
+  </record>
+</odoo>
