@@ -21,8 +21,8 @@
     </record>
 
     <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
-    <record id="view_stock_move_repair_consult_list" model="ir.ui.view">
-        <field name="name">stock.move.repair.consult.list</field>
+    <record id="view_repair_order_repair_consult_list" model="ir.ui.view">
+        <field name="name">repair.order.repair.consult.list</field>
         <field name="model">repair.order</field>
         <field name="arch" type="xml">
             <list string="Consultas" create="false" delete="false">
@@ -45,11 +45,11 @@
     </record>
 
      <!-- Acción de ventana -->
-    <record id="action_stock_move_repair_consult_list" model="ir.actions.act_window">
+    <record id="action_repair_order_repair_consult_list" model="ir.actions.act_window">
         <field name="name">Consultas</field>
-        <field name="res_model">stock.move</field>
+        <field name="res_model">repair.order</field>
         <field name="view_mode">list</field>
-        <field name="view_id" ref="view_stock_move_repair_consult_list"/>       
+        <field name="view_id" ref="view_repair_order_repair_consult_list"/>       
         <field name="help" type="html">
             <p>Aquí puedes consultar todos los productos que se han añadido o retirado en las órdenes de reparación.</p>
         </field>
@@ -63,9 +63,9 @@
               action="action_stock_move_repair_list"
               sequence="50"/>
 
-    <menuitem id="menu_stock_move_repair_list"
+    <menuitem id="menu_repair_order_repair_consult_list"
               name="Consultas"
               parent="repair.menu_repair_order"
-              action="action_stock_move_repair_consult_list"
+              action="action_repair_order_repair_consult_list"
               sequence="60"/>
 </odoo>
