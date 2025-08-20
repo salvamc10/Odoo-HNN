@@ -23,7 +23,7 @@
     <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
     <record id="view_stock_move_repair_consult_list" model="ir.ui.view">
         <field name="name">stock.move.repair.consult.list</field>
-        <field name="model">stock.move</field>
+        <field name="model">repair.order</field>
         <field name="arch" type="xml">
             <list string="Consultas" create="false" delete="false">
                <field name="activity_summary" string="Piezas a consultar"/> 
