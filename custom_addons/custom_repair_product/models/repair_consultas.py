@@ -25,7 +25,7 @@ class RepairConsulta(models.Model):
         if self.refer:
             # Dominio para buscar productos que coincidan con refer
             domain = [                            
-                ('default_code', '=', self.refer or ''),
+                ('default_code', '=', self.refer),
                 ('type', '=', 'consu')
             ]
             # Busca el primer producto que coincida
