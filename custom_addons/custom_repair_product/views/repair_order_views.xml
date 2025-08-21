@@ -8,22 +8,16 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
-                         <field name="move_ids" readonly="state == 'cancel' or state == 'done'"
-                        context="{'default_repair_id': id, 'default_product_uom_qty': 1, 'default_company_id': company_id, 'default_date': schedule_date, 'default_repair_line_type': 'add'}">
+                         <field name="consulta_ids" context="{'default_repair_order_id': id}">
                             <list string="Operations" editable="bottom">
                                 <control>
                                     <create string="Add a line"/>
                                     <button name="action_add_from_catalog_repair" string="Catalog" type="object" class="px-4 btn-link" context="{'order_id': parent.id}"/>
                                 </control>
-                                <field name="consulta_text" string="Producto a consultar"/>                               
-                                <field name="product_uom_qty" string="Demand" readonly="state in ('done', 'cancel')"/>                         
-                                
-                                <field name="product_uom" readonly="state != 'draft' and not additional" options="{'no_open': True, 'no_create': True}" string="Unit of Measure" groups="uom.group_uom"/>
-                                <field name="picked" string="Used"/>                                
-                                <button name="action_show_details" type="object" icon="fa-list" width="0.1" title="Details"
-                                        options='{"warn": true}'
-                                        context="{'default_location_dest_id': location_dest_id}"
-                                    />
+                                <field name="consulta_text" string="Producto a consultar"/>
+                                <field name="product_uom_qty" string="Cantidad"/>
+                                <field name="product_uom"/>
+                                <field name="picked" string="Usado"/>
                             </list>
                         </field>
                         <div class="clearfix"/>

@@ -4,6 +4,7 @@ from odoo import fields, models
 
 class RepairOrder(models.Model):
     _inherit = 'repair.order'
+    
+    consulta_ids = fields.One2many('repair.consulta', 'repair_order_id', string="Consultas")
 
-    consulta_text = fields.Char(string='Consulta')
 
