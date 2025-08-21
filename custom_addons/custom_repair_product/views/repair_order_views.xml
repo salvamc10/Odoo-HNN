@@ -15,7 +15,7 @@
                                 </control>
                                 <field name="consulta_text" string="Producto a consultar"/>
                                 <field name="refer" string="Referencia"/>
-                                <field name="product_id" string="Producto"/>
+                                <field name="product_id" string="Producto" readonly="1"/>
                                 <field name="product_uom_qty" string="Cantidad"/>                               
                             </list>
                         </field>

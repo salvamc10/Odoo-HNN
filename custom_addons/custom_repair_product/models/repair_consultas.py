@@ -16,18 +16,16 @@ class RepairConsulta(models.Model):
     product_id = fields.Many2one(
         'product.product', 'Product',
         check_company=True,
-        domain="[('type', '=', 'consu')]", index=True, required=True)
+        domain="[('type', '=', 'consu')]", index=True)
 
-    @api.onchange('consulta_text', 'refer')
-    def _onchange_consulta_text_or_refer(self):
-        """Busca un producto que coincida con consulta_text o refer y actualiza product_id."""
+    @api.onchange('refer')
+    def _onchange_refer(self):
+        """Busca un producto que coincida con refer y actualiza product_id."""
         self.ensure_one()
-        if self.consulta_text or self.refer:
-            # Dominio para buscar productos que coincidan con consulta_text o refer
-            domain = [
-                '|',
-                ('name', 'ilike', self.consulta_text or ''),
-                ('default_code', 'ilike', self.refer or ''),
+        if self.refer:
+            # Dominio para buscar productos que coincidan con refer
+            domain = [                            
+                ('default_code', '=', self.refer or ''),
                 ('type', '=', 'consu')
             ]
             # Busca el primer producto que coincida
