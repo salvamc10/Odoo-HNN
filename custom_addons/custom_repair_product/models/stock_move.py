@@ -6,4 +6,4 @@ class StockMove(models.Model):
     _inherit = 'stock.move'
 
     repair_state = fields.Selection(related='repair_id.state', store=True, string="Estado reparación")
-
+    consulta_text = fields.Char(string='Consulta')
