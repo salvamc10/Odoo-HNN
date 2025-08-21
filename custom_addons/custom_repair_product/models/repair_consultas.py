@@ -10,6 +10,11 @@ class RepairConsulta(models.Model):
         ondelete='cascade'
     )
     consulta_text = fields.Text(string="Producto a consultar")
+    refer = fields.Char(string="Referencia")
     product_uom_qty = fields.Float(string="Cantidad")
     product_uom = fields.Many2one('uom.uom', string="Unidad de medida")
     picked = fields.Boolean(string="Usado")
+    product_id = fields.Many2one(
+        'product.product', 'Product',
+        check_company=True,
+        domain="[('type', '=', 'consu')]", index=True, required=True)
