@@ -53,3 +53,31 @@ class RepairConsulta(models.Model):
                     'product_uom_qty': self.product_uom_qty,
                     'picked': self.picked,
                 })
+
+    def action_create_product(self):
+        """Devuelve una acción para crear un nuevo producto y actualiza product_id."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'product.template',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_type': 'consu',
+                'default_default_code': self.refer,  # Prellenar el campo default_code con refer
+                'repair_consulta_id': self.id,  # Pasar el ID de la consulta para usarlo después
+            },
+        }
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+
+    def create(self, vals):
+        """Sobrescribe create para actualizar repair.consulta después de crear el producto."""
+        product = super(ProductTemplate, self).create(vals)
+        # Verifica si el contexto incluye un repair_consulta_id
+        if self._context.get('repair_consulta_id'):
+            consulta = self.env['repair.consulta'].browse(self._context.get('repair_consulta_id'))
+            if consulta and product.product_variant_id:
+                consulta.write({'product_id': product.product_variant_id.id})
+        return product

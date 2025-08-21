@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
-        <!-- Acción para crear un nuevo producto -->
-        <record id="action_create_product_template" model="ir.actions.act_window">
-            <field name="name">Crear Producto</field>
-            <field name="res_model">product.template</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-            <field name="context">{'default_type': 'consu'}</field>
-        </record>
-
+        <!-- Vista del formulario de repair.order -->
         <record id="custom_view_repair_order_form_inherit_consultas" model="ir.ui.view">
             <field name="name">repair.order.form.inherit.consultas</field>
             <field name="model">repair.order</field>
@@ -18,19 +9,21 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
-                         <field name="consulta_ids" context="{'default_repair_order_id': id}">
+                        <field name="consulta_ids" context="{'default_repair_order_id': id}">
                             <list editable="bottom">
                                 <control>
                                     <create string="Añadir consulta"/>
                                 </control>
                                 <field name="consulta_text" string="Producto a consultar"/>
                                 <field name="refer" string="Referencia"/>
-                                <field name="product_id" string="Producto" readonly="1"/>
                                 <field name="product_uom_qty" string="Cantidad"/>
-                                <button string="Crear Producto" type="action" name="%(action_create_product_template)d" 
-                                        invisible="product_id != False" class="btn-primary"/>                               
+                                <field name="picked" string="Usado"/>
+                                <field name="product_id" readonly="1"/>
+                                <button string="Crear Producto" type="object" name="action_create_product" 
+                                        invisible="product_id != False" class="btn-primary"/>
                             </list>
-                        </field>                       
+                        </field>
+                        <div class="oe_clear"/>
                     </page>
                 </xpath>
             </field>
