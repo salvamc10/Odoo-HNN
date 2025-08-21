@@ -15,8 +15,7 @@
                                 </control>
                                 <field name="consulta_text" string="Producto a consultar"/>
                                 <field name="product_uom_qty" string="Cantidad"/>
-                                <field name="product_uom"/>
-                                <field name="picked" string="Usado"/>
+                                <field name="product_uom" default="Unidades"/>
                             </list>
                         </field>
                         <div class="oe_clear"/>
