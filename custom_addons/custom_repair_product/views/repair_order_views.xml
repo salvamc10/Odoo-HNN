@@ -12,7 +12,7 @@
                             <list string="Operations" editable="bottom">
                                 <control>
                                     <create string="Add a line"/>
-                                    <button name="action_add_from_catalog_repair" string="Catalog" type="object" class="px-4 btn-link" context="{'order_id': parent.id}"/>
+                                    <delete string="Remove selected lines"/>
                                 </control>
                                 <field name="consulta_text" string="Producto a consultar"/>
                                 <field name="product_uom_qty" string="Cantidad"/>
@@ -24,7 +24,6 @@
                     </page>
                 </xpath>
             </field>
-        </record>   
-      
+        </record>         
     </data>
 </odoo>
