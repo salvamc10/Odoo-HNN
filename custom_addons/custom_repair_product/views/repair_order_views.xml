@@ -9,8 +9,9 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">
+                      <list string="Repairs order" multi_edit="1" sample="1" decoration-info="state == 'draft'">
                         <field string="Producto en Consulta" name="consulta_text"/>
-                         <field name="company_id" column_invisible="True"/>
+                        <field name="company_id" column_invisible="True"/>
                         <field name="priority" optional="show" widget="priority" nolabel="1"/>
                         <field name="name"/>
                         <field name="schedule_date" optional="show" widget="remaining_days"/>
@@ -22,6 +23,7 @@
                             decoration-success="parts_availability_state == 'available'"
                             decoration-warning="parts_availability_state == 'expected'"
                             decoration-danger="parts_availability_state == 'late'"/>
+                    </list>
                     </page>
                 </xpath>
             </field>
