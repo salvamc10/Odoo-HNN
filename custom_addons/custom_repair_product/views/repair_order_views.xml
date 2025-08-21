@@ -9,65 +9,16 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">
-                      <list string="Repairs order" multi_edit="1" sample="1" decoration-info="state == 'draft'">
+                      <list string="Repairs order">
                         <field string="Producto en Consulta" name="consulta_text"/>
-                        <field name="company_id" column_invisible="True"/>
-                        <field name="priority" optional="show" widget="priority" nolabel="1"/>
                         <field name="name"/>
-                        <field name="schedule_date" optional="show" widget="remaining_days"/>
                         <field name="product_id" readonly="1" optional="show"/>
-                        <field name="parts_availability_state" column_invisible="True"/>
-                        <field name="parts_availability"
-                            invisible="state not in ['confirmed', 'under_repair']"
-                            optional="show"
-                            decoration-success="parts_availability_state == 'available'"
-                            decoration-warning="parts_availability_state == 'expected'"
-                            decoration-danger="parts_availability_state == 'late'"/>
-                    </list>
+                        <field name="product_uom_qty" readonly="1" optional="show"/>
+                      </list>
                     </page>
                 </xpath>
             </field>
-        </record> 
-    
-        <!-- <record id="custom_view_repair_order_tree_inherit_consultas" model="ir.ui.view">
-            <field name="name">repair.order.tree.inherit.views</field>
-            <field name="model">repair.order</field>
-            <field name="inherit_id" ref="repair.view_repair_order_tree"/>
-            <field name="arch" type="xml">
-                <xpath expr="//list" position="inside">
-                    <field string="Producto en Consulta" name="consulta_text"/>
-                    <field name="company_id" column_invisible="True"/>
-                    <field name="priority" optional="show" widget="priority" nolabel="1"/>
-                    <field name="name"/>
-                    <field name="schedule_date" optional="show" widget="remaining_days"/>
-                    <field name="product_id" readonly="1" optional="show"/>
-                    <field name="parts_availability_state" column_invisible="True"/>
-                    <field name="parts_availability"
-                        invisible="state not in ['confirmed', 'under_repair']"
-                        optional="show"
-                        decoration-success="parts_availability_state == 'available'"
-                        decoration-warning="parts_availability_state == 'expected'"
-                        decoration-danger="parts_availability_state == 'late'"/>
-                    <field name="product_qty" optional="hide" string="Quantity" readonly="state != 'draft'"/>
-                    <field name="product_uom" string="Unit of Measure" readonly="1" groups="uom.group_uom" optional="hide"/>
-                    <field name="user_id" optional="hide" widget='many2one_avatar_user'/>
-                    <field name="partner_id" readonly="1" optional="show"/>
-                    <field name="picking_id" optional="hide"/>
-                    <field name="is_returned" optional="hide"/>
-                    <field name="sale_order_id" optional="show"/>
-                    <field name="location_id" optional="hide"/>
-                    <field name="company_id" groups="base.group_multi_company" readonly="1" optional="show"/>
-                    <field name="state" optional="show" widget='badge'
-                        decoration-success="state == 'done'"
-                        decoration-info="state == 'confirmed'"
-                        decoration-warning="state == 'under_repair'"
-                        decoration-danger="state == 'cancel'"
-                        decoration-muted="state == 'draft'"
-                    />
-                    <field name="activity_exception_decoration" widget="activity_exception"/>
-                </xpath>
-            </field>
-        </record> -->
-            
+        </record>   
+      
     </data>
 </odoo>
