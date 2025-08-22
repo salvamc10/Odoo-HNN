@@ -54,3 +54,17 @@ class Repair(models.Model):
             self.x_machine_number = self.lot_id
         else:
             self.x_machine_number = False
+
+class StockLot(models.Model):
+    _inherit = 'stock.lot'
+
+    def name_get(self):
+        result = []
+        for lot in self:
+            # Si el contexto indica que estamos buscando desde x_machine_number, mostramos x_machine_number
+            if self.env.context.get('show_x_machine_number'):
+                name = lot.x_machine_number or lot.name
+            else:
+                name = lot.name
+            result.append((lot.id, name))
+        return result

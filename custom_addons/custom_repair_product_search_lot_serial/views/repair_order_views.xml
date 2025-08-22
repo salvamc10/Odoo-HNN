@@ -15,16 +15,12 @@
             <field name="lot_id" position="attributes">
                 <attribute name="readonly">0</attribute>
                 <attribute name="options">{'no_create': False, 'no_open': False}</attribute>
+                <attribute name="invisible">[('product_id', '!=', False)]</attribute>
             </field>
             
             <!-- Añadimos x_machine_number antes de lot_id -->
             <field name="lot_id" position="before">
-                <field name="x_machine_number" widget="many2one" options="{'no_create': False, 'no_open': False}" context="{'default_product_id': product_id, 'default_x_machine_number': x_machine_number.x_machine_number}" domain="[('id', 'in', allowed_lot_ids)]"/>
-            </field>
-            
-            
-            <field name="lot_id" position="attributes">
-                <attribute name="invisible">[('product_id', '!=', False)]</attribute>
+                <field name="x_machine_number" widget="many2one" options="{'no_create': False, 'no_open': False}" context="{'show_x_machine_number': True, 'default_product_id': product_id, 'default_x_machine_number': x_machine_number.x_machine_number}" domain="[('id', 'in', allowed_lot_ids)]" invisible="[('product_id', '!=', False)]"/>
             </field>
         </field>
     </record>
