@@ -1,5 +1,8 @@
 from odoo import api, fields, models
 from odoo.osv import expression
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class Repair(models.Model):
     _inherit = 'repair.order'
@@ -36,7 +39,10 @@ class Repair(models.Model):
     @api.depends('lot_id', 'lot_id.x_machine_number')
     def _compute_x_machine_number(self):
         for repair in self:
-            repair.x_machine_number = repair.lot_id.x_machine_number if repair.lot_id else False
+            machine_number = repair.lot_id.x_machine_number if repair.lot_id else False
+            _logger.info("Computing x_machine_number for repair %s: lot_id=%s, x_machine_number=%s", 
+                         repair.id, repair.lot_id.name if repair.lot_id else None, machine_number)
+            repair.x_machine_number = machine_number
 
     @api.depends('product_id', 'company_id', 'picking_id', 'picking_id.move_ids', 'picking_id.move_ids.lot_ids')
     def _compute_allowed_lot_ids(self):

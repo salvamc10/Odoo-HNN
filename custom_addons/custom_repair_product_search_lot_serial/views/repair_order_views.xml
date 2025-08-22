@@ -10,29 +10,27 @@
                 <field name="allowed_lot_ids" invisible="1"/>
             </xpath>
             
-                   
-            <!-- Modificamos el lot_id original para que sea informativo -->
+            <!-- Asegurar que lot_id sea visible y editable -->
             <xpath expr="//field[@name='lot_id']" position="attributes">
                 <attribute name="string">📋 Lote/Serie</attribute>
                 <attribute name="invisible">0</attribute>
                 <attribute name="readonly">0</attribute>
             </xpath>
             
-            <!-- Añadimos campo informativo para número de máquina después del lot_id original -->
+            <!-- Añadir campo x_machine_number después de lot_id -->
             <xpath expr="//field[@name='lot_id']" position="after">
-                <!-- Mostrar número de máquina como información -->
-                <field name="x_machine_number" string="📋 Número de Máquina" context="{'show_x_machine_number': True}" readonly="0" />
+                <field name="x_machine_number" string="📋 Número de Máquina" readonly="0" /> <!-- Cambiado a readonly=0 para depurar -->
                 
+                <!-- Asegurar que el campo cantidad esté alineado -->
                 <xpath expr="//field[@name='product_uom_qty']" position="attributes">
                     <attribute name="colspan">1</attribute>
                 </xpath>
                 
+                <!-- Hacer product_id readonly cuando esté lleno -->
                 <xpath expr="//field[@name='product_id']" position="attributes">
                     <attribute name="readonly">1</attribute>
                     <attribute name="force_save">1</attribute>
-                </xpath>           
-                
-              
+                </xpath>
             </xpath>
         </field>
     </record>
