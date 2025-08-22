@@ -46,7 +46,6 @@
                 <label for="x_machine_display" string="📋 Machine Number:"/>
                 <div>
                     <field name="x_machine_number" 
-                           name="x_machine_display"
                            widget="char"
                            readonly="1" 
                            nolabel="1"/>
