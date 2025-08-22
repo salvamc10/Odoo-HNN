@@ -19,7 +19,7 @@ class RepairOrder(models.Model):
         string='Machine Number',
         related='lot_id.x_machine_number', readonly=True,
         help="Machine number associated with the selected lot/serial")
-    
+
     @api.depends('lot_id', 'lot_id.product_id')
     def _compute_product_id(self):
         for repair in self:
@@ -41,7 +41,7 @@ class RepairOrder(models.Model):
                 # Permitimos buscar cualquier lote de productos consumibles en la compañía
                 domain = [('product_id.type', '=', 'consu'), '|', ('product_id.company_id', '=', False), ('product_id.company_id', '=', repair.company_id.id)]
             repair.allowed_lot_ids = self.env['stock.lot'].search(domain) or self.env['stock.lot']
-            
+
     @api.onchange('x_machine_number')
     def _onchange_x_machine_number(self):
         if self.x_machine_number:
@@ -59,17 +59,17 @@ class RepairOrder(models.Model):
                 return {
                     'context': dict(self.env.context, default_x_machine_number=self.x_machine_number)
                 }
-            
-class StockLot(models.Model):
-    _inherit = 'stock.lot'
 
-    def name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
-        args = args or []
-        domain = []
-        if name:
-            domain = ['|', ('name', operator, name), ('x_machine_number', operator, name)]
-        # Combinamos el dominio con los argumentos recibidos
-        domain = expression.AND([domain, args])
-        # Usamos name_get_uid para respetar los permisos del usuario
-        lots = self.with_user(name_get_uid or self.env.user).search(domain, limit=limit)
-        return lots.name_get() if lots else []
+# class StockLot(models.Model):
+#     _inherit = 'stock.lot'
+
+#     def name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
+#         args = args or []
+#         domain = []
+#         if name:
+#             domain = ['|', ('name', operator, name), ('x_machine_number', operator, name)]
+#         # Combinamos el dominio con los argumentos recibidos
+#         domain = expression.AND([domain, args])
+#         # Usamos name_get_uid para respetar los permisos del usuario
+#         lots = self.with_user(name_get_uid or self.env.user).search(domain, limit=limit)
+#         return lots.name_get() if lots else []
