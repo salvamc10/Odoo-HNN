@@ -35,3 +35,13 @@ class RepairOrder(models.Model):
                 # Si no hay product_id ni picking_id, permitimos buscar cualquier lote de productos consumibles en la compañía
                 domain = [('product_id.type', '=', 'consu'), '|', ('product_id.company_id', '=', False), ('product_id.company_id', '=', repair.company_id.id)]
             repair.allowed_lot_ids = self.env['stock.lot'].search(domain)
+            
+class StockLot(models.Model):
+    _inherit = 'stock.lot'
+
+    def name_search(self, name='', args=None, operator='ilike', limit=100):
+        args = args or []
+        domain = []
+        if name:
+            domain = ['|', ('name', operator, name), ('x_machine_number', operator, name)]
+        return self.search(domain + args, limit=limit).name_get()
