@@ -14,29 +14,12 @@
             <xpath expr="//field[@name='product_id']" position="attributes">
                 <attribute name="readonly">1</attribute>
                 <attribute name="force_save">1</attribute>
-            </xpath>
-            
-            <!-- Añadimos los campos de búsqueda ANTES del product_id -->
-            <xpath expr="//field[@name='product_id']" position="before">
-                <!-- Campo de búsqueda por número de serie/lote -->
-                <field name="lot_id" 
-                       string="🔍 Search by Lot/Serial Number"
-                       widget="many2one" 
-                       options="{'no_create': True, 'no_open': True}" 
-                       domain="[('id', 'in', allowed_lot_ids)]"/>
-                
-                <!-- Campo de búsqueda por número de máquina -->
-                <field name="x_machine_number" 
-                       string="🔍 Search by Machine Number"
-                       widget="many2one" 
-                       options="{'no_create': True, 'no_open': True}" 
-                       context="{'show_lot_name': True}" 
-                       domain="[('id', 'in', allowed_lot_ids), ('x_machine_number', '!=', False)]"/>
-            </xpath>
+            </xpath>           
+                      
             
             <!-- Modificamos el lot_id original para que sea informativo -->
             <xpath expr="//field[@name='lot_id']" position="attributes">
-                <attribute name="string">📋 Selected Lot/Serial</attribute>
+                <attribute name="string">📋 Lote/Serie</attribute>
                 <attribute name="readonly">1</attribute>
             </xpath>
             
@@ -44,15 +27,10 @@
             <xpath expr="//field[@name='lot_id']" position="after">
                 <!-- Mostrar número de máquina como información -->
                 <field name="x_machine_number" 
-                       string="📋 Machine Number"
+                       string="📋 Numero de Máquina"
                        widget="char"
-                       readonly="1"/>
-                
-                <!-- Botón para limpiar selección -->
-                <button name="clear_selection" 
-                        type="object" 
-                        string="🔄 New Search" 
-                        class="btn-secondary oe_link"/>
+                       readonly="1"/>               
+              
             </xpath>
         </field>
     </record>
