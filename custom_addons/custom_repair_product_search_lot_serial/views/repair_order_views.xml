@@ -21,12 +21,8 @@
             <!-- Añadimos campo informativo para número de máquina después del lot_id original -->
             <xpath expr="//field[@name='lot_id']" position="after">
                 <!-- Mostrar número de máquina como información -->
-                <field name="x_machine_number" 
-                       string="📋 Numero de Máquina"
-                       widget="char"
-                       readonly="1"/>   
+                <field name="x_machine_number" string="📋 Número de Máquina" context="{'show_x_machine_number': True}" />
                 
-                <!-- Modificamos el campo product_id original para que sea readonly cuando esté lleno -->
                 <xpath expr="//field[@name='product_id']" position="attributes">
                     <attribute name="readonly">1</attribute>
                     <attribute name="force_save">1</attribute>

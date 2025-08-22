@@ -66,29 +66,25 @@ class Repair(models.Model):
     def _onchange_lot_id(self):
         if self.lot_id:
             self.product_id = self.lot_id.product_id
-            # Si seleccionamos por lote/serie, podemos tener o no número de máquina
-            # Si buscamos un lote que tenga el mismo número de máquina que el actual
             if self.lot_id.x_machine_number:
-                # Buscamos si hay otro lote con el mismo número de máquina
+                # Buscar un lote diferente con el mismo número de máquina
                 machine_lots = self.env['stock.lot'].search([
                     ('x_machine_number', '=', self.lot_id.x_machine_number),
                     ('product_id', '=', self.lot_id.product_id.id),
-                    ('id', '!=', self.lot_id.id)  # Excluir el lote actual
-                ])
-                # Si encontramos otros lotes con el mismo número de máquina, 
-                # seleccionamos uno para el campo x_machine_number
-                self.x_machine_number = machine_lots[0] if machine_lots else self.lot_id
+                    ('id', '!=', self.lot_id.id)
+                ], limit=1)
+                self.x_machine_number = machine_lots if machine_lots else self.env['stock.lot'].browse(self.lot_id.id)
             else:
-                self.x_machine_number = self.lot_id
+                self.x_machine_number = False
         else:
             self.x_machine_number = False
             self.product_id = False
 
-    def clear_selection(self):
-        """Método para limpiar la selección y permitir nueva búsqueda"""
-        self.product_id = False
-        self.lot_id = False
-        self.x_machine_number = False
+        def clear_selection(self):
+            """Método para limpiar la selección y permitir nueva búsqueda"""
+            self.product_id = False
+            self.lot_id = False
+            self.x_machine_number = False
 
 
 class StockLot(models.Model):
@@ -97,13 +93,15 @@ class StockLot(models.Model):
     def name_get(self):
         result = []
         for lot in self:
-            if lot.x_machine_number:
-                name = f"{lot.name} (Machine: {lot.x_machine_number})"
+            if self.env.context.get('show_x_machine_number') and lot.x_machine_number:
+                name = lot.x_machine_number
+            elif self.env.context.get('show_lot_name') and lot.name:
+                name = f"{lot.x_machine_number or 'No Machine'} (Serial: {lot.name})"
             else:
                 name = lot.name
             result.append((lot.id, name))
         return result
-
+    
     @api.model
     def name_search(self, name='', args=None, operator='ilike', limit=100):
         if args is None:
