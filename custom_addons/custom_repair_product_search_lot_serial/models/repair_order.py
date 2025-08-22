@@ -18,10 +18,9 @@ class Repair(models.Model):
     machine_lot_id = fields.Many2one(
         'stock.lot',
         string='📋 Número de Máquina',
-        domain="[('x_machine_number', '!=', False), ('id', 'in', allowed_lot_ids)]",
+        domain="[('id', 'in', allowed_machine_lot_ids)]",
         check_company=True,
-        context={'show_x_machine_number': True},
-        help="Machine number linked to a lot/serial")
+        context={'show_x_machine_number': True})
 
     # Campo computed necesario para el dominio
     allowed_lot_ids = fields.Many2many(
@@ -48,14 +47,17 @@ class Repair(models.Model):
             if repair.picking_id:
                 picking_lot_domain = [('id', 'in', repair.picking_id.move_ids.lot_ids.ids or [])]
                 if domain:
-                    domain = expression.AND([domain, picking_lot_domain]) if domain else picking_lot_domain                
+                    domain = expression.AND([domain, picking_lot_domain])
+                else:
+                    domain = picking_lot_domain
             if not domain:
-                domain = [('product_id.type', '=', 'consu'), 
-                         '|', ('product_id.company_id', '=', False), 
-                         ('product_id.company_id', '=', repair.company_id.id if repair.company_id else False)]
-            
+                domain = [('product_id.type', '=', 'consu'),
+                        '|', ('product_id.company_id', '=', False),
+                            ('product_id.company_id', '=', repair.company_id.id or False)]
+
             lots = self.env['stock.lot'].search(domain)
             repair.allowed_lot_ids = [(6, 0, lots.ids)]
+            repair.allowed_machine_lot_ids = [(6, 0, lots.filtered(lambda l: l.x_machine_number).ids)]
 
     @api.onchange('machine_lot_id')
     def _onchange_machine_lot_id(self):
