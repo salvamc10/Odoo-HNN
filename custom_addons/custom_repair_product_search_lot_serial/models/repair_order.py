@@ -1,4 +1,5 @@
 from odoo import fields, models, api
+from odoo.osv import expression
 
 class RepairOrder(models.Model):
     _inherit = 'repair.order'
@@ -62,15 +63,13 @@ class RepairOrder(models.Model):
 class StockLot(models.Model):
     _inherit = 'stock.lot'
 
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
+    def name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
         args = args or []
         domain = []
         if name:
             domain = ['|', ('name', operator, name), ('x_machine_number', operator, name)]
-        try:
-            lots = self.search(domain + args, limit=limit)
-            return lots.name_get() if lots else []
-        except Exception as e:
-            # Log del error para depuración (opcional)
-            _logger.error(f"Error in name_search for stock.lot: {e}")
-            return []
+        # Combinamos el dominio con los argumentos recibidos
+        domain = expression.AND([domain, args])
+        # Usamos name_get_uid para respetar los permisos del usuario
+        lots = self.with_user(name_get_uid or self.env.user).search(domain, limit=limit)
+        return lots.name_get() if lots else []
