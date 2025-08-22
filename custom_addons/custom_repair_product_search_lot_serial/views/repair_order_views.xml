@@ -19,13 +19,9 @@
             
             <!-- Añadir campo x_machine_number después de lot_id -->
             <xpath expr="//field[@name='lot_id']" position="after">
-                <field name="x_machine_number" string="📋 Número de Máquina" readonly="0" /> <!-- Cambiado a readonly=0 para depurar -->
-                
-                <!-- Asegurar que el campo cantidad esté alineado -->
-                <xpath expr="//field[@name='product_uom_qty']" position="attributes">
-                    <attribute name="colspan">1</attribute>
-                </xpath>
-                
+                <field name="machine_lot_id" string="📋 Número de Máquina"
+                       context="{'show_x_machine_number': True}" readonly="0" class="o_inline"/>
+
                 <!-- Hacer product_id readonly cuando esté lleno -->
                 <xpath expr="//field[@name='product_id']" position="attributes">
                     <attribute name="readonly">1</attribute>
