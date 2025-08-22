@@ -23,6 +23,10 @@
                 <!-- Mostrar número de máquina como información -->
                 <field name="x_machine_number" string="📋 Número de Máquina" context="{'show_x_machine_number': True}" readonly="0" />
                 
+                <xpath expr="//field[@name='product_uom_qty']" position="attributes">
+                    <attribute name="colspan">1</attribute>
+                </xpath>
+                
                 <xpath expr="//field[@name='product_id']" position="attributes">
                     <attribute name="readonly">1</attribute>
                     <attribute name="force_save">1</attribute>

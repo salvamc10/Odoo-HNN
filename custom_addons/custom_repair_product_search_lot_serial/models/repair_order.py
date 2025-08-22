@@ -15,26 +15,28 @@ class Repair(models.Model):
         domain="[('id', 'in', allowed_lot_ids)]", check_company=True,
         help="Products repaired are all belonging to this lot")
 
-    x_machine_number = fields.Many2one(
-        'stock.lot', string='Machine Number',
-        domain="[('id', 'in', allowed_lot_ids)]", check_company=True,
-        help="Machine number to search or create a lot/serial",
-        context={'show_x_machine_number': True})  # Pasar contexto para personalizar la visualización
+    x_machine_number = fields.Char(
+        string='Machine Number',
+        compute='_compute_x_machine_number', store=True, readonly=True,
+        help="Machine number associated with the lot")
 
     # Campo computed necesario para el dominio
     allowed_lot_ids = fields.Many2many(
         'stock.lot', compute='_compute_allowed_lot_ids', 
         string='Allowed Lot IDs')
 
-    @api.depends('lot_id', 'lot_id.product_id', 'x_machine_number', 'x_machine_number.product_id')
+    @api.depends('lot_id', 'lot_id.product_id', 'lot_id.x_machine_number')
     def _compute_product_id(self):
         for repair in self:
             if repair.lot_id:
                 repair.product_id = repair.lot_id.product_id
-            elif repair.x_machine_number:
-                repair.product_id = repair.x_machine_number.product_id
             else:
                 repair.product_id = False
+
+    @api.depends('lot_id', 'lot_id.x_machine_number')
+    def _compute_x_machine_number(self):
+        for repair in self:
+            repair.x_machine_number = repair.lot_id.x_machine_number if repair.lot_id else False
 
     @api.depends('product_id', 'company_id', 'picking_id', 'picking_id.move_ids', 'picking_id.move_ids.lot_ids')
     def _compute_allowed_lot_ids(self):
@@ -54,32 +56,14 @@ class Repair(models.Model):
             lots = self.env['stock.lot'].search(domain)
             repair.allowed_lot_ids = [(6, 0, lots.ids)]
 
-    @api.onchange('x_machine_number')
-    def _onchange_x_machine_number(self):
-        if self.x_machine_number:
-            self.lot_id = self.x_machine_number
-            self.product_id = self.x_machine_number.product_id
-        else:
-            self.lot_id = False
-            self.product_id = False
-
     @api.onchange('lot_id')
     def _onchange_lot_id(self):
         if self.lot_id:
             self.product_id = self.lot_id.product_id
-            if self.lot_id.x_machine_number:
-                # Buscar un lote diferente con el mismo número de máquina
-                machine_lots = self.env['stock.lot'].search([
-                    ('x_machine_number', '=', self.lot_id.x_machine_number),
-                    ('product_id', '=', self.lot_id.product_id.id),
-                    ('id', '!=', self.lot_id.id)
-                ], limit=1)
-                self.x_machine_number = machine_lots if machine_lots else False
-            else:
-                self.x_machine_number = False
+            self.x_machine_number = self.lot_id.x_machine_number
         else:
-            self.x_machine_number = False
             self.product_id = False
+            self.x_machine_number = False
 
     def clear_selection(self):
         """Método para limpiar la selección y permitir nueva búsqueda"""
