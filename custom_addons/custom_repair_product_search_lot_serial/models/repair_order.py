@@ -12,8 +12,8 @@ class Repair(models.Model):
 
     lot_id = fields.Many2one(
         'stock.lot', 'Lot/Serial',
-        domain="[('id', 'in', allowed_lot_ids), '|', ('name', 'ilike', x_machine_number), ('x_machine_number', 'ilike', x_machine_number)]",
-        check_company=True, help="Products repaired are all belonging to this lot")
+        domain="[('id', 'in', allowed_lot_ids)]", check_company=True,
+        help="Products repaired are all belonging to this lot")
 
     x_machine_number = fields.Many2one(
         'stock.lot', string='Machine Number',
