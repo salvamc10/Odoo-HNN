@@ -18,7 +18,8 @@ class Repair(models.Model):
     x_machine_number = fields.Many2one(
         'stock.lot', string='Machine Number',
         domain="[('id', 'in', allowed_lot_ids)]", check_company=True,
-        help="Machine number to search or create a lot/serial")
+        help="Machine number to search or create a lot/serial",
+        context={'show_x_machine_number': True})  # Pasar contexto para personalizar la visualización
 
     # Campo computed necesario para el dominio
     allowed_lot_ids = fields.Many2many(
@@ -61,7 +62,7 @@ class Repair(models.Model):
         else:
             self.lot_id = False
             self.product_id = False
-            
+
     @api.onchange('lot_id')
     def _onchange_lot_id(self):
         if self.lot_id:
@@ -73,18 +74,18 @@ class Repair(models.Model):
                     ('product_id', '=', self.lot_id.product_id.id),
                     ('id', '!=', self.lot_id.id)
                 ], limit=1)
-                self.x_machine_number = machine_lots if machine_lots else self.env['stock.lot'].browse(self.lot_id.id)
+                self.x_machine_number = machine_lots if machine_lots else False
             else:
                 self.x_machine_number = False
         else:
             self.x_machine_number = False
             self.product_id = False
 
-        def clear_selection(self):
-            """Método para limpiar la selección y permitir nueva búsqueda"""
-            self.product_id = False
-            self.lot_id = False
-            self.x_machine_number = False
+    def clear_selection(self):
+        """Método para limpiar la selección y permitir nueva búsqueda"""
+        self.product_id = False
+        self.lot_id = False
+        self.x_machine_number = False
 
 
 class StockLot(models.Model):
