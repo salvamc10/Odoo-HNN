@@ -43,7 +43,7 @@
             <!-- Añadimos campo informativo para número de máquina después del lot_id original -->
             <xpath expr="//field[@name='lot_id']" position="after">
                 <!-- Mostrar número de máquina como información -->
-                <label for="x_machine_display" string="📋 Machine Number:"/>
+                <label string="📋 Machine Number:"/>
                 <div>
                     <field name="x_machine_number" 
                            widget="char"
