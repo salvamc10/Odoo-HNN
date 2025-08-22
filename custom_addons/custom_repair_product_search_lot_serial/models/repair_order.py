@@ -61,7 +61,6 @@ class StockLot(models.Model):
     def name_get(self):
         result = []
         for lot in self:
-            # Si el contexto indica que estamos buscando desde x_machine_number, mostramos x_machine_number
             if self.env.context.get('show_x_machine_number'):
                 name = lot.x_machine_number or lot.name
             else:

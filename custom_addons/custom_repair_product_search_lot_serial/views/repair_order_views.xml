@@ -6,22 +6,23 @@
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
             <!-- Modificamos el campo product_id para que sea de solo lectura -->
-            <field name="product_id" position="attributes">
+            <xpath expr="//field[@name='product_id']" position="attributes">
                 <attribute name="readonly">1</attribute>
-                <attribute name="force_save">1</attribute>
-            </field>
+                <attribute name="force_save">1</attribute> <!-- Permite guardar el valor calculado -->
+            </xpath>
             
-            <!-- Aseguramos que lot_id sea editable y permita creación/edición -->
-            <field name="lot_id" position="attributes">
+            <!-- Aseguramos que lot_id sea editable y se muestre primero -->
+            <xpath expr="//field[@name='lot_id']" position="attributes">
                 <attribute name="readonly">0</attribute>
-                <attribute name="options">{'no_create': False, 'no_open': False}</attribute>
+                <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
                 <attribute name="invisible">[('product_id', '!=', False)]</attribute>
-            </field>
+            </xpath>
             
-            <!-- Añadimos x_machine_number antes de lot_id -->
-            <field name="lot_id" position="before">
-                <field name="x_machine_number" widget="many2one" options="{'no_create': False, 'no_open': False}" context="{'show_x_machine_number': True, 'default_product_id': product_id, 'default_x_machine_number': x_machine_number.x_machine_number}" domain="[('id', 'in', allowed_lot_ids)]" invisible="[('product_id', '!=', False)]"/>
-            </field>
+            <!-- Reorganizamos para que lot_id aparezca antes que product_id -->
+            <xpath expr="//field[@name='product_id']" position="before">
+                <field name="x_machine_number" widget="many2one" options="{'no_create': False, 'no_open': False}" context="{'show_x_machine_number': True, 'default_product_id': product_id, 'default_x_machine_number': x_machine_number}" domain="[('id', 'in', allowed_lot_ids)]" invisible="[('product_id', '!=', False)]"/>
+                <field name="lot_id" widget="many2one" context="{'default_product_id': product_id}"/>
+            </xpath>
         </field>
     </record>
 </odoo>
