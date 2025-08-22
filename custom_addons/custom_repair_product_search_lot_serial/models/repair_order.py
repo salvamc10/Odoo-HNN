@@ -1,24 +1,24 @@
-from odoo import fields, models, api
+from odoo import api, fields, models
 from odoo.osv import expression
 
-class RepairOrder(models.Model):
+class Repair(models.Model):
     _inherit = 'repair.order'
 
     product_id = fields.Many2one(
         'product.product', string='Product to Repair',
         domain="[('type', '=', 'consu'), '|', ('company_id', '=', company_id), ('company_id', '=', False), '|', ('id', 'in', picking_product_ids), ('id', '=?', picking_product_id)]",
-        compute='_compute_product_id', store=True, readonly=True,  # Product_id es calculado y de solo lectura, derivado de lot_id
+        compute='_compute_product_id', store=True, readonly=True,
         check_company=True)
 
     lot_id = fields.Many2one(
         'stock.lot', 'Lot/Serial',
-        domain="[('id', 'in', allowed_lot_ids)]", check_company=True,
-        help="Products repaired are all belonging to this lot")  # Lot_id es entrada manual, sin compute
+        domain="[('id', 'in', allowed_lot_ids), '|', ('name', 'ilike', x_machine_number), ('x_machine_number', 'ilike', x_machine_number)]",
+        check_company=True, help="Products repaired are all belonging to this lot")
 
-    x_machine_number = fields.Char(
-        string='Machine Number',
-        related='lot_id.x_machine_number', readonly=True,
-        help="Machine number associated with the selected lot/serial")
+    x_machine_number = fields.Many2one(
+        'stock.lot', string='Machine Number',
+        domain="[('id', 'in', allowed_lot_ids)]", check_company=True,
+        help="Machine number to search or create a lot/serial")
 
     @api.depends('lot_id', 'lot_id.product_id')
     def _compute_product_id(self):
@@ -38,38 +38,19 @@ class RepairOrder(models.Model):
                 else:
                     domain = picking_lot_domain
             if not domain:
-                # Permitimos buscar cualquier lote de productos consumibles en la compañía
-                domain = [('product_id.type', '=', 'consu'), '|', ('product_id.company_id', '=', False), ('product_id.company_id', '=', repair.company_id.id)]
+                domain = [('product_id.type', '=', 'consu'), '|', ('product_id.company_id', '=', False), ('product_id.company_id', '=', self.company_id.id)]
             repair.allowed_lot_ids = self.env['stock.lot'].search(domain) or self.env['stock.lot']
 
     @api.onchange('x_machine_number')
     def _onchange_x_machine_number(self):
         if self.x_machine_number:
-            # Buscar lotes que coincidan con x_machine_number o name
-            lots = self.env['stock.lot'].search([
-                '|', ('x_machine_number', 'ilike', self.x_machine_number), ('name', 'ilike', self.x_machine_number),
-                ('product_id.type', '=', 'consu'),
-                '|', ('product_id.company_id', '=', False), ('product_id.company_id', '=', self.company_id.id)
-            ], limit=1)
-            if lots:
-                self.lot_id = lots[0]
-            else:
-                # Si no se encuentra un lote, preparamos el contexto para crear uno nuevo con x_machine_number
-                self.lot_id = False
-                return {
-                    'context': dict(self.env.context, default_x_machine_number=self.x_machine_number)
-                }
+            self.lot_id = self.x_machine_number
+        else:
+            self.lot_id = False
 
-# class StockLot(models.Model):
-#     _inherit = 'stock.lot'
-
-#     def name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
-#         args = args or []
-#         domain = []
-#         if name:
-#             domain = ['|', ('name', operator, name), ('x_machine_number', operator, name)]
-#         # Combinamos el dominio con los argumentos recibidos
-#         domain = expression.AND([domain, args])
-#         # Usamos name_get_uid para respetar los permisos del usuario
-#         lots = self.with_user(name_get_uid or self.env.user).search(domain, limit=limit)
-#         return lots.name_get() if lots else []
+    @api.onchange('lot_id')
+    def _onchange_lot_id(self):
+        if self.lot_id:
+            self.x_machine_number = self.lot_id
+        else:
+            self.x_machine_number = False

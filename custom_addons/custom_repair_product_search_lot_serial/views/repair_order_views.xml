@@ -20,7 +20,7 @@
             
             <!-- Reorganizamos para que lot_id aparezca antes que product_id -->
             <xpath expr="//field[@name='product_id']" position="before">
-                <field name="x_machine_number" />
+                <field name="x_machine_number" widget="many2one" context="{'default_product_id': product_id, 'search_default_x_machine_number': x_machine_number}" options="{'no_create': False, 'no_open': False}" invisible="[('product_id', '!=', False)]"/>
                 <field name="lot_id" widget="many2one" context="{'default_product_id': product_id, 'default_x_machine_number': x_machine_number}"/>
             </xpath>
         </field>
