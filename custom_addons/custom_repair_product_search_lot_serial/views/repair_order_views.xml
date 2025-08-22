@@ -5,23 +5,62 @@
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
+            <!-- Campo computed invisible para dominios -->
+            <xpath expr="//field[@name='product_id']" position="before">
+                <field name="allowed_lot_ids" invisible="1"/>
+            </xpath>
+            
             <!-- Modificamos el campo product_id para que sea de solo lectura -->
             <xpath expr="//field[@name='product_id']" position="attributes">
                 <attribute name="readonly">1</attribute>
-                <attribute name="force_save">1</attribute> <!-- Permite guardar el valor calculado -->
+                <attribute name="force_save">1</attribute>
+                <!-- Solo se oculta cuando ya hay un producto seleccionado Y queremos mostrar los campos de búsqueda -->
+                <attribute name="invisible">[('product_id', '=', False)]</attribute>
             </xpath>
             
-            <!-- Aseguramos que lot_id sea editable y se muestre primero -->
+            <!-- Modificamos lot_id para que sea visible cuando no hay producto -->
             <xpath expr="//field[@name='lot_id']" position="attributes">
                 <attribute name="readonly">0</attribute>
                 <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
+                <!-- Solo visible cuando no hay producto seleccionado -->
                 <attribute name="invisible">[('product_id', '!=', False)]</attribute>
+                <attribute name="string">Search by Lot/Serial Number</attribute>
             </xpath>
             
-            <!-- Reorganizamos para que lot_id aparezca antes que product_id -->
+            <!-- Añadimos el campo x_machine_number antes del product_id -->
             <xpath expr="//field[@name='product_id']" position="before">
-                <field name="x_machine_number" widget="many2one" options="{'no_create': False, 'no_open': False}" context="{'show_x_machine_number': True, 'default_product_id': product_id, 'default_x_machine_number': x_machine_number}" domain="[('id', 'in', allowed_lot_ids)]" invisible="[('product_id', '!=', False)]"/>
-                <field name="lot_id" widget="many2one" context="{'default_product_id': product_id}"/>
+                <field name="x_machine_number" 
+                       string="Search by Machine Number"
+                       widget="many2one" 
+                       options="{'no_create': True, 'no_open': True}" 
+                       context="{'show_lot_name': True}" 
+                       domain="[('id', 'in', allowed_lot_ids), ('x_machine_number', '!=', False)]" 
+                       invisible="[('product_id', '!=', False)]"/>
+            </xpath>
+            
+            <!-- Añadimos campos informativos cuando ya hay producto seleccionado -->
+            <xpath expr="//field[@name='lot_id']" position="after">
+                <field name="lot_id" 
+                       string="Lot/Serial Number" 
+                       readonly="1" 
+                       invisible="[('product_id', '=', False)]"/>
+                <label for="x_machine_number" string="Machine Number:" invisible="[('product_id', '=', False)]"/>
+                <div invisible="[('product_id', '=', False)]">
+                    <field name="x_machine_number" 
+                           widget="char"
+                           readonly="1" 
+                           nolabel="1"
+                           class="o_field_char"/>
+                </div>
+            </xpath>
+            
+            <!-- Añadimos un botón para limpiar la selección -->
+            <xpath expr="//field[@name='product_id']" position="after">
+                <button name="clear_selection" 
+                        type="object" 
+                        string="Clear Selection" 
+                        class="btn-secondary"
+                        invisible="[('product_id', '=', False)]"/>
             </xpath>
         </field>
     </record>
