@@ -1,30 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <record id="view_repair_order_form_inherit_custom_serial_first" model="ir.ui.view">
+        <field name="name">repair.order.form.serial.first</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
 
-        <record id="custom_view_repair_order_form_inherit_consultas" model="ir.ui.view">
-            <field name="name">repair.order.form.inherit.consultas</field>
-            <field name="model">repair.order</field>
-            <field name="inherit_id" ref="repair.view_repair_order_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//notebook/page[@name='parts']" position="before">
-                    <page string="Consultas" name="consultas">
-                        <field name="consulta_text"/>
-                    </page>
-                </xpath>
-            </field>
-        </record> 
-    
-        <record id="custom_view_repair_order_tree_inherit_consultas" model="ir.ui.view">
-            <field name="name">repair.order.tree.inherit.views</field>
-            <field name="model">repair.order</field>
-            <field name="inherit_id" ref="repair.view_repair_order_tree"/>
-            <field name="arch" type="xml">
-                <xpath expr="//list" position="inside">
-                    <field name="consulta_text"/>
-                </xpath>
-            </field>
-        </record>
-            
-    </data>
+        <!-- 1) Mostrar primero el nº de serie -->
+        <xpath expr="//field[@name='product_id']" position="before">
+            <!-- mover el campo existente lot_id aquí -->
+            <xpath expr="//field[@name='lot_id']" position="move"/>
+        </xpath>
+
+        <!-- 2) Ajustar dominio del lote/serie al producto y compañía -->
+        <xpath expr="//field[@name='lot_id']" position="attributes">
+            <attribute name="domain">[('company_id', '=', company_id), ('product_id', '=', product_id)]</attribute>
+            <attribute name="string">Nº de serie</attribute>
+            <attribute name="placeholder">Escanea o escribe el nº de serie</attribute>
+            <attribute name="options">{'no_open': True}</attribute>
+            <attribute name="context">{'default_company_id': company_id}</attribute>
+        </xpath>
+
+        </field>
+    </record>
 </odoo>

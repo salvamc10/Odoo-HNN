@@ -9,16 +9,10 @@
     Incluye funcionalidades para rastrear el estado de los productos, gestionar su inventario y facilitar
     la creación de órdenes de trabajo.
     """,
-    'category': 'Operations/Repair',
-    'depends': [
-        'repair',
-        'product',
-        'stock',
-    ],
-    'data': [   
-       'security/ir.model.access.csv',         
-       'views/repair_product_views.xml',
-       'views/repair_order_views.xml',     
+    'category': 'Inventory/Repairs',
+    'depends': ['repair', 'stock'],
+    'data': [
+        'views/repair_order_views.xml',
     ],
     'installable': True,
     'application': False,

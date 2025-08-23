@@ -2,70 +2,75 @@ name: Odoo CI
 
 on:
   push:
-    branches:
-      - test
-      - main
-      - dev
+    branches: [dev, test, main]
   pull_request:
-    branches:
-      - test
-      - main
-      - dev
+    branches: [dev, test, main]
 
 jobs:
-  odoo-tests:
+  tests:
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_DB: odoo
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
-        ports:
-          - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U odoo"
+          --health-cmd="pg_isready -U odoo -d odoo"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=6
 
     container:
       image: odoo:18
       options: --user root
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Instalar dependencias del sistema
+      - name: Mostrar versiones
         run: |
-          apt-get update && apt-get install -y git python3-flake8
+          odoo --version || true
+          python3 --version
+          psql --version || true
 
-      - name: Validar estilo de código con flake8
+      - name: Instalar herramientas
         run: |
-          flake8 custom_addons --max-line-length=120 || true
+          apt-get update
+          apt-get install -y python3-pip
+          pip install --no-cache-dir flake8
 
-      - name: Definir módulos a testear si no se proporciona
+      - name: Lint (flake8)
+        # usa --exit-zero si quieres que no falle el job por estilo
+        run: flake8 custom_addons --max-line-length=120
+
+      - name: Detectar módulos con manifest
+        id: mods
         run: |
-          if [ -z "$MODS" ]; then
-            export MODS=$(find custom_addons -maxdepth 1 -type d -not -name '__pycache__' -not -name 'custom_addons' -exec basename {} \; | paste -sd "," -)
-            echo "MODS=$MODS" >> $GITHUB_ENV
-          fi
+          MODS=$(find custom_addons -mindepth 1 -maxdepth 1 -type d \
+                 -exec test -f "{}/__manifest__.py" \; -print \
+                 | xargs -n1 basename | paste -sd "," -)
+          echo "MODS=$MODS"
+          echo "MODS=$MODS" >> $GITHUB_ENV
 
-      - name: Ejecutar pruebas de Odoo
+      - name: Ejecutar tests
         env:
-          PGHOST: postgres
-          PGPORT: 5432
-          PGUSER: odoo
-          PGPASSWORD: odoo
           MODS: ${{ env.MODS }}
         run: |
           echo "Instalando módulos: $MODS"
-          odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
+          odoo \
+            --addons-path=/usr/lib/python3/dist-packages/odoo/addons,${GITHUB_WORKSPACE}/custom_addons \
+            --db_host=postgres \
+            --db_port=5432 \
             --db_user=odoo \
-            --init=$MODS \
+            --db_password=odoo \
+            --database=odoo \
+            --without-demo=all \
+            --workers=0 \
+            --init="$MODS" \
             --test-enable \
             --stop-after-init \
             --log-level=test
