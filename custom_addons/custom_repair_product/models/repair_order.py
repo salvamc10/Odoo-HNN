@@ -15,7 +15,6 @@ class RepairOrder(models.Model):
                 if hasattr(ro, 'product_uom') and ro.product_id.uom_id:
                     ro.product_uom = ro.product_id.uom_id
             if hasattr(ro, 'product_qty'):
-                # Serial → 1 unidad
                 ro.product_qty = 1.0
 
     @api.onchange('product_id')
@@ -24,14 +23,12 @@ class RepairOrder(models.Model):
             if not ro.product_id:
                 continue
             warning = None
-            # Coherencia producto/lote
             if ro.lot_id and ro.lot_id.product_id and ro.lot_id.product_id != ro.product_id:
                 ro.lot_id = False
                 warning = {
                     'title': _('Lote incoherente'),
                     'message': _('El lote/serie seleccionado pertenece a otro producto. Se deseleccionará.'),
                 }
-            # Trazabilidad y cantidad
             tracking = ro.product_id.tracking
             if tracking == 'serial' and hasattr(ro, 'product_qty'):
                 ro.product_qty = 1.0

@@ -5,22 +5,17 @@
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
-
-        <!-- 1) Mostrar primero el nº de serie -->
+        <!-- Mover lot_id antes que product_id -->
         <xpath expr="//field[@name='product_id']" position="before">
-            <!-- mover el campo existente lot_id aquí -->
             <xpath expr="//field[@name='lot_id']" position="move"/>
         </xpath>
-
-        <!-- 2) Ajustar dominio del lote/serie al producto y compañía -->
+        <!-- Buscar entre todas las series de la compañía -->
         <xpath expr="//field[@name='lot_id']" position="attributes">
-            <attribute name="domain">[('company_id', '=', company_id), ('product_id', '=', product_id)]</attribute>
+            <attribute name="domain">[('company_id', '=', company_id)]</attribute>
             <attribute name="string">Nº de serie</attribute>
-            <attribute name="placeholder">Escanea o escribe el nº de serie</attribute>
+            <attribute name="placeholder">Buscar o escanear nº de serie</attribute>
             <attribute name="options">{'no_open': True}</attribute>
-            <attribute name="context">{'default_company_id': company_id}</attribute>
         </xpath>
-
         </field>
     </record>
 </odoo>
