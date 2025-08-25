@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Órdenes de Fabricación Automáticas',
+    'name': 'Órdenes de fabricación automáticas',
     'version': '18.0.1.0.0',
     'summary': 'Automatiza la creación de órdenes de fabricación tras validar recepciones',
     'description': """
