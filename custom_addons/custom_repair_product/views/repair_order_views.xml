@@ -22,7 +22,7 @@
                                 <button string="Crear Producto" type="object" name="action_create_product" 
                                         invisible="product_id != False" class="btn-primary"/>
                                 <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" 
-                                        invisible="product_id == False" class="btn-secondary"/>
+                                        invisible="product_id == False" class="btn-primary"/>
                             </list>
                         </field>
                         <div class="oe_clear"/>

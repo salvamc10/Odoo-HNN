@@ -32,27 +32,27 @@ class RepairConsulta(models.Model):
             product = self.env['product.product'].search(domain, limit=1)
             # Si se encuentra un producto, asigna su ID; si no, deja product_id en blanco
             self.product_id = product.id if product else False
-            # Guardar el registro si ya existe
-            if self._origin:
-                self.write({
-                    'product_id': self.product_id,
-                    'consulta_text': self.consulta_text,
-                    'refer': self.refer,
-                    'product_uom_qty': self.product_uom_qty,
-                    'picked': self.picked,
-                })
+            # # Guardar el registro si ya existe
+            # if self._origin:
+            #     self.write({
+            #         'product_id': self.product_id,
+            #         'consulta_text': self.consulta_text,
+            #         'refer': self.refer,
+            #         'product_uom_qty': self.product_uom_qty,
+            #         'picked': self.picked,
+            #     })
         else:
             # Si ambos campos están vacíos, limpia product_id
             self.product_id = False
-            # Guardar el registro si ya existe
-            if self._origin:
-                self.write({
-                    'product_id': False,
-                    'consulta_text': self.consulta_text,
-                    'refer': self.refer,
-                    'product_uom_qty': self.product_uom_qty,
-                    'picked': self.picked,
-                })
+            # # Guardar el registro si ya existe
+            # if self._origin:
+            #     self.write({
+            #         'product_id': False,
+            #         'consulta_text': self.consulta_text,
+            #         'refer': self.refer,
+            #         'product_uom_qty': self.product_uom_qty,
+            #         'picked': self.picked,
+            #     })
 
     def action_create_product(self):
         """Devuelve una acción para crear un nuevo producto y actualiza product_id."""
@@ -76,7 +76,7 @@ class RepairConsulta(models.Model):
             return
         repair_order = self.repair_order_id
         if repair_order:
-            self.env['repair.line'].create({
+            self.env['stock.move'].create({
                 'repair_id': repair_order.id,
                 'product_id': self.product_id.id,
                 'name': self.consulta_text or self.product_id.name,
