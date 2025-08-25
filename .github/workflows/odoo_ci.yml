@@ -56,8 +56,9 @@ jobs:
         id: mods
         run: |
           MODS=$(find custom_addons -mindepth 1 -maxdepth 1 -type d \
-                -exec test -f "{}/__manifest__.py" \; -print \
-                | xargs -n1 basename | paste -sd "," -)
+            -exec test -f "{}/__manifest__.py" \; \
+            -exec grep -L "'hr_payroll'" {}/__manifest__.py \; \
+            | xargs -n1 basename | paste -sd "," -)
           echo "MODS=$MODS"
           echo "MODS=$MODS" >> $GITHUB_ENV
 
