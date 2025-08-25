@@ -24,7 +24,7 @@
     <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
     <record id="view_repair_order_repair_consult_list" model="ir.ui.view">
         <field name="name">repair.order.repair.consult.list</field>
-        <field name="model">repair.order</field>
+        <field name="model">repair.consulta</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <list string="Consultas" create="false" delete="false">
@@ -54,7 +54,7 @@
      <!-- Acción de ventana -->
     <record id="action_repair_order_repair_consult_list" model="ir.actions.act_window">
         <field name="name">Consultas</field>
-        <field name="res_model">repair.order</field>
+        <field name="res_model">repair.consulta</field>
         <field name="view_mode">list</field>
         <field name="view_id" ref="view_repair_order_repair_consult_list"/>       
         <field name="help" type="html">
