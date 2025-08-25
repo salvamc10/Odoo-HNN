@@ -6,7 +6,7 @@
     'summary': 'Divide el carrito en pedidos Máquinas y Recambios usando categoría web',
     'description': 'Este módulo permite dividir los pedidos realizados en '
     'la tienda online en dos categorías: Máquinas y Recambios, facilitando así la gestión de los mismos.'
-    'esto sirve para mejorar la organización y el control de los pedidos.',
+    'esto sirve para mejorar la organización y el control de los pedidos al separarlos por categoría.',
     'depends': ['website_sale', 'sale_management'],
     'data': [
         'views/website_settings_views.xml',
