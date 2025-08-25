@@ -29,7 +29,7 @@
         <field name="arch" type="xml">
             <list string="Consultas" create="false" delete="false">
                 <field name="repair_order_id"/>
-                <field name="activity_summary" string="Piezas a consultar"/>
+                <field name="consulta_text"/>
                 <field name="refer"/>
                 <field name="product_id"/>
                 <field name="product_uom_qty"/> 
