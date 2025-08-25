@@ -69,6 +69,24 @@ class RepairConsulta(models.Model):
             },
         }
 
+    def action_add_to_repair_lines(self):
+        """Añade el producto consultado a las líneas de reparación."""
+        self.ensure_one()
+        if not self.product_id:
+            return
+        repair_order = self.repair_order_id
+        if repair_order:
+            self.env['repair.line'].create({
+                'repair_id': repair_order.id,
+                'product_id': self.product_id.id,
+                'name': self.consulta_text or self.product_id.name,
+                'product_uom_qty': self.product_uom_qty or 1.0,
+                'product_uom': self.product_id.uom_id.id,
+                'type': 'add',
+                'state': 'draft',
+            })
+        
+
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
