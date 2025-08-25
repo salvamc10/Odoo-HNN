@@ -3,7 +3,7 @@ from odoo import models, fields, api
 class StockLot(models.Model):
     _inherit = 'stock.lot'
 
-    x_machine_number = fields.Char(string="Número de máquina", copy=False)
+    x_machine_number = fields.Char(string="Número de máquina", copy=False, index=True)
 
     @api.model_create_multi
     def create(self, vals_list):
