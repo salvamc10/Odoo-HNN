@@ -7,76 +7,59 @@ on:
     branches: [dev, test, main]
 
 jobs:
-  tests:
+  odoo-tests:
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:13
         env:
           POSTGRES_DB: odoo
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
+        ports:
+          - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U odoo -d odoo"
+          --health-cmd="pg_isready -U odoo"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=6
+          --health-retries=5
 
     container:
       image: odoo:18
       options: --user root
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Mostrar versiones
+      - name: Instalar dependencias del sistema
         run: |
-          odoo --version || true
-          python3 --version
-          psql --version || true
+          apt-get update && apt-get install -y git python3-flake8
 
-      - name: Preparar entorno virtual y flake8
+      - name: Validar estilo de código con flake8
         run: |
-          apt-get update
-          apt-get install -y python3-venv
-          python3 -m venv venv
-          . venv/bin/activate
-          pip install --no-cache-dir flake8
-        shell: bash
+          flake8 custom_addons --max-line-length=120 || true
 
-      - name: Lint (flake8)
+      - name: Definir módulos a testear si no se proporciona
         run: |
-          . venv/bin/activate
-          flake8 custom_addons --max-line-length=120 --exit-zero
-        shell: bash
+          if [ -z "$MODS" ]; then
+            export MODS=$(find custom_addons -maxdepth 1 -type d -not -name '__pycache__' -not -name 'custom_addons' -exec basename {} \; | paste -sd "," -)
+            echo "MODS=$MODS" >> $GITHUB_ENV
+          fi
 
-      - name: Detectar módulos con manifest
-        id: mods
-        run: |
-          MODS=$(find custom_addons -mindepth 1 -maxdepth 1 -type d \
-            -exec test -f "{}/__manifest__.py" \; \
-            -exec grep -L "'hr_payroll'" {}/__manifest__.py \; \
-            | xargs -n1 basename | paste -sd "," -)
-          echo "MODS=$MODS"
-          echo "MODS=$MODS" >> $GITHUB_ENV
-
-      - name: Ejecutar tests
+      - name: Ejecutar pruebas de Odoo
         env:
+          PGHOST: postgres
+          PGPORT: 5432
+          PGUSER: odoo
+          PGPASSWORD: odoo
           MODS: ${{ env.MODS }}
         run: |
           echo "Instalando módulos: $MODS"
-          odoo \
-            --addons-path=/usr/lib/python3/dist-packages/odoo/addons,${GITHUB_WORKSPACE}/custom_addons \
-            --db_host=postgres \
-            --db_port=5432 \
+          odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
             --db_user=odoo \
-            --db_password=odoo \
-            --database=odoo \
-            --without-demo=all \
-            --workers=0 \
-            --init="$MODS" \
+            --init=$MODS \
             --test-enable \
             --stop-after-init \
             --log-level=test
