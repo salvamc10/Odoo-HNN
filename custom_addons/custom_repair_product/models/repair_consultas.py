@@ -67,7 +67,7 @@ class RepairConsulta(models.Model):
                 'repair_line_type': 'add',
                 
             })
-        
+            self.unlink()
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
