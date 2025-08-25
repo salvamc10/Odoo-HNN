@@ -37,22 +37,27 @@ jobs:
           python3 --version
           psql --version || true
 
-      - name: Instalar herramientas
+      - name: Preparar entorno virtual y flake8
         run: |
           apt-get update
-          apt-get install -y python3-pip
+          apt-get install -y python3-venv
+          python3 -m venv venv
+          . venv/bin/activate
           pip install --no-cache-dir flake8
+        shell: bash
 
       - name: Lint (flake8)
-        # usa --exit-zero si quieres que no falle el job por estilo
-        run: flake8 custom_addons --max-line-length=120
+        run: |
+          . venv/bin/activate
+          flake8 custom_addons --max-line-length=120
+        shell: bash
 
       - name: Detectar módulos con manifest
         id: mods
         run: |
           MODS=$(find custom_addons -mindepth 1 -maxdepth 1 -type d \
-                 -exec test -f "{}/__manifest__.py" \; -print \
-                 | xargs -n1 basename | paste -sd "," -)
+                -exec test -f "{}/__manifest__.py" \; -print \
+                | xargs -n1 basename | paste -sd "," -)
           echo "MODS=$MODS"
           echo "MODS=$MODS" >> $GITHUB_ENV
 
