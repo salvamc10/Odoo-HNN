@@ -18,7 +18,7 @@
                                 <field name="refer" string="Referencia"/>
                                 <field name="product_uom_qty" string="Cantidad"/>
                                 <field name="picked" string="Usado"/>
-                                <field name="product_id" readonly="1"/>
+                                <field name="product_id" readonly="1" force_save="1"/>
                                 <button string="Crear Producto" type="object" name="action_create_product" 
                                         invisible="product_id != False" class="btn-primary"/>
                                 <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" 
