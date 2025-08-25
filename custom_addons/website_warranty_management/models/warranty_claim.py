@@ -44,7 +44,7 @@ class WarrantyClaim(models.Model):
                                  default=lambda self: self.env.user)
     state = fields.Selection(
         [('draft', 'Draft'), ('approved', 'Approved'),
-         ('rejected', 'Rejected')], default='draft', String="Status",
+         ('rejected', 'Rejected')], default='draft', string="Status",
         help="To select the state")
     product_expiry_date = fields.Date(
         string='Product Expiry Date', help="To get the product expiry date",
