@@ -79,11 +79,9 @@ class RepairConsulta(models.Model):
             self.env['stock.move'].create({
                 'repair_id': repair_order.id,
                 'product_id': self.product_id.id,
-                'name': self.consulta_text or self.product_id.name,
                 'product_uom_qty': self.product_uom_qty or 1.0,
-                'product_uom': self.product_id.uom_id.id,
-                'type': 'add',
-                'state': 'draft',
+                'repair_line_type': 'add',
+                
             })
         
 
