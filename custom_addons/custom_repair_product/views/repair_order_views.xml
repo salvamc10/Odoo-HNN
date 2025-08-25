@@ -7,6 +7,9 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
+                <xpath expr="//sheet/group/group[1]" position="inside">
+                   <field name="type"/>
+                </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
                         <field name="consulta_ids" context="{'default_repair_order_id': id}">
