@@ -17,6 +17,7 @@ class RepairConsulta(models.Model):
         'product.product', 'Product',
         check_company=True,
         domain="[('type', '=', 'consu')]", index=True)
+    company_id = fields.Many2one('res.company', string="Compañía", default=lambda self: self.env.company)
 
     @api.onchange('refer')
     def _onchange_refer(self):
