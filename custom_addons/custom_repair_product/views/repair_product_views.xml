@@ -10,7 +10,8 @@
                    <field name="partner_id"/>
                    <field name="x_machine_number"/>
                    <field name="repair_id"/>
-                   <field name="provider_id"/>                   
+                   <field name="provider_id"/> 
+                   <field name="description"/>                  
                    <field name="internal_reference"/>                   
                    <field name="provider_reference"/>
                    <field name="product_id"/>
