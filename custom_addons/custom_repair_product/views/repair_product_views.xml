@@ -11,8 +11,7 @@
                    <field name="x_machine_number"/>
                    <field name="repair_id"/>
                    <field name="provider_id"/>                   
-                   <field name="internal_reference"/>
-                   <field name="description"/>
+                   <field name="internal_reference"/>                   
                    <field name="provider_reference"/>
                    <field name="product_id"/>
                    <field name="product_uom_qty"/>
