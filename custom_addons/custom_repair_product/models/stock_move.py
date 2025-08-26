@@ -9,6 +9,6 @@ class StockMove(models.Model):
     x_machine_number = fields.Char(related='lot_id.x_machine_number', string="Número de Máquina/Lote", store=True)
     internal_reference = fields.Char(related='lot_id.ref', string="Referencia Interna", store=True)
     description = fields.Text(related='lot_id.note', string="Descripción", store=True)
-    provider_reference = fields.Char(related='product_supplierinfo.product_code', string="Referencia Proveedor", store=True)
+    provider_reference = fields.Char(related='provider_id.product_code', string="Referencia Proveedor", store=True)
     provider_id = fields.Many2one('product.supplierinfo', string="Proveedor", domain="[('supplier_rank', '>', 0)]")
     
