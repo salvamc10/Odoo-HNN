@@ -6,11 +6,16 @@
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <list string="Piezas" create="false" delete="false">
+                <searchpanel>
+                    <field name="location_id" select="multi" string="Ubicación" icon="fa-map-marker" domain="[('picked', '=', False)]"/>
+                    <field name="x_machine_number" select="multi" string="Número de Máquina/Lote" icon="fa-cogs" domain="[('picked', '=', False)]"/>
+                </searchpanel>
                 <field name="repair_state"/>
                 <field name="repair_id"/>
                 <field name="product_id"/>
                 <field name="product_uom_qty"/>
                 <field name="quantity"/>
+                <field name="location_id"/>
                 <field name="repair_line_type"/>
                 <field name="forecast_availability"/>
                 <field name="picked"/>
