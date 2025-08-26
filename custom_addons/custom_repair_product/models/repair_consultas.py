@@ -17,7 +17,7 @@ class RepairConsulta(models.Model):
         'product.product', 'Product',
         check_company=True,
         domain="[('type', '=', 'consu')]", index=True)
-    company_id = fields.Many2one('res.company', string="Compañía", default=lambda self: self.env.company)
+    
 
     @api.onchange('refer')
     def _onchange_refer(self):
@@ -38,7 +38,6 @@ class RepairConsulta(models.Model):
             # Si ambos campos están vacíos, limpia product_id
             self.product_id = False
             
-
     def action_create_product(self):
         """Devuelve una acción para crear un nuevo producto y actualiza product_id."""
         self.ensure_one()
