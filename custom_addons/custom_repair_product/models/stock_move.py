@@ -19,7 +19,7 @@ class StockMove(models.Model):
                        ('Montado/servido', 'Montado/servido')],
             ondelete={'Pte almacenar': 'cascade', 'Estanteria': 'cascade', 'Stock': 'cascade', 'Montado/servido': 'cascade'},
             compute='_onchange_estado_recambio',
-            store=True
+            store=True,
             readonly=False
         )
 
