@@ -5,11 +5,7 @@
         <field name="model">stock.move</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <list string="Piezas" create="false" delete="false">
-                <searchpanel>
-                    <field name="location_id" select="multi" string="Ubicación" icon="fa-map-marker" domain="[('picked', '=', False)]"/>
-                    <field name="x_machine_number" select="multi" string="Número de Máquina/Lote" icon="fa-cogs" domain="[('picked', '=', False)]"/>
-                </searchpanel>
+            <list string="Piezas" create="false" delete="false">                
                 <field name="repair_state"/>
                 <field name="repair_id"/>
                 <field name="product_id"/>
@@ -23,6 +19,24 @@
                 <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart text-danger" invisible="forecast_availability &gt;= 0 or repair_line_type != 'add'"/>
                 <field name="forecast_availability" string="Forecasted"  widget="forecast_widget"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_stock_move_repair_search" model="ir.ui.view">
+        <field name="name">stock.move.repair.search</field>
+        <field name="model">stock.move</field>
+        <field name="arch" type="xml">
+            <search>
+                <searchpanel>
+                    <field name="location_id" select="multi" string="Ubicación" icon="fa-map-marker" domain="[('picked', '=', False)]"/>
+                    <field name="x_machine_number" select="multi" string="Número de Máquina/Lote" icon="fa-cogs" domain="[('picked', '=', False)]"/>
+                </searchpanel>
+                <filter name="not_picked" string="No Recogido" domain="[('picked', '=', False)]"/>
+                <field name="product_id"/>
+                <field name="repair_id"/>
+                <field name="location_id"/>
+                <field name="x_machine_number"/>
+            </search>
         </field>
     </record>
 
@@ -49,6 +63,7 @@
         <field name="res_model">stock.move</field>
         <field name="view_mode">list</field>
         <field name="view_id" ref="view_stock_move_repair_list"/>
+        <field name="search_view_id" ref="custom_repair_product.view_stock_move_repair_search"/>
         <field name="domain">[('repair_id', '!=', False)]</field>
         <field name="context">{'default_repair_state': 'confirmed'}</field>
         <field name="help" type="html">
