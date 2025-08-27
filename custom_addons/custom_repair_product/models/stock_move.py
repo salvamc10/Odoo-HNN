@@ -75,19 +75,19 @@ class StockMove(models.Model):
 
             record.estado_recambio = estado
 
-    @api.onchange('estado_recambio')
-    def _onchange_estado_recambio(self):
-        """
-        Marca como picked cuando el estado es Montado/servido
-        """
-        if self.estado_recambio == 'Montado/servido':
-            self.picked = True
+    # @api.onchange('estado_recambio')
+    # def _onchange_estado_recambio(self):
+    #     """
+    #     Marca como picked cuando el estado es Montado/servido
+    #     """
+    #     if self.estado_recambio == 'Montado/servido':
+    #         self.picked = True
     
-    @api.model
-    def _recalculate_all_estados(self):
-        """
-        Método para recalcular todos los estados - ejecutar una vez después de la actualización
-        """
-        all_moves = self.search([('state', '=', 'done')])
-        all_moves._compute_estado_recambio()
-        return len(all_moves)
+    # @api.model
+    # def _recalculate_all_estados(self):
+    #     """
+    #     Método para recalcular todos los estados - ejecutar una vez después de la actualización
+    #     """
+    #     all_moves = self.search([('state', '=', 'done')])
+    #     all_moves._compute_estado_recambio()
+    #     return len(all_moves)
