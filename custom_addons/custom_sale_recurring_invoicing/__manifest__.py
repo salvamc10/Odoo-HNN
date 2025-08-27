@@ -6,7 +6,9 @@
     'author': 'Pedro M.',    
     'category': 'Sales',
     'depends': ['base', 'sale'],
-    'data': [],
+    'data': [
+        'data/automated_action.xml',
+    ],
     'application': True,
     'installable': True,
     'auto_install': False,
