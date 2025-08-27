@@ -8,11 +8,6 @@
                <list string="Piezas" create="false" delete="false">
                    <field name="repair_state"/>
                    <field name="partner_repair_id"/>
-                   <field name="x_machine_number"/>
-                   <field name="internal_reference"/>
-                   <field name="description"/> 
-                   <field name="provider_reference"/>
-                   <field name="provider_id"/> 
                    <field name="estado_recambio"/>
                    <field name="repair_id"/>               
                    <field name="product_id"/>
