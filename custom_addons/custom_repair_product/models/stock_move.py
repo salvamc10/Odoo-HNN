@@ -69,30 +69,24 @@ class StockMove(models.Model):
                 
                 # 4. Pte almacenar: Movimiento desde compra en proceso
                 elif (record.purchase_line_id and 
-                      record.state in ['assigned', 'partially_available', 'waiting'] and
+                      record.state in ['assigned', 'done'] and
                       record.location_dest_id and
-                      'Input' in record.location_dest_id.complete_name):
+                      'Input' in record.location_dest_id.name):
                     estado = 'Pte almacenar'
                 
                 # 5. Estanteria: Ubicado en sub-ubicación de Stock
                 elif (record.state == 'done' and 
                       record.location_dest_id and
-                      'Stock/' in record.location_dest_id.complete_name and
-                      record.location_dest_id.complete_name != 'WH/Stock'):
+                      'Stock/' in record.location_dest_id.name and
+                      record.location_dest_id.name != 'WH/Stock'):
                     estado = 'Estanteria'
                 
                 # 6. Stock: Ubicado en ubicación Stock principal
                 elif (record.state == 'done' and 
                       record.location_dest_id and
-                      record.location_dest_id.complete_name == 'WH/Stock'):
-                    estado = 'Stock'
+                      record.location_dest_id.name == 'WH/Stock'):
+                    estado = 'Stock'            
                 
-                # 7. Estado por defecto para movimientos de reparación
-                elif record.repair_id:
-                    if record.state in ['assigned', 'partially_available', 'confirmed']:
-                        estado = 'Stock'  # Disponible para usar
-                    elif record.state == 'waiting':
-                        estado = 'Pte almacenar'
                 
                 record.estado_recambio = estado
                 
@@ -109,7 +103,7 @@ class StockMove(models.Model):
         Verifica si el movimiento está pendiente de almacenamiento
         """
         try:
-            if not self.purchase_line_id or self.state not in ['assigned', 'partially_available', 'waiting']:
+            if not self.purchase_line_id or self.state not in ['assigned', 'done']:
                 return False
                 
             # Si no hay ubicación de destino, no puede estar pendiente de almacenamiento
@@ -120,11 +114,7 @@ class StockMove(models.Model):
             warehouse = self.location_dest_id.warehouse_id or self.location_dest_id._get_warehouse()
             if not warehouse:
                 return False
-                
-            # Verificar si está configurado para recepción en 2 pasos
-            if not hasattr(warehouse, 'reception_steps') or warehouse.reception_steps != 'two_steps':
-                return False
-                
+                                      
             # Verificar si la ubicación de destino es la ubicación de entrada/input
             return self.location_dest_id == warehouse.wh_input_stock_loc_id
             
@@ -185,7 +175,7 @@ class StockMove(models.Model):
         try:
             # Verificar si está relacionado con una orden de reparación completada
             if self.repair_id:
-                if self.repair_id.state in ['done', 'invoice']:
+                if self.repair_id.state in ['done']:
                     return True
                 # Si es una línea de tipo 'add' en una reparación y el movimiento está hecho
                 if (hasattr(self, 'repair_line_type') and 
@@ -246,19 +236,4 @@ class StockMove(models.Model):
         move._compute_estado_recambio()
         return move
     
-    def action_recalculate_estados(self):
-        """
-        Método temporal para recalcular todos los estados
-        Ejecutar desde el menú Técnico > Acciones > Acciones del Servidor
-        """
-        moves = self.env['stock.move'].search([])
-        moves._compute_estado_recambio()
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'message': f'Estados recalculados para {len(moves)} movimientos',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+    
