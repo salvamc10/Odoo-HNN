@@ -47,11 +47,6 @@ class StockMove(models.Model):
         """
         for record in self:
             estado = False
-            
-            # Solo procesar si el movimiento está completado
-            if record.state != 'done':
-                record.estado_recambio = estado
-                continue
                 
             # Si no hay ubicación de destino, no podemos determinar el estado
             if not record.location_dest_id:
