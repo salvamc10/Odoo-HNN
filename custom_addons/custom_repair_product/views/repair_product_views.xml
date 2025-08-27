@@ -29,24 +29,6 @@
            </field>
        </record>
 
-       <!-- Vista de búsqueda para stock.move con searchpanel -->
-       <record id="view_stock_move_repair_search" model="ir.ui.view">
-           <field name="name">stock.move.repair.search</field>
-           <field name="model">stock.move</field>
-           <field name="arch" type="xml">
-               <search>
-                   <searchpanel>
-                       <field name="location_id" select="multi" string="Ubicación" icon="fa-map-marker"/>
-                       <field name="lot_id" select="multi" string="Lote/Número de Serie" icon="fa-cogs"/>
-                   </searchpanel>
-                   <field name="product_id"/>
-                   <field name="repair_id"/>
-                   <field name="location_id"/>
-                   <field name="lot_id"/>
-                   <field name="x_machine_number"/>
-               </search>
-           </field>
-       </record>
 
        <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
        <record id="view_repair_order_repair_consult_list" model="ir.ui.view">
@@ -75,8 +57,7 @@
            <field name="res_model">stock.move</field>
            <field name="view_mode">list</field>
            <field name="view_id" ref="view_stock_move_repair_list"/>
-           <field name="search_view_id" ref="view_stock_move_repair_search"/>
-           <field name="domain">[('repair_id', '!=', False), ('picked', '=', False)]</field>
+           <field name="domain">[]</field>
            <field name="context">{'default_repair_state': 'confirmed'}</field>
            <field name="help" type="html">
                <p>Aquí puedes consultar todos los productos que se han añadido o retirado en las órdenes de reparación con estado no recogido.</p>
