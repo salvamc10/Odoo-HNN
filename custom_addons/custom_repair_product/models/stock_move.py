@@ -43,7 +43,7 @@ class StockMove(models.Model):
         readonly=False
     )
 
-    @api.depends('location_dest_id', 'location_id', 'state', 'picked', 'purchase_line_id', 'repair_id')
+    @api.depends('location_dest_id', 'location_id', 'state', 'picked', 'purchase_line_id', 'repair_id', 'repair_line_type')
     def _compute_estado_recambio(self):
         """
         Computa el estado del recambio basado en su ubicación y contexto
@@ -52,47 +52,57 @@ class StockMove(models.Model):
             try:
                 estado = False
                 
-                _logger.info(f"Computing estado_recambio for move {record.id}: "
-                           f"state={record.state}, picked={record.picked}, "
-                           f"location_dest_id={record.location_dest_id.complete_name if record.location_dest_id else None}")
-                
-                # 1. Montado/servido: Si está marcado como picked o se ha usado
+                # 1. Montado/servido: Si está marcado como picked
                 if record.picked:
                     estado = 'Montado/servido'
-                    _logger.info(f"Move {record.id}: Estado = Montado/servido (picked=True)")
                 
-                # 2. Verificar si el componente se ha usado en reparación
-                elif record._is_component_used():
+                # 2. Montado/servido: Si es componente usado en reparación
+                elif record.repair_id and record.repair_id.state in ['done', 'invoice']:
                     estado = 'Montado/servido'
-                    _logger.info(f"Move {record.id}: Estado = Montado/servido (component used)")
                 
-                # 3. Pte almacenar: Recepción en 2 pasos, primera recepción desde compra
-                elif record._is_pending_storage():
+                # 3. Montado/servido: Si es movimiento de salida completado
+                elif (record.state == 'done' and 
+                      record.location_id and record.location_dest_id and
+                      record.location_id.usage == 'internal' and 
+                      record.location_dest_id.usage in ['production', 'customer']):
+                    estado = 'Montado/servido'
+                
+                # 4. Pte almacenar: Movimiento desde compra en proceso
+                elif (record.purchase_line_id and 
+                      record.state in ['assigned', 'partially_available', 'waiting'] and
+                      record.location_dest_id and
+                      'Input' in record.location_dest_id.complete_name):
                     estado = 'Pte almacenar'
-                    _logger.info(f"Move {record.id}: Estado = Pte almacenar")
                 
-                # 4. Estanteria: Ubicado en sub-ubicación de Stock
-                elif record._is_in_shelf_location():
+                # 5. Estanteria: Ubicado en sub-ubicación de Stock
+                elif (record.state == 'done' and 
+                      record.location_dest_id and
+                      'Stock/' in record.location_dest_id.complete_name and
+                      record.location_dest_id.complete_name != 'WH/Stock'):
                     estado = 'Estanteria'
-                    _logger.info(f"Move {record.id}: Estado = Estanteria")
                 
-                # 5. Stock: Ubicado en la ubicación padre Stock
-                elif record._is_in_stock_location():
+                # 6. Stock: Ubicado en ubicación Stock principal
+                elif (record.state == 'done' and 
+                      record.location_dest_id and
+                      record.location_dest_id.complete_name == 'WH/Stock'):
                     estado = 'Stock'
-                    _logger.info(f"Move {record.id}: Estado = Stock")
                 
-                # 6. Estado por defecto para movimientos sin ubicación específica
-                else:
-                    # Si es un movimiento de reparación sin estado específico
-                    if record.repair_id and record.state in ['assigned', 'partially_available']:
-                        estado = 'Stock'  # Asumimos que está disponible en stock
-                    _logger.info(f"Move {record.id}: Estado = {estado} (default)")
+                # 7. Estado por defecto para movimientos de reparación
+                elif record.repair_id:
+                    if record.state in ['assigned', 'partially_available', 'confirmed']:
+                        estado = 'Stock'  # Disponible para usar
+                    elif record.state == 'waiting':
+                        estado = 'Pte almacenar'
                 
                 record.estado_recambio = estado
                 
             except Exception as e:
                 _logger.error(f"Error computing estado_recambio for move {record.id}: {str(e)}")
-                record.estado_recambio = False
+                # Asignar estado por defecto en caso de error
+                if record.repair_id:
+                    record.estado_recambio = 'Stock'
+                else:
+                    record.estado_recambio = False
 
     def _is_pending_storage(self):
         """
@@ -235,3 +245,20 @@ class StockMove(models.Model):
         # Forzar cálculo inicial del estado
         move._compute_estado_recambio()
         return move
+    
+    def action_recalculate_estados(self):
+        """
+        Método temporal para recalcular todos los estados
+        Ejecutar desde el menú Técnico > Acciones > Acciones del Servidor
+        """
+        moves = self.env['stock.move'].search([])
+        moves._compute_estado_recambio()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'message': f'Estados recalculados para {len(moves)} movimientos',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
