@@ -1,7 +1,4 @@
 from odoo import fields, models, api
-import logging
-
-_logger = logging.getLogger(__name__)
 
 class StockMove(models.Model):
     _inherit = 'stock.move'
@@ -18,20 +15,19 @@ class StockMove(models.Model):
     @api.depends('product_id')
     def _compute_provider_id(self):
         for record in self:
-            if record.product_id:
-                supplier = record.product_id.seller_ids.filtered(lambda s: s.sequence == 0) or record.product_id.seller_ids[:1]
-                record.provider_id = supplier.id if supplier else False
+            if record.product_id and record.product_id.seller_ids:
+                # Tomar el primer proveedor disponible
+                record.provider_id = record.product_id.seller_ids[0].id
+            else:
+                record.provider_id = False
 
-    provider_id = fields.Many2one('product.supplierinfo', string="Proveedor", compute='_compute_provider_id', store=True)
-    
+    provider_id = fields.Many2one('product.supplierinfo', string="Proveedor", 
+                                compute='_compute_provider_id', store=True)
     provider_reference = fields.Char(related='provider_id.product_code', 
                                    string="Referencia Proveedor", store=True)
-    provider_ids = fields.One2many(
-        related='lot_id.product_id.seller_ids',
-        string="Proveedores",
-        readonly=True
-    )
+    provider_ids = fields.One2many(related='product_id.seller_ids', string="Proveedores", readonly=True)
     description = fields.Html(related='lot_id.note', string="Descripción", store=True)
+    
     estado_recambio = fields.Selection(
         string="Estado Recambio",
         selection=[
@@ -40,40 +36,44 @@ class StockMove(models.Model):
             ('Stock', 'Stock'),
             ('Montado/servido', 'Montado/servido')
         ],
-        ondelete={
-            'Pte almacenar': 'cascade', 
-            'Estanteria': 'cascade', 
-            'Stock': 'cascade', 
-            'Montado/servido': 'cascade'
-        },
         compute='_compute_estado_recambio',
-        store=True,
-        readonly=False
+        store=True
     )
 
-    @api.depends('location_dest_id', 'location_id', 'state', 'picked')
+    @api.depends('location_dest_id', 'state', 'picked')
     def _compute_estado_recambio(self):
         """
-        Computa el estado del recambio basado únicamente en la ubicación y el estado picked
+        Computa el estado del recambio basado en la ubicación de destino
         """
         for record in self:
             estado = False
+            
+            # Solo procesar si el movimiento está completado
+            if record.state != 'done':
+                record.estado_recambio = estado
+                continue
+                
+            # Si no hay ubicación de destino, no podemos determinar el estado
+            if not record.location_dest_id:
+                record.estado_recambio = estado
+                continue
 
-            # 1. Montado/servido: Si picked está marcado o es un movimiento a cliente
-            if record.picked or (record.state == 'done' and record.location_dest_id and record.location_dest_id.usage == 'customer'):
+            # 1. Montado/servido: Si picked está marcado O la ubicación es Customer
+            if record.picked or record.location_dest_id.usage == 'customer':
                 estado = 'Montado/servido'
-
-            # 2. Pte almacenar: Si es un movimiento completado a la ubicación de entrada (Input)
-            elif (record.state == 'done' and record.location_dest_id and record.location_dest_id.usage == 'input'):
+            
+            # 2. Pte almacenar: Si la ubicación es Input (WH/Input)
+            elif record.location_dest_id.usage == 'input':
                 estado = 'Pte almacenar'
-
-            # 3. Stock: Si es un movimiento completado a la ubicación principal de stock
-            elif (record.state == 'done' and record.location_dest_id and record.location_dest_id == record.location_dest_id.warehouse_id.lot_stock_id):
+            
+            # 3. Stock: Si la ubicación es la ubicación principal de Stock (WH/Stock)
+            elif (record.location_dest_id.usage == 'internal' and 
+                  record.location_dest_id.warehouse_id and
+                  record.location_dest_id == record.location_dest_id.warehouse_id.lot_stock_id):
                 estado = 'Stock'
-
-            # 4. Estanteria: Si es un movimiento completado a cualquier otra ubicación interna distinta de Stock
-            elif (record.state == 'done' and record.location_dest_id and record.location_dest_id.usage == 'internal' and 
-                  record.location_dest_id != record.location_dest_id.warehouse_id.lot_stock_id):
+            
+            # 4. Estanteria: Cualquier otra ubicación interna que no sea Stock principal
+            elif record.location_dest_id.usage == 'internal':
                 estado = 'Estanteria'
 
             record.estado_recambio = estado
@@ -83,6 +83,14 @@ class StockMove(models.Model):
         """
         Marca como picked cuando el estado es Montado/servido
         """
-        for record in self:
-            if record.estado_recambio == 'Montado/servido':
-                record.picked = True
+        if self.estado_recambio == 'Montado/servido':
+            self.picked = True
+    
+    @api.model
+    def _recalculate_all_estados(self):
+        """
+        Método para recalcular todos los estados - ejecutar una vez después de la actualización
+        """
+        all_moves = self.search([('state', '=', 'done')])
+        all_moves._compute_estado_recambio()
+        return len(all_moves)
