@@ -31,6 +31,7 @@ class StockLotInherit(models.Model):
         ('in_stock', 'Terminada'),
         ('scrapped', 'Canibalizada'),
         ('in_transit', 'Vendida'),
+        ('rental', 'Alquilada'),
     ], string='Estado', compute='_compute_state', store=True)
 
     # Relación con workorders que tienen este lote como terminado
@@ -59,23 +60,50 @@ class StockLotInherit(models.Model):
             string='Notas',
     )
 
-    @api.depends('location_id')
+    @api.depends('location_id', 'mrp_workorder_ids.state')
     def _compute_state(self):
-        """ Calcula el estado basado en el tipo de ubicación y si es de desecho. """
+        """
+        Calcula el estado basado en el tipo de ubicación, si es de desecho,
+        y si la ubicación interna corresponde a 'Alquiler'.
+        Además, si la ubicación es de fabricación ('production'), el estado
+        depende también del estado de las órdenes de trabajo asociadas.
+        """
         for lot in self:
             location = lot.location_id
+            
+            # Primero verificar si hay órdenes de trabajo activas (independientemente de la ubicación)
+            active_workorders = lot.mrp_workorder_ids.filtered(
+                lambda w: w.state not in ('done', 'cancel')
+            )
+            
+            # Si hay workorders activos, el estado es manufacturing (prioritario)
+            if active_workorders:
+                lot.state = 'manufacturing'
+                continue
+            
+            # Si no hay ubicación, estado por defecto
             if not location:
                 lot.state = 'in_stock'
                 continue
-    
+
+            # Verificar estados basados en ubicación
             if location.scrap_location:
                 lot.state = 'scrapped'
             elif location.usage == 'supplier':
                 lot.state = 'reception'
             elif location.usage == 'production':
-                lot.state = 'manufacturing'
+                # Si está en ubicación de producción pero no hay workorders activos
+                lot.state = 'in_stock'
             elif location.usage == 'customer':
                 lot.state = 'in_transit'
+            elif location.usage == 'internal':
+                # Verificar si es ubicación de alquiler
+                # Buscar "Alquiler" en cualquier parte de la ruta completa de la ubicación
+                location_path = location.complete_name or location.name or ''
+                if 'alquiler' in location_path.lower():
+                    lot.state = 'rental'
+                else:
+                    lot.state = 'in_stock'
             else:
                 lot.state = 'in_stock'
 
