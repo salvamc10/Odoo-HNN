@@ -70,28 +70,37 @@ class StockLotInherit(models.Model):
         """
         for lot in self:
             location = lot.location_id
+            
+            # Primero verificar si hay órdenes de trabajo activas (independientemente de la ubicación)
+            active_workorders = lot.mrp_workorder_ids.filtered(
+                lambda w: w.state not in ('done', 'cancel')
+            )
+            
+            # Si hay workorders activos, el estado es manufacturing (prioritario)
+            if active_workorders:
+                lot.state = 'manufacturing'
+                continue
+            
+            # Si no hay ubicación, estado por defecto
             if not location:
                 lot.state = 'in_stock'
                 continue
 
+            # Verificar estados basados en ubicación
             if location.scrap_location:
                 lot.state = 'scrapped'
             elif location.usage == 'supplier':
                 lot.state = 'reception'
             elif location.usage == 'production':
-                # Si hay workorders asociados, considerar su estado
-                active_workorders = lot.mrp_workorder_ids.filtered(
-                    lambda w: w.state not in ('done', 'cancel')
-                )
-                if active_workorders:
-                    lot.state = 'manufacturing'
-                else:
-                    lot.state = 'in_stock'
+                # Si está en ubicación de producción pero no hay workorders activos
+                lot.state = 'in_stock'
             elif location.usage == 'customer':
                 lot.state = 'in_transit'
             elif location.usage == 'internal':
-                # Si la ubicación interna se llama 'Alquiler', marcar como alquilada
-                if location.name and location.name.strip().lower() == 'alquiler':
+                # Verificar si es ubicación de alquiler
+                # Buscar "Alquiler" en cualquier parte de la ruta completa de la ubicación
+                location_path = location.complete_name or location.name or ''
+                if 'alquiler' in location_path.lower():
                     lot.state = 'rental'
                 else:
                     lot.state = 'in_stock'

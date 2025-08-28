@@ -7,7 +7,7 @@
     'category': 'Sales',
     'depends': ['base', 'sale'],
     'data': [
-        'data/automated_action.xml',
+        # 'data/automated_action.xml',
     ],
     'application': True,
     'installable': True,
