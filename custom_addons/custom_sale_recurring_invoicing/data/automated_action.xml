@@ -20,7 +20,7 @@
                     hoy = datetime.date.today()
 
                     if order.start_date and order.end_date:
-                        if not (order.start_date <= hoy <= order.end_date):
+                        if not (order.start_date &lt;= hoy &lt;= order.end_date):
                             continue
 
                     if not order.x_studio_recurrente:
