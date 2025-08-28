@@ -12,6 +12,28 @@ class RepairOrder(models.Model):
             selection=[('Reparación', 'Reparación'), ('Recambios', 'Recambios')],
             ondelete={'Reparación': 'cascade', 'Recambios': 'cascade'}
         )
+    
+    worksheet_template_id = fields.Many2one(
+        'repair.worksheet.template',
+        string='Plantilla de Hoja de Trabajo',
+        tracking=True
+    )
+    worksheet_count = fields.Integer(compute='_compute_worksheet_count', string='Hojas de Trabajo')
+    worksheet_signature = fields.Binary(string='Firma')
+    worksheet_signature_date = fields.Datetime(string='Fecha de Firma')
+    worksheet_signed_by = fields.Many2one('res.partner', string='Firmado por')
+    worksheet_document_id = fields.Many2one(
+        'documents.document',
+        string='Documento de Hoja de Trabajo',
+        copy=False
+    )
+    
+    def _compute_worksheet_count(self):
+        for record in self:
+            record.worksheet_count = self.env['documents.document'].search_count([
+                ('res_id', '=', record.id),
+                ('res_model', '=', 'repair.order')
+            ])
 
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
@@ -26,6 +48,58 @@ class RepairOrder(models.Model):
                 'product_id': consulta.product_id.id if consulta.product_id else False,
             }) for consulta in self.consulta_ids if consulta._origin]})
 
+    def action_worksheet_sign(self):
+        """Abre el asistente de firma para la hoja de trabajo."""
+        self.ensure_one()
+        if not self.worksheet_template_id:
+            raise UserError(_('Esta orden de reparación no tiene una plantilla de hoja de trabajo asignada.'))
+        if not self.worksheet_template_id.require_signature:
+            raise UserError(_('Esta plantilla no requiere firma.'))
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Firmar Hoja de Trabajo'),
+            'res_model': 'repair.worksheet.signature.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_repair_id': self.id}
+        }
+
+    def _generate_worksheet_document(self):
+        """Genera el documento PDF y lo guarda en la carpeta configurada."""
+        self.ensure_one()
+        if not self.worksheet_template_id or not self.worksheet_template_id.document_folder_id:
+            return
+
+        folder = self.worksheet_template_id.document_folder_id
+        # Generar PDF
+        report_template = self.worksheet_template_id.report_view_id
+        pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+            report_template.id, [self.id]
+        )
+
+        # Crear documento
+        document = self.env['documents.document'].create({
+            'name': f"Hoja de trabajo - {self.name}",
+            'folder_id': folder.id,
+            'partner_id': self.partner_id.id,
+            'owner_id': self.user_id.id,
+            'datas': pdf_content,
+            'mimetype': 'application/pdf',
+            'res_id': self.id,
+            'res_model': 'repair.order',
+        })
+
+        self.worksheet_document_id = document.id
+        return document
+
+    def action_validate(self):
+        """Sobreescribe el método de validación para incluir la generación del documento."""
+        res = super().action_validate()
+        if self.worksheet_template_id and self.worksheet_template_id.document_folder_id:
+            self._generate_worksheet_document()
+        return res
+        
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""
         # Check if any repair order is already linked to a sale order
