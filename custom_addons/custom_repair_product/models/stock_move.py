@@ -40,37 +40,33 @@ class StockMove(models.Model):
         store=True
     )
 
-    @api.depends('location_id', 'picked')
-    def _compute_estado_recambio(self):
+    @api.onchange('location_id', 'picked')
+    def _onchange_estado_recambio(self):
         """
-        Computa el estado del recambio basado en la ubicación de destino
+        Actualiza el estado del recambio basado en la ubicación de destino y si está marcado como picked.
+        Este método se ejecuta en el cliente cuando cambian los campos, útil para formularios.
         """
         for record in self:
             estado = False
             location = record.location_id
             if not location:
-                record.state = 'Stock'
-                continue
-                
-            # Si no hay ubicación de destino, no podemos determinar el estado
-            if not record.location_id:
                 record.estado_recambio = estado
                 continue
 
             # 1. Montado/servido: Si picked está marcado O la ubicación es Customer
             if record.picked or location.usage == 'customer':
                 estado = 'Montado/servido'
-            
+
             # 2. Pte almacenar: Si la ubicación es Input (WH/Input)
             elif location.usage == 'input':
                 estado = 'Pte almacenar'
-            
+
             # 3. Stock: Si la ubicación es la ubicación principal de Stock (WH/Stock)
-            elif location.usage == 'Stock':
+            elif location.usage == 'internal' and location.name.lower() == 'stock':
                 estado = 'Stock'
-            
+
             # 4. Estanteria: Cualquier otra ubicación interna que no sea Stock principal
-            elif location.usage != 'Stock':
+            elif location.usage == 'internal':
                 estado = 'Estanteria'
 
             record.estado_recambio = estado
