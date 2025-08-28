@@ -99,6 +99,31 @@ class RepairOrder(models.Model):
         if self.worksheet_template_id and self.worksheet_template_id.document_folder_id:
             self._generate_worksheet_document()
         return res
+
+    def action_view_worksheet(self):
+        """Abre o genera la hoja de trabajo."""
+        self.ensure_one()
+        if not self.worksheet_template_id:
+            raise UserError(_('No hay una plantilla de hoja de trabajo configurada.'))
+
+        # Si ya existe un documento, lo mostramos
+        if self.worksheet_document_id:
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{self.worksheet_document_id.id}',
+                'target': 'new'
+            }
+        
+        # Si no existe documento pero hay plantilla, lo generamos
+        document = self._generate_worksheet_document()
+        if document:
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{document.id}',
+                'target': 'new'
+            }
+        
+        raise UserError(_('No se pudo generar la hoja de trabajo.'))
         
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""

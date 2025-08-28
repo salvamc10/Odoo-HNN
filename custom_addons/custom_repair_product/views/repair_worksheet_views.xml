@@ -5,6 +5,43 @@
         <field name="model">repair.order</field>
         <field name="inherit_id" ref="repair.view_repair_order_form"/>
         <field name="arch" type="xml">
+            <!-- Añadir el campo template_id en la vista principal -->
+            <xpath expr="//group[@name='repair_info']" position="inside">
+                <field name="worksheet_template_id" 
+                       options="{'no_quick_create': True}"
+                       context="{'default_res_model': 'repair.order'}"/>
+            </xpath>
+
+            <!-- Añadir botón estadístico para la hoja de trabajo -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="worksheet_count" invisible="1"/>
+                <button class="oe_stat_button"
+                        name="action_view_worksheet"
+                        type="object"
+                        icon="fa-pencil"
+                        attrs="{'invisible': ['|', 
+                                ('worksheet_template_id', '=', False),
+                                ('worksheet_signature', '!=', False)]}">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Hoja de</span>
+                        <span class="o_stat_text">Trabajo</span>
+                    </div>
+                </button>
+                <button class="oe_stat_button text-success"
+                        name="action_view_worksheet"
+                        type="object"
+                        icon="fa-check"
+                        attrs="{'invisible': ['|', 
+                                ('worksheet_template_id', '=', False),
+                                ('worksheet_signature', '=', False)]}">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Hoja</span>
+                        <span class="o_stat_text">Firmada</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Añadir botón de firma en el header -->
             <xpath expr="//header" position="inside">
                 <button name="action_worksheet_sign"
                         string="Firmar Hoja de Trabajo"
@@ -16,12 +53,12 @@
                             ('state', 'not in', ['confirmed', 'under_repair'])]}"/>
             </xpath>
             
+            <!-- Añadir página de hoja de trabajo -->
             <xpath expr="//sheet/notebook" position="inside">
                 <page string="Hoja de Trabajo" name="worksheet"
                       attrs="{'invisible': [('worksheet_template_id', '=', False)]}">
                     <group>
                         <group>
-                            <field name="worksheet_template_id"/>
                             <field name="worksheet_signature" widget="signature" readonly="1"
                                    attrs="{'invisible': [('worksheet_signature', '=', False)]}"/>
                             <field name="worksheet_signature_date" readonly="1"
