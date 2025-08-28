@@ -60,7 +60,7 @@ class StockLotInherit(models.Model):
             string='Notas',
     )
 
-    @api.depends('location_id', 'mrp_workorder_ids.state')
+   @api.depends('location_id', 'mrp_workorder_ids.state')
     def _compute_state(self):
         """
         Calcula el estado basado en el tipo de ubicación, si es de desecho,
@@ -72,8 +72,9 @@ class StockLotInherit(models.Model):
             location = lot.location_id
             
             # Primero verificar si hay órdenes de trabajo activas (independientemente de la ubicación)
+            # Estados que mantienen el lote en fabricación: 'draft', 'confirmed', 'progress', 'to_close'
             active_workorders = lot.mrp_workorder_ids.filtered(
-                lambda w: w.state not in ('done', 'cancel')
+                lambda w: w.state in ('draft', 'confirmed', 'progress', 'to_close')
             )
             
             # Si hay workorders activos, el estado es manufacturing (prioritario)
