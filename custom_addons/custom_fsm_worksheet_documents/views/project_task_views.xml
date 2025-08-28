@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_task_form_inherit" model="ir.ui.view">
+        <field name="name">project.task.form.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='worksheet_template_id']" position="after">
+                <field name="worksheet_signature" widget="signature" attrs="{'invisible': [('worksheet_template_id', '=', False)]}"/>
+                <field name="worksheet_signature_date" readonly="1" attrs="{'invisible': [('worksheet_signature', '=', False)]}"/>
+                <field name="worksheet_signed_by" readonly="1" attrs="{'invisible': [('worksheet_signature', '=', False)]}"/>
+                <field name="worksheet_document_id" readonly="1" attrs="{'invisible': [('worksheet_document_id', '=', False)]}"/>
+                <button name="action_fsm_worksheet_signature" 
+                        string="Firmar Hoja de Trabajo" 
+                        type="object" 
+                        class="oe_highlight"
+                        attrs="{'invisible': ['|', ('worksheet_template_id', '=', False), ('worksheet_signature', '!=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
