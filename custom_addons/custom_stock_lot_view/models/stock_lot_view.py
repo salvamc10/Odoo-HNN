@@ -60,7 +60,7 @@ class StockLotInherit(models.Model):
             string='Notas',
     )
 
-   @api.depends('location_id', 'mrp_workorder_ids.state')
+    @api.depends('location_id', 'mrp_workorder_ids.state')
     def _compute_state(self):
         """
         Calcula el estado basado en el tipo de ubicación, si es de desecho,
