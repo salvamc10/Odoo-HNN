@@ -41,6 +41,15 @@ class StockPicking(models.Model):
             ('purchase_id', '=', purchase_order.id),
         ])
 
+
+        # Verificar si ya existen órdenes de fabricación para esta orden de compra
+        existing_mos = self.env['mrp.production'].search([('origin', '=', purchase_order.name)])
+        if existing_mos:
+            self.message_post(body="⚠️ Ya existen órdenes de fabricación asociadas a la orden de compra '{}': {}".format(
+                purchase_order.name, ", ".join(existing_mos.mapped('name'))))
+            return
+
+
         self.message_post(body="🔄 Iniciando automatización de órdenes de fabricación para la orden de compra '{}'...".format(purchase_order.name))
         
         # Recopilar TODOS los componentes recibidos en todas las recepciones
@@ -96,51 +105,12 @@ class StockPicking(models.Model):
                 debug_msg += " (sin lotes)"
             debug_msg += "<br/>"
         self.message_post(body=debug_msg)
-        # Buscar órdenes de fabricación existentes para esta orden de compra
-        existing_mos = self.env['mrp.production'].search([('origin', '=', purchase_order.name)])
-        used_components = {}
-        
-        # Rastrear componentes ya utilizados en órdenes de fabricación existentes
-        for mo in existing_mos:
-            for move_raw in mo.move_raw_ids:
-                comp_id = move_raw.product_id.id
-                if comp_id not in used_components:
-                    used_components[comp_id] = 0
-                used_components[comp_id] += int(move_raw.product_qty)
 
-        # Buscar órdenes de fabricación existentes para esta orden de compra
-        existing_mos = self.env['mrp.production'].search([('origin', '=', purchase_order.name)])
-        used_components = {}
-        
-        # Rastrear componentes ya utilizados en órdenes de fabricación existentes
-        for mo in existing_mos:
-            for move_raw in mo.move_raw_ids:
-                comp_id = move_raw.product_id.id
-                if comp_id not in used_components:
-                    used_components[comp_id] = 0
-                # Asegurarse de que la cantidad sea un entero
-                used_components[comp_id] += int(move_raw.product_qty)
 
-        # Calcular componentes disponibles restando los ya utilizados
-        available_components = {}
-        for product_id, components in received_components.items():
-            available_qty = max(0, len(components) - used_components.get(product_id, 0))
-            if available_qty > 0:
-                available_components[product_id] = components[:int(available_qty)]
-        if not available_components:
-            self.message_post(body="⚠️ No hay componentes disponibles para nuevas órdenes de fabricación (todos ya utilizados).")
-            return
-
-        # Mostrar componentes disponibles para depuración
-        debug_msg = "🔍 Componentes disponibles después de restar utilizados:<br/>"
-        for prod_id, components in available_components.items():
-            product_name = env['product.product'].browse(prod_id).name
-            debug_msg += "• {}: {} unidades<br/>".format(product_name, len(components))
-        self.message_post(body=debug_msg)
-
-        # Buscar BOMs que contengan alguno de los componentes disponibles
+        # Buscar BOMs que contengan alguno de los componentes recibidos
         matching_boms = []
-        for product_id in available_components.keys():
+        for product_id in received_components.keys():
+
             bom_lines = env['mrp.bom.line'].search([('product_id', '=', product_id)])
             for bom_line in bom_lines:
                 if bom_line.bom_id not in matching_boms:
@@ -149,7 +119,8 @@ class StockPicking(models.Model):
         self.message_post(body="🔍 BOMs encontradas que usan estos componentes: {}".format(len(matching_boms)))
 
         if not matching_boms:
-            self.message_post(body="⚠️ No se encontraron BOMs que utilicen los componentes disponibles.")
+
+            self.message_post(body="⚠️ No se encontraron BOMs que utilicen los componentes recibidos")
             return
 
         orders_created = 0
@@ -162,13 +133,16 @@ class StockPicking(models.Model):
             # Mapear todos los componentes de esta BOM
             bom_components = {}  # {product_id: cantidad_requerida}
             missing_components = []
-            bom_available_components = {}
+
+            available_components = {}
 
             for bom_line in bom.bom_line_ids:
                 comp_id = bom_line.product_id.id
                 bom_components[comp_id] = bom_line.product_qty
-                if comp_id in available_components:
-                    bom_available_components[comp_id] = bom_line.product_qty
+
+                if comp_id in received_components:
+                    available_components[comp_id] = bom_line.product_qty
+
                 else:
                     missing_components.append(bom_line.product_id.name)
 
@@ -182,7 +156,9 @@ class StockPicking(models.Model):
 
             # Mostrar componentes disponibles
             available_list = []
-            for comp_id in bom_available_components.keys():
+
+            for comp_id in available_components.keys():
+
                 comp_name = env['product.product'].browse(comp_id).name
                 available_list.append(comp_name)
             available_text = ', '.join(available_list[:3])
@@ -193,7 +169,9 @@ class StockPicking(models.Model):
             # Calcular cuántas unidades podemos fabricar
             max_units = 999999
             for comp_id, required_qty in bom_components.items():
-                available_qty = len(available_components.get(comp_id, []))
+
+                available_qty = len(received_components.get(comp_id, []))
+
                 if required_qty > 0:
                     possible_units = int(available_qty / required_qty)
                     if possible_units < max_units:
@@ -206,9 +184,10 @@ class StockPicking(models.Model):
             # Crear órdenes de fabricación
             self.message_post(body="🏭 {}: Creando {} órdenes...".format(bom.display_name, max_units))
 
-            # Hacer una copia de available_components para esta BOM
+            # Hacer una copia de received_components para esta BOM
             temp_components = {}
-            for k, v in available_components.items():
+            for k, v in received_components.items():
+
                 temp_components[k] = v[:]
 
             for unit_num in range(max_units):
@@ -269,13 +248,16 @@ class StockPicking(models.Model):
                     error_msg = str(e)
                     self.message_post(body="❌ Error creando orden {}: {}".format(unit_num + 1, error_msg))
 
-            # Actualizar available_components después de procesar esta BOM
+            # Actualizar received_components después de procesar esta BOM
             for k, v in temp_components.items():
-                available_components[k] = v
+                received_components[k] = v
+
 
         if orders_created > 0:
             self.message_post(body="✅ Automatización completada: {} órdenes de fabricación creadas para la orden de compra '{}'.".format(
                 orders_created, purchase_order.name))
         else:
-            self.message_post(body="⚠️ No se crearon órdenes de fabricación para la orden de compra '{}'. Posibles causas: componentes insuficientes, BOMs incompletas, o productos no relacionados con BOMs.".format(
+          
+            self.message_post(body="⚠️ No se crearon órdenes de fabricación para la orden de compra '{}'. Posibles causas: componentes insuficientes o BOMs incompletas.".format(
+
                 purchase_order.name))
