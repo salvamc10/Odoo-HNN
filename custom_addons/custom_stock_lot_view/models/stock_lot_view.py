@@ -82,11 +82,6 @@ class StockLotInherit(models.Model):
                 lot.state = 'manufacturing'
                 continue
             
-            # Si no hay ubicación, estado por defecto
-            if not location:
-                lot.state = 'in_stock'
-                continue
-
             # Verificar estados basados en ubicación
             if location.scrap_location:
                 lot.state = 'scrapped'
