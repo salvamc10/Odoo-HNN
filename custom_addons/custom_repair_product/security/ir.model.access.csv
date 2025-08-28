@@ -1,8 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-<<<<<<< HEAD
-custom_repair_product.access_stock_move,access_stock_move,custom_repair_product.model_stock_move,base.group_user,1,0,0,0
-=======
 custom_repair_product.access_stock_move,access_stock_move,custom_repair_product.model_stock_move,base.group_user,1,0,0,0
 custom_repair_product.access_repair_consulta,access_repair_consulta,custom_repair_product.model_repair_consulta,base.group_user,1,1,1,1
 custom_repair_product.access_product_template,access_product_template,product.model_product_template,base.group_user,1,1,1,1
->>>>>>> fa564c68c58d72b7d90427d683e9d227c505a725

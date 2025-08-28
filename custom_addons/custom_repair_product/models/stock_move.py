@@ -1,18 +1,8 @@
-<<<<<<< HEAD
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
-from odoo import api, fields, models
-=======
 from odoo import fields, models, api
->>>>>>> fa564c68c58d72b7d90427d683e9d227c505a725
 
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-<<<<<<< HEAD
-    repair_state = fields.Selection(related='repair_id.state', store=True, string="Estado reparación")
-
-=======
     lot_id = fields.Many2one('stock.lot', string="Lot/Serial Number", 
                            domain="[('product_id', '=', product_id), ('company_id', '=', company_id)]")
     repair_state = fields.Selection(related='repair_id.state', store=True, string="Estado reparación")
@@ -97,4 +87,3 @@ class StockMove(models.Model):
     #     all_moves = self.search([('state', '=', 'done')])
     #     all_moves._compute_estado_recambio()
     #     return len(all_moves)
->>>>>>> fa564c68c58d72b7d90427d683e9d227c505a725

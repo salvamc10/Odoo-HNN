@@ -1,14 +1,5 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-<<<<<<< HEAD
-from odoo import fields, models
-
-class RepairOrder(models.Model):
-    _inherit = 'repair.order'
-
-    consulta_text = fields.Char(string='Consulta')
-
-=======
 from odoo import fields, models, api
 from odoo.exceptions import UserError
 from odoo import _
@@ -94,4 +85,3 @@ class RepairOrder(models.Model):
                 repair.move_ids._create_repair_sale_order_line()
         
         return self.action_view_sale_order()
->>>>>>> fa564c68c58d72b7d90427d683e9d227c505a725
