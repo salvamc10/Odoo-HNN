@@ -15,7 +15,6 @@
         'product',
         'stock',
         'documents',
-        'web_signature',
     ],
     'data': [   
        'security/ir.model.access.csv',         
