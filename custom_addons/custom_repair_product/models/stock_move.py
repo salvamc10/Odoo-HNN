@@ -26,7 +26,7 @@ class StockMove(models.Model):
     provider_reference = fields.Char(related='provider_id.product_code', 
                                    string="Referencia Proveedor", store=True)
     provider_ids = fields.One2many(related='product_id.seller_ids', string="Proveedores", readonly=True)
-    description = fields.Html(related='lot_id.note', string="Descripción", store=True)
+    # description = fields.Html(related='lot_id.note', string="Descripción", store=True)
     
     estado_recambio = fields.Selection(
         string="Estado Recambio",
