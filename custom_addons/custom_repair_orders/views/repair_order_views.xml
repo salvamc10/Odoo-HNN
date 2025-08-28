@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_repair_order_form_machine" model="ir.ui.view">
+        <field name="name">repair.order.form.machine.number</field>
+        <field name="model">repair.order</field>
+        <field name="inherit_id" ref="repair.view_repair_order_form"/>
+        <field name="arch" type="xml">
+
+        <!-- Campo nuevo: número de máquina -->
+        <xpath expr="//field[@name='product_id']" position="before">
+            <field name="machine_lot_id"
+                domain="[('x_machine_number','!=',False),('company_id','=',company_id)]"
+                context="{'lot_display': 'machine'}"
+                options="{'no_open': True, 'create': False}"
+                placeholder="Buscar número de máquina"/>
+        </xpath>
+
+        <!-- Corregir visualización de lot_id: forzar contexto limpio -->
+        <xpath expr="//field[@name='lot_id']" position="attributes">
+            <attribute name="domain">[('company_id','=',company_id)]</attribute>
+            <attribute name="options">{'no_open': True}</attribute>
+            <attribute name="context">{'lot_display': 'serial'}</attribute>
+        </xpath>
+
+        </field>
+    </record>
+</odoo>

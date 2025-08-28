@@ -2,15 +2,11 @@ name: Odoo CI
 
 on:
   push:
-    branches:
-      - test
-      - main
-      - dev
+
+    branches: [dev, test, main]
   pull_request:
-    branches:
-      - test
-      - main
-      - dev
+    branches: [dev, test, main]
+
 
 jobs:
   odoo-tests:
