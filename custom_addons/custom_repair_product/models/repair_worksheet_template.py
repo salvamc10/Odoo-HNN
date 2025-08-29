@@ -11,6 +11,7 @@ class RepairWorksheetTemplate(models.Model):
     document_folder_id = fields.Many2one(
         'documents.folder',
         string='Carpeta de Documentos',
+        required=True,
         tracking=True
     )
     worksheet_count = fields.Integer(compute='_compute_worksheet_count', string='Número de Hojas de Trabajo')

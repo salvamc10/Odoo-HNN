@@ -16,7 +16,6 @@ class RepairOrder(models.Model):
     worksheet_template_id = fields.Many2one(
         'repair.worksheet.template',
         string='Plantilla de Hoja de Trabajo',
-        required=True,
         tracking=True
     )
     worksheet_count = fields.Integer(compute='_compute_worksheet_count', string='Hojas de Trabajo')
