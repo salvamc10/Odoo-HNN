@@ -17,7 +17,7 @@
                             <field name="notes" placeholder="Añada notas sobre el trabajo realizado..."/>
                         </group>
                     </group>
-                    <group string="Firma" attrs="{'invisible': [('template_id', '=', False)]}">
+                    <group string="Firma" invisible="template_id == False">
                         <field name="worksheet_signature" widget="signature"/>
                     </group>
                 </sheet>
