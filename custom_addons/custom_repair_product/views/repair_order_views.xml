@@ -7,16 +7,24 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
+                <!-- Botón de worksheet en la esquina superior derecha -->
+                <xpath expr="//form" position="inside">
+                    <div class="oe_chatter">
+                        <div class="o_wsm_repair_order" invisible="not worksheet_template_id">
+                            <div class="float-end">
+                                <button name="action_fsm_worksheet" 
+                                    type="object"
+                                    class="btn btn-secondary"
+                                    string="Hoja de Trabajo"
+                                    data-hotkey="f"
+                                    title="Abrir hoja de trabajo"/>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+                
                 <xpath expr="//header" position="inside">
-                    <header>
-                        <button name="action_fsm_worksheet" 
-                                type="object" 
-                                string="Rellenar Hoja de Trabajo" 
-                                class="oe_highlight"   
-                                invisible="state not in ('confirmed', 'under_repair') or not worksheet_template_id"
-                                data-hotkey="f"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,under_repair,done"/>
-                    </header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,under_repair,done"/>
                 </xpath>
                 <xpath expr="//sheet/group/group[1]" position="inside">
                    <field name="type"/>
