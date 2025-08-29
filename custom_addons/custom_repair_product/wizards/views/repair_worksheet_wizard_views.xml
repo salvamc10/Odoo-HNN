@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="repair_worksheet_wizard_form_view" model="ir.ui.view">
+        <field name="name">repair.worksheet.wizard.form</field>
+        <field name="model">repair.worksheet.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Hoja de Trabajo">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="repair_id" invisible="1"/>
+                            <field name="template_id" readonly="1"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="notes" placeholder="Añada notas sobre el trabajo realizado..."/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="worksheet_signature" widget="signature" required="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Confirmar" name="action_confirm" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

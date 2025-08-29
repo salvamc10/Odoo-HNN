@@ -62,7 +62,7 @@ class StockMove(models.Model):
                 estado = 'Pte almacenar'
 
             # 3. Stock: Si la ubicación es la ubicación principal de Stock (WH/Stock)
-            elif location.usage == 'internal' and location.name.lower() == 'stock':
+            elif location.usage == 'internal' and location.name == 'stock' :
                 estado = 'Stock'
 
             # 4. Estanteria: Cualquier otra ubicación interna que no sea Stock principal
@@ -71,19 +71,4 @@ class StockMove(models.Model):
 
             record.estado_recambio = estado
 
-    # @api.onchange('estado_recambio')
-    # def _onchange_estado_recambio(self):
-    #     """
-    #     Marca como picked cuando el estado es Montado/servido
-    #     """
-    #     if self.estado_recambio == 'Montado/servido':
-    #         self.picked = True
-    
-    # @api.model
-    # def _recalculate_all_estados(self):
-    #     """
-    #     Método para recalcular todos los estados - ejecutar una vez después de la actualización
-    #     """
-    #     all_moves = self.search([('state', '=', 'done')])
-    #     all_moves._compute_estado_recambio()
-    #     return len(all_moves)
+   

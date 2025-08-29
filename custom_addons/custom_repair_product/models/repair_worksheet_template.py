@@ -26,3 +26,6 @@ class RepairWorksheetTemplate(models.Model):
     ], string='Tipo de Firma', default='customer')
 
     worksheet_template_sequence = fields.Integer(string='Sequence', default=10)
+
+    
+    
