@@ -35,8 +35,17 @@
                 <xpath expr="//sheet/group/group[1]" position="inside">
                    <field name="type"/>
                    <field name="worksheet_template_id" 
-                          options="{'no_open': True, 'no_quick_create': True}"
-                          context="{'default_res_model': 'repair.order'}"/>
+                          options="{
+                              'no_quick_create': True,
+                              'no_create_edit': True,
+                              'no_open': True
+                          }"
+                          context="{
+                              'form_view_ref': 'industry_fsm.industry_fsm_worksheet_template_view_form',
+                              'tree_view_ref': 'custom_repair_product.custom_repair_worksheet_template_tree_m2o',
+                              'search_view_ref': 'custom_repair_product.custom_repair_worksheet_template_search',
+                              'default_res_model': 'repair.order'
+                          }"/>
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      

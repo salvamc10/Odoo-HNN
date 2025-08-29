@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de búsqueda heredada para worksheet.template -->
+    <record id="custom_repair_worksheet_template_search" model="ir.ui.view">
+        <field name="name">worksheet.template.search.repair</field>
+        <field name="model">worksheet.template</field>
+        <field name="inherit_id" ref="industry_fsm.industry_fsm_worksheet_template_view_search"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <filter string="Reparaciones" 
+                        name="repair_templates" 
+                        domain="[('res_model', '=', 'repair.order')]"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Vista de árbol específica para el campo Many2one -->
+    <record id="custom_repair_worksheet_template_tree_m2o" model="ir.ui.view">
+        <field name="name">worksheet.template.tree.repair.m2o</field>
+        <field name="model">worksheet.template</field>
+        <field name="priority">20</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <tree string="Plantillas de Hojas de Trabajo">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="worksheet_count"/>
+                <button string="Plantilla de diseño"
+                        type="object"
+                        name="action_edit_template"
+                        class="btn btn-link"
+                        icon="fa-pencil"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Configuración de ventana para el campo Many2one -->
+    <record id="custom_repair_worksheet_template_m2o_action" model="ir.actions.act_window">
+        <field name="name">Plantillas de Hojas de Trabajo</field>
+        <field name="res_model">worksheet.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('res_model', '=', 'repair.order')]</field>
+        <field name="context">{
+            'default_res_model': 'repair.order',
+            'search_default_repair_templates': 1
+        }</field>
+        <field name="search_view_id" ref="custom_repair_worksheet_template_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('custom_repair_worksheet_template_tree_m2o')})]"/>
+    </record>
+</odoo>

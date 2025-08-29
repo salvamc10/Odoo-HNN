@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Grupo de seguridad para gestión de hojas de trabajo de reparación -->
+    <record id="group_repair_worksheet" model="res.groups">
+        <field name="name">Hojas de Trabajo de Reparación</field>
+        <field name="category_id" ref="base.module_category_services_repair"/>
+        <field name="implied_ids" eval="[(4, ref('repair.group_repair_user'))]"/>
+    </record>
+
+    <!-- Regla de acceso para plantillas de hojas de trabajo de reparación -->
+    <record id="rule_repair_worksheet_template" model="ir.rule">
+        <field name="name">Plantillas de Hojas de Trabajo: Reparación</field>
+        <field name="model_id" ref="worksheet.model_worksheet_template"/>
+        <field name="domain_force">[('res_model', '=', 'repair.order')]</field>
+        <field name="groups" eval="[(4, ref('repair.group_repair_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Acceso a las plantillas de hojas de trabajo para usuarios de reparación -->
+    <record id="worksheet_template_repair_access" model="ir.model.access">
+        <field name="name">worksheet.template.repair.access</field>
+        <field name="model_id" ref="worksheet.model_worksheet_template"/>
+        <field name="group_id" ref="repair.group_repair_user"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+</odoo>
