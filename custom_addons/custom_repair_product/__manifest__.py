@@ -14,7 +14,6 @@
         'repair',
         'product',
         'stock',
-        'documents',
         'web_studio',
         'worksheet',
         'industry_fsm'

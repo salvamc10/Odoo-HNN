@@ -11,19 +11,9 @@ class RepairWorksheetTemplate(models.Model):
     active = fields.Boolean(default=True)
     sequence = fields.Integer(string='Secuencia', default=10)
     
-    document_folder_id = fields.Many2one(
-        'documents.folder',
-        string='Carpeta de Documentos',
-        tracking=True
-    )
     worksheet_count = fields.Integer(
         compute='_compute_worksheet_count', 
         string='Número de Hojas de Trabajo'
-    )
-    report_view_id = fields.Many2one(
-        'ir.ui.view', 
-        string='Vista del Informe', 
-        domain=[('type', '=', 'qweb')]
     )
     require_signature = fields.Boolean(
         string='Requiere Firma',

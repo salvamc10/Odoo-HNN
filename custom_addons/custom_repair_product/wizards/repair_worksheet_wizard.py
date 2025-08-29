@@ -47,11 +47,6 @@ class RepairWorksheetWizard(models.TransientModel):
         if values:
             self.repair_id.write(values)
 
-        # Generar el documento si está configurado
-        if (self.repair_id.worksheet_template_id and 
-            self.repair_id.worksheet_template_id.document_folder_id):
-            self.repair_id._generate_worksheet_document()
-
         return {
             'type': 'ir.actions.client',
             'tag': 'reload',

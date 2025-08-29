@@ -32,25 +32,40 @@ class RepairWorksheetSignatureWizard(models.TransientModel):
             
         return defaults
 
-    def action_sign(self):
-        """Procesa la firma de la hoja de trabajo"""
+    def action_sign(self) -> dict:
+        """
+        Procesa la firma de la hoja de trabajo.
+
+        Guarda la firma en la orden de reparación, actualiza la fecha y el firmante,
+        y genera el documento firmado.
+
+        Raises:
+            UserError: Si no se especifica la orden de reparación o la firma.
+
+        Returns:
+            dict: Acción para recargar la vista del cliente.
+
+        Ejemplo:
+            wizard.action_sign()
+        """
         self.ensure_one()
-        
+
         if not self.repair_id:
             raise UserError(_('No se ha especificado una orden de reparación.'))
-            
+
         if not self.worksheet_signature:
             raise UserError(_('Debe proporcionar una firma.'))
 
-        # Guardar la firma en la orden de reparación
-        self.repair_id.write({
-            'worksheet_signature': self.worksheet_signature,
-            'worksheet_signature_date': fields.Datetime.now(),
-            'worksheet_signed_by': self.partner_id.id,
-        })
-
-        # Generar el documento firmado
-        self.repair_id._generate_worksheet_document()
+        try:
+            self.repair_id.write({
+                'worksheet_signature': self.worksheet_signature,
+                'worksheet_signature_date': fields.Datetime.now(),
+                'worksheet_signed_by': self.partner_id.id,
+            })
+            self.repair_id._generate_worksheet_document()
+        except Exception as exc:
+            # Manejo de errores al guardar la firma o generar el documento
+            raise UserError(_('Error al procesar la firma: %s') % str(exc))
 
         return {
             'type': 'ir.actions.client',

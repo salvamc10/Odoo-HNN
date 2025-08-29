@@ -39,15 +39,10 @@ class RepairOrder(models.Model):
     )
             
     def _compute_worksheet_count(self):
-        """Computa el número de documentos de hoja de trabajo"""
+        """Computa el número de hojas de trabajo"""
         for record in self:
-            if hasattr(self.env, 'documents.document'):
-                record.worksheet_count = self.env['documents.document'].search_count([
-                    ('res_id', '=', record.id),
-                    ('res_model', '=', 'repair.order')
-                ])
-            else:
-                record.worksheet_count = 0
+            # Por ahora solo consideramos si tiene una plantilla asignada
+            record.worksheet_count = 1 if record.worksheet_template_id else 0
 
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
@@ -91,58 +86,17 @@ class RepairOrder(models.Model):
         }
 
     def _generate_worksheet_document(self):
-        """Genera el documento PDF y lo guarda en la carpeta configurada."""
+        """Genera el documento de hoja de trabajo."""
         self.ensure_one()
         
-        if not self.worksheet_template_id or not self.worksheet_template_id.document_folder_id:
-            return
-
-        # Verificar si el módulo documents está instalado
-        if not hasattr(self.env, 'documents.document'):
-            return
-
-        folder = self.worksheet_template_id.document_folder_id
-        report_template = self.worksheet_template_id.report_view_id
-        
-        if not report_template:
-            return
-            
-        try:
-            # Generar PDF
-            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-                report_template.id, [self.id]
-            )
-
-            # Crear documento
-            document = self.env['documents.document'].create({
-                'name': f"Hoja de trabajo - {self.name}",
-                'folder_id': folder.id,
-                'partner_id': self.partner_id.id if self.partner_id else False,
-                'owner_id': self.user_id.id if self.user_id else False,
-                'datas': pdf_content,
-                'mimetype': 'application/pdf',
-                'res_id': self.id,
-                'res_model': 'repair.order',
-            })
-
-            self.worksheet_document_id = document
-            return document
-            
-        except Exception as e:
-            # Log del error pero no fallar el proceso
-            _logger.warning(f"Error generando documento de hoja de trabajo: {e}")
+        if not self.worksheet_template_id:
             return False
+            
+        return True
 
     def action_validate(self):
-        """Sobreescribe el método de validación para incluir la generación del documento."""
-        res = super().action_validate()
-        
-        if (self.worksheet_template_id and 
-            self.worksheet_template_id.document_folder_id and
-            hasattr(self.env, 'documents.document')):
-            self._generate_worksheet_document()
-            
-        return res
+        """Sobreescribe el método de validación."""
+        return super().action_validate()
 
     def action_fsm_worksheet(self):
         """Abre el wizard para rellenar y firmar la hoja de trabajo."""
@@ -164,30 +118,23 @@ class RepairOrder(models.Model):
         }
 
     def action_view_worksheet(self):
-        """Abre o genera la hoja de trabajo."""
+        """Abre la hoja de trabajo."""
         self.ensure_one()
         
         if not self.worksheet_template_id:
             raise UserError(_('No hay una plantilla de hoja de trabajo configurada.'))
 
-        # Si ya existe un documento, lo mostramos
-        if self.worksheet_document_id and self.worksheet_document_id.exists():
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{self.worksheet_document_id.id}',
-                'target': 'new'
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Hoja de Trabajo'),
+            'res_model': 'repair.worksheet.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_repair_id': self.id,
+                'default_template_id': self.worksheet_template_id.id,
             }
-        
-        # Si no existe documento pero hay plantilla, lo generamos
-        document = self._generate_worksheet_document()
-        if document:
-            return {
-                'type': 'ir.actions.act_url',
-                'url': f'/web/content/{document.id}',
-                'target': 'new'
-            }
-        
-        raise UserError(_('No se pudo generar la hoja de trabajo.'))
+        }
         
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""

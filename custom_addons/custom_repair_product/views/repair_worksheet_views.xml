@@ -14,14 +14,12 @@
                         <group>
                             <field name="active"/>
                             <field name="sequence"/>
-                            <field name="document_folder_id"/>
                             <field name="require_signature"/>
                             <field name="signature_type" 
                                    attrs="{'invisible': [('require_signature', '=', False)],
                                            'required': [('require_signature', '=', True)]}"/>
                         </group>
                         <group>
-                            <field name="report_view_id"/>
                             <field name="worksheet_count" readonly="1"/>
                         </group>
                     </group>
@@ -42,7 +40,7 @@
             <tree>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="document_folder_id"/>
+
                 <field name="require_signature"/>
                 <field name="worksheet_count"/>
                 <field name="active"/>
