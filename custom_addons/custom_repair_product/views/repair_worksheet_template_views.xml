@@ -19,8 +19,9 @@
     <record id="repair_worksheet_template_tree" model="ir.ui.view">
         <field name="name">worksheet.template.tree.repair</field>
         <field name="model">worksheet.template</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
-            <tree string="Plantillas de Hojas de Trabajo">
+            <list string="Plantillas de Hojas de Trabajo">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="active"/>
@@ -29,7 +30,7 @@
                         name="action_edit_template"
                         class="btn btn-link"
                         icon="fa-pencil"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -37,6 +38,7 @@
     <record id="repair_worksheet_template_form" model="ir.ui.view">
         <field name="name">worksheet.template.form.repair</field>
         <field name="model">worksheet.template</field>
+        <field name="type">form</field>
         <field name="arch" type="xml">
             <form string="Plantilla de Hoja de Trabajo">
                 <sheet>
