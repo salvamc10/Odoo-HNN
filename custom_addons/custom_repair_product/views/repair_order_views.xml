@@ -7,19 +7,21 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
-                <!-- Botón de worksheet en la esquina superior derecha -->
-                <xpath expr="//form" position="inside">
-                    <div class="oe_chatter">
-                        <div class="o_repair_worksheet_button" groups="base.group_user">
-                            <div class="float-end">
-                                <button name="action_fsm_worksheet" 
-                                    type="object"
-                                    class="btn btn-secondary"
-                                    string="Hoja de Trabajo"
-                                    data-hotkey="f"
-                                    icon="fa-file-text-o"
-                                    invisible="(not partner_id) or not allow_worksheets or not worksheet_template_id or worksheet_count == 0"
-                                    help="Abrir hoja de trabajo"/>
+                <!-- Botón de worksheet en el panel de control -->
+                <xpath expr="//form/div[hasclass('o_form_view')]" position="inside">
+                    <div class="o_control_panel">
+                        <div class="o_cp_top">
+                            <div class="o_cp_top_right">
+                                <div class="o_control_panel_actions d-empty-none d-flex align-items-center justify-content-start justify-content-lg-around order-2 order-lg-1 w-100 mw-100 w-lg-auto">
+                                    <button name="action_fsm_worksheet" 
+                                        type="object"
+                                        class="btn btn-secondary"
+                                        string="Hoja de Trabajo"
+                                        data-hotkey="f"
+                                        icon="fa-file-text-o"
+                                        invisible="(not partner_id) or not allow_worksheets or not worksheet_template_id or worksheet_count == 0"
+                                        help="Abrir hoja de trabajo"/>
+                                </div>
                             </div>
                         </div>
                     </div>
