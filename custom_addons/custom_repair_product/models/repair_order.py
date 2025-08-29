@@ -1,7 +1,5 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from odoo import fields, models, api
 from odoo.exceptions import UserError
 from odoo import _
@@ -21,10 +19,10 @@ class RepairOrder(models.Model):
     )
     
     worksheet_template_id = fields.Many2one(
-        'repair.worksheet.template',
-        string='Plantilla de Hoja de Trabajo',
-        tracking=True
-    )
+        'repair.worksheet.template', string="Plantilla de Hoja de Trabajo",
+        readonly=False, tracking=True,
+        domain="[('active', '=', True)]",
+        help="Seleccione una plantilla para personalizar la hoja de trabajo.")
     
     worksheet_count = fields.Integer(
         compute='_compute_worksheet_count', 
@@ -39,14 +37,7 @@ class RepairOrder(models.Model):
         string='Firmado por',
         ondelete='set null'
     )
-    
-    worksheet_document_id = fields.Many2one(
-        'documents.document',
-        string='Documento de Hoja de Trabajo',
-        copy=False,
-        ondelete='set null'
-    )
-    
+            
     def _compute_worksheet_count(self):
         """Computa el número de documentos de hoja de trabajo"""
         for record in self:

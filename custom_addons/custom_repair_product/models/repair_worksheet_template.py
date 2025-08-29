@@ -35,8 +35,6 @@ class RepairWorksheetTemplate(models.Model):
         ('both', 'Ambos')
     ], string='Tipo de Firma', default='customer')
 
-    worksheet_template_sequence = fields.Integer(string='Sequence', default=10)
-
     @api.depends('name')
     def _compute_worksheet_count(self):
         """Calcula el número de hojas de trabajo que usan esta plantilla"""

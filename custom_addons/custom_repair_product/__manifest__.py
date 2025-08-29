@@ -15,6 +15,9 @@
         'product',
         'stock',
         'documents',
+        'web_studio',
+        'worksheet',
+        'industry_fsm'
     ],
     'data': [   
        'security/ir.model.access.csv',         
