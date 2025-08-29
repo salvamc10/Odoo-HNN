@@ -40,32 +40,35 @@ class StockMove(models.Model):
         store=True
     )
 
-    @api.onchange('location_id', 'picked')
-    def _onchange_estado_recambio(self):
+    @api.depends('location_id', 'picked')
+    def _compute_estado_recambio(self) -> None:
         """
-        Actualiza el estado del recambio basado en la ubicación de destino y si está marcado como picked.
-        Este método se ejecuta en el cliente cuando cambian los campos, útil para formularios.
+        Calcula el estado del recambio basado en la ubicación y si está marcado como usado (picked).
+        - 'Montado/servido': Si el check 'picked' está marcado.
+        - 'Stock': Si la ubicación es la principal de stock.
+        - 'Pte almacenar': Si la ubicación es 'input' (recepción en 2 pasos).
+        - 'Estanteria': Cualquier otra ubicación interna distinta de 'stock'.
+        Ejemplo:
+            move._compute_estado_recambio()
         """
         for record in self:
             estado = False
             location = record.location_id
+
             if not location:
                 record.estado_recambio = estado
                 continue
 
-            # 1. Montado/servido: Si picked está marcado O la ubicación es Customer
-            if record.picked or location.usage == 'customer':
+            # 1. Montado/servido: Si el recambio está marcado como usado
+            if record.picked:
                 estado = 'Montado/servido'
-
-            # 2. Pte almacenar: Si la ubicación es Input (WH/Input)
+            # 2. Stock: Si la ubicación es la principal de stock
+            elif location.usage == 'internal' and location.name.lower() == 'stock':
+                estado = 'Stock'
+            # 3. Pte almacenar: Si la ubicación es 'input' (recepción en 2 pasos)
             elif location.usage == 'input':
                 estado = 'Pte almacenar'
-
-            # 3. Stock: Si la ubicación es la ubicación principal de Stock (WH/Stock)
-            elif location.usage == 'internal' and location.name == 'stock' :
-                estado = 'Stock'
-
-            # 4. Estanteria: Cualquier otra ubicación interna que no sea Stock principal
+            # 4. Estanteria: Cualquier otra ubicación interna distinta de 'stock'
             elif location.usage == 'internal':
                 estado = 'Estanteria'
 

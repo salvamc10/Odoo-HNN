@@ -101,6 +101,25 @@ class RepairOrder(models.Model):
             self._generate_worksheet_document()
         return res
 
+    def action_fsm_worksheet(self):
+        """Abre el wizard para rellenar y firmar la hoja de trabajo."""
+        self.ensure_one()
+        if not self.worksheet_template_id:
+            raise UserError(_('Es necesario seleccionar una plantilla de hoja de trabajo.'))
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Hoja de Trabajo'),
+            'res_model': 'repair.worksheet.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_repair_id': self.id,
+                'default_template_id': self.worksheet_template_id.id,
+                'form_view_ref': 'custom_repair_product.repair_worksheet_wizard_form_view',
+            }
+        }
+
     def action_view_worksheet(self):
         """Abre o genera la hoja de trabajo."""
         self.ensure_one()
