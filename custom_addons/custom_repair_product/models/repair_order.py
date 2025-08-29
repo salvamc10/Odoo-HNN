@@ -19,9 +19,13 @@ class RepairOrder(models.Model):
     )
     
     worksheet_template_id = fields.Many2one(
-        'repair.worksheet.template', string="Plantilla de Hoja de Trabajo",
+        'worksheet.template', string="Plantilla de Hoja de Trabajo",
         readonly=False, tracking=True,
-        domain="[('active', '=', True)]",
+        domain="[('res_model', '=', 'repair.order'), ('active', '=', True)]",
+        context={
+            'default_res_model': 'repair.order',
+            'default_name': 'Hoja de Reparación'
+        },
         help="Seleccione una plantilla para personalizar la hoja de trabajo.")
     
     worksheet_count = fields.Integer(
