@@ -69,30 +69,53 @@ class StockMove(models.Model):
             else:
                 record.provider_id = False
 
-    @api.depends('location_id', 'picked')
+    @api.depends('location_id', 'location_dest_id', 'state', 'picked')
     def _compute_estado_recambio(self):
         """
-        Calcula el estado del recambio basado en la ubicación y si está marcado como usado (picked).
+        Calcula el estado del recambio basado en:
+        - La ubicación actual y destino del producto
+        - Si está marcado como usado (picked)
+        - El estado del movimiento
         """
         for record in self:
             estado = False
-            location = record.location_id
+            
+            # Si está marcado como usado, siempre será Montado/servido
+            if record.picked:
+                estado = 'Montado/servido'
+                record.estado_recambio = estado
+                continue
 
+            # Ubicación actual y destino
+            location = record.location_id
+            location_dest = record.location_dest_id
+
+            # Si no hay ubicación, no podemos determinar el estado
             if not location:
                 record.estado_recambio = estado
                 continue
 
-            # 1. Montado/servido: Si el recambio está marcado como usado
-            if record.picked:
-                estado = 'Montado/servido'
-            # 2. Stock: Si la ubicación es la principal de stock
-            elif location.usage == 'internal' and location.name.lower() == 'stock':
-                estado = 'Stock'
-            # 3. Pte almacenar: Si la ubicación es 'input' (recepción en 2 pasos)
-            elif location.usage == 'input':
+            # Determinar estado basado en ubicación y tipo de ubicación
+            if location.usage == 'internal':
+                # Es una ubicación interna (almacén)
+                if location.complete_name and 'stock' in location.complete_name.lower():
+                    estado = 'Stock'
+                else:
+                    estado = 'Estanteria'
+            elif location.usage == 'supplier':
+                # Viene de proveedor
                 estado = 'Pte almacenar'
-            # 4. Estanteria: Cualquier otra ubicación interna distinta de 'stock'
-            elif location.usage == 'internal':
-                estado = 'Estanteria'
-
+            elif location.usage == 'customer':
+                # Está en cliente
+                if record.state == 'done':
+                    estado = 'Montado/servido'
+                else:
+                    estado = 'Stock'
+            elif location.usage == 'production':
+                # Está en reparación
+                if location_dest.usage == 'customer':
+                    estado = 'Montado/servido'
+                else:
+                    estado = 'Stock'
+            
             record.estado_recambio = estado

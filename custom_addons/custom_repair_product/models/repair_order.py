@@ -18,20 +18,34 @@ class RepairOrder(models.Model):
         ondelete={'Reparación': 'cascade', 'Recambios': 'cascade'}
     )
     
+    allow_worksheets = fields.Boolean(
+        string="Permitir Hojas de Trabajo",
+        default=True,
+        help="Habilita el uso de hojas de trabajo en esta orden de reparación"
+    )
+
     worksheet_template_id = fields.Many2one(
-        'worksheet.template', string="Plantilla de Hoja de Trabajo",
-        readonly=False, tracking=True,
+        'worksheet.template', 
+        string="Plantilla de Hoja de Trabajo",
+        tracking=True,
         domain="[('res_model', '=', 'repair.order'), ('active', '=', True)]",
         context={
             'default_res_model': 'repair.order',
             'default_name': 'Hoja de Reparación'
         },
-        help="Seleccione una plantilla para personalizar la hoja de trabajo.")
+        help="Seleccione una plantilla para personalizar la hoja de trabajo"
+    )
     
     worksheet_count = fields.Integer(
         compute='_compute_worksheet_count', 
         string='Hojas de Trabajo'
     )
+    
+    def _compute_worksheet_count(self):
+        """Computa el número de hojas de trabajo"""
+        for record in self:
+            # Por ahora solo consideramos si tiene una plantilla asignada y está permitido
+            record.worksheet_count = 1 if record.worksheet_template_id and record.allow_worksheets else 0
     
     worksheet_signature = fields.Binary(string='Firma')
     worksheet_signature_date = fields.Datetime(string='Fecha de Firma')

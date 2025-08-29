@@ -10,17 +10,23 @@
                 <!-- Botón de worksheet en la esquina superior derecha -->
                 <xpath expr="//form" position="inside">
                     <div class="oe_chatter">
-                        <div class="o_wsm_repair_order" invisible="not worksheet_template_id">
+                        <div class="o_repair_worksheet_button" groups="base.group_user">
                             <div class="float-end">
                                 <button name="action_fsm_worksheet" 
                                     type="object"
                                     class="btn btn-secondary"
                                     string="Hoja de Trabajo"
                                     data-hotkey="f"
-                                    title="Abrir hoja de trabajo"/>
+                                    icon="fa-file-text-o"
+                                    invisible="(not partner_id) or not allow_worksheets or not worksheet_template_id or worksheet_count == 0"
+                                    help="Abrir hoja de trabajo"/>
                             </div>
                         </div>
                     </div>
+                </xpath>
+                
+                <xpath expr="//sheet/group/group[1]" position="inside">
+                    <field name="allow_worksheets" invisible="1"/>
                 </xpath>
                 
                 <xpath expr="//header" position="inside">

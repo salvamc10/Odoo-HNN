@@ -6,6 +6,14 @@
         <field name="model">repair.worksheet.wizard</field>
         <field name="arch" type="xml">
             <form string="Hoja de Trabajo">
+                <header>
+                    <button name="action_edit_template"
+                            type="object"
+                            string="Plantilla de Diseño"
+                            class="btn-secondary"
+                            icon="fa-pencil"
+                            invisible="not template_id"/>
+                </header>
                 <sheet>
                     <group>
                         <group>

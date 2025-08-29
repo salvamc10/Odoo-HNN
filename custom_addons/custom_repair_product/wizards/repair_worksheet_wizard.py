@@ -6,10 +6,26 @@ class RepairWorksheetWizard(models.TransientModel):
     _description = 'Wizard para rellenar hoja de trabajo de reparación'
 
     repair_id = fields.Many2one('repair.order', string='Orden de Reparación')
-    template_id = fields.Many2one('repair.worksheet.template', string='Plantilla')
+    template_id = fields.Many2one('worksheet.template', string='Plantilla')
     partner_id = fields.Many2one(related='repair_id.partner_id', readonly=True)
     worksheet_signature = fields.Binary(string='Firma')
     notes = fields.Text(string='Notas del Trabajo')
+
+    def action_edit_template(self):
+        """Abre el editor de Studio para personalizar la plantilla"""
+        self.ensure_one()
+        
+        if not self.template_id:
+            raise UserError(_('Es necesario seleccionar una plantilla primero.'))
+            
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'studio.form.edit',
+            'context': {
+                'model_name': self.template_id.model_id.model,
+                'studio': True,
+            }
+        }
     
     @api.model
     def default_get(self, fields_list):
