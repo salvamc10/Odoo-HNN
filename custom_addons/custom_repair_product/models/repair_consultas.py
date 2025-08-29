@@ -48,8 +48,9 @@ class RepairConsulta(models.Model):
             'target': 'new',
             'context': {
                 'default_type': 'consu',
-                'default_default_code': self.refer,  # Prellenar el campo default_code con refer
-                'repair_consulta_id': self.id,  # Pasar el ID de la consulta para usarlo después
+                'default_default_code': self.refer or '',
+                'default_name': self.consulta_text or '',
+                'repair_consulta_id': self.id,
             },
         }
 
@@ -58,26 +59,37 @@ class RepairConsulta(models.Model):
         self.ensure_one()
         if not self.product_id:
             return
+            
         repair_order = self.repair_order_id
         if repair_order:
+            # Crear el stock.move
             self.env['stock.move'].create({
                 'repair_id': repair_order.id,
                 'product_id': self.product_id.id,
                 'product_uom_qty': self.product_uom_qty or 1.0,
+                'product_uom': self.product_id.uom_id.id,
+                'location_id': repair_order.location_id.id,
+                'location_dest_id': repair_order.location_dest_id.id,
                 'repair_line_type': 'add',
-                
+                'name': self.product_id.name,
+                'state': 'draft',
             })
+            # Eliminar la consulta después de añadirla
             self.unlink()
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    @api.model
     def create(self, vals):
         """Sobrescribe create para actualizar repair.consulta después de crear el producto."""
-        product = super(ProductTemplate, self).create(vals)
+        product = super().create(vals)
+        
         # Verifica si el contexto incluye un repair_consulta_id
-        if self._context.get('repair_consulta_id'):
-            consulta = self.env['repair.consulta'].browse(self._context.get('repair_consulta_id'))
-            if consulta and product.product_variant_id:
+        consulta_id = self._context.get('repair_consulta_id')
+        if consulta_id:
+            consulta = self.env['repair.consulta'].browse(consulta_id)
+            if consulta.exists() and product.product_variant_id:
                 consulta.write({'product_id': product.product_variant_id.id})
+                
         return product

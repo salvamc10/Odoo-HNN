@@ -1,59 +1,58 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 class RepairWorksheetSignatureWizard(models.TransientModel):
     _name = 'repair.worksheet.signature.wizard'
-    _description = 'Asistente de Firma de Hoja de Trabajo'
+    _description = 'Asistente de Firma para Hoja de Trabajo'
 
-    repair_id = fields.Many2one('repair.order', required=True)
-    signature = fields.Binary(string='Firma', required=True)
-    signed_by = fields.Many2one('res.partner', string='Firmado por')
-    
+    repair_id = fields.Many2one(
+        'repair.order', 
+        string='Orden de Reparación', 
+        required=True
+    )
+    partner_id = fields.Many2one(
+        related='repair_id.partner_id', 
+        string='Cliente', 
+        readonly=True
+    )
+    worksheet_signature = fields.Binary(
+        string='Firma', 
+        required=True
+    )
+
     @api.model
     def default_get(self, fields_list):
-        res = super().default_get(fields_list)
-        if self.env.context.get('default_repair_id'):
-            repair = self.env['repair.order'].browse(self.env.context['default_repair_id'])
-            if repair.exists():
-                res['signed_by'] = repair.partner_id.id
-        return res
+        """Valores por defecto del wizard"""
+        defaults = super().default_get(fields_list)
+        
+        # Obtener repair_id del contexto
+        repair_id = self._context.get('default_repair_id')
+        if repair_id:
+            defaults['repair_id'] = repair_id
+            
+        return defaults
 
-    def action_sign_worksheet(self):
-        """Procesa la firma, la guarda en la orden de reparación y genera el documento PDF."""
+    def action_sign(self):
+        """Procesa la firma de la hoja de trabajo"""
         self.ensure_one()
-        if not self.signature:
-            raise UserError('Se requiere una firma para continuar.')
+        
+        if not self.repair_id:
+            raise UserError(_('No se ha especificado una orden de reparación.'))
             
-        if not self.repair_id.worksheet_template_id:
-            raise UserError('No hay una plantilla de hoja de trabajo configurada.')
+        if not self.worksheet_signature:
+            raise UserError(_('Debe proporcionar una firma.'))
 
-        values = {
-            'worksheet_signature': self.signature,
+        # Guardar la firma en la orden de reparación
+        self.repair_id.write({
+            'worksheet_signature': self.worksheet_signature,
             'worksheet_signature_date': fields.Datetime.now(),
-            'worksheet_signed_by': self.signed_by.id,
+            'worksheet_signed_by': self.partner_id.id,
+        })
+
+        # Generar el documento firmado
+        self.repair_id._generate_worksheet_document()
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
         }
-
-        # Generar el documento PDF si hay una plantilla de informe configurada
-        if self.repair_id.worksheet_template_id.report_view_id:
-            report_template = self.repair_id.worksheet_template_id.report_view_id
-            report_name = f"Hoja de trabajo - {self.repair_id.name}"
-            
-            # Generar PDF
-            pdf_content = report_template._render_qweb_pdf(self.repair_id.id)[0]
-            
-            # Crear el documento en el sistema de documentos
-            document = self.env['documents.document'].create({
-                'name': report_name,
-                'datas': pdf_content,
-                'folder_id': self.repair_id.worksheet_template_id.document_folder_id.id,
-                'res_model': 'repair.order',
-                'res_id': self.repair_id.id,
-                'mimetype': 'application/pdf',
-            })
-            
-            values['worksheet_document_id'] = document.id
-
-        # Actualizar la orden de reparación
-        self.repair_id.write(values)
-
-        return {'type': 'ir.actions.act_window_close'}

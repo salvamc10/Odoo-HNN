@@ -13,31 +13,46 @@ class RepairWorksheetWizard(models.TransientModel):
     
     @api.model
     def default_get(self, fields_list):
-        res = super().default_get(fields_list)
-        if self.env.context.get('active_model') == 'repair.order' and self.env.context.get('active_id'):
-            repair = self.env['repair.order'].browse(self.env.context.get('active_id'))
-            res.update({
-                'repair_id': repair.id,
-                'template_id': repair.worksheet_template_id.id,
-            })
-        return res
+        """Valores por defecto del wizard"""
+        defaults = super().default_get(fields_list)
+        
+        # Obtener repair_id del contexto
+        repair_id = self._context.get('default_repair_id')
+        if repair_id:
+            repair = self.env['repair.order'].browse(repair_id)
+            if repair.exists():
+                defaults['repair_id'] = repair.id
+                if repair.worksheet_template_id:
+                    defaults['template_id'] = repair.worksheet_template_id.id
+                    
+        return defaults
 
     def action_confirm(self):
-        """Confirma y guarda la hoja de trabajo."""
+        """Confirma la hoja de trabajo y guarda la información"""
         self.ensure_one()
-        if not self.worksheet_signature:
-            raise UserError(_('Es necesario firmar la hoja de trabajo.'))
-
-        # Actualizar la orden de reparación con la firma
-        self.repair_id.write({
-            'worksheet_signature': self.worksheet_signature,
-            'worksheet_signature_date': fields.Datetime.now(),
-            'worksheet_signed_by': self.repair_id.partner_id.id,
-        })
-
-        # Generar el documento PDF
-        document = self.repair_id._generate_worksheet_document()
         
+        if not self.repair_id:
+            raise UserError(_('No se ha especificado una orden de reparación.'))
+
+        # Actualizar la orden de reparación con la información de la hoja de trabajo
+        values = {}
+        
+        if self.worksheet_signature:
+            values.update({
+                'worksheet_signature': self.worksheet_signature,
+                'worksheet_signature_date': fields.Datetime.now(),
+                'worksheet_signed_by': self.partner_id.id,
+            })
+
+        if values:
+            self.repair_id.write(values)
+
+        # Generar el documento si está configurado
+        if (self.repair_id.worksheet_template_id and 
+            self.repair_id.worksheet_template_id.document_folder_id):
+            self.repair_id._generate_worksheet_document()
+
         return {
-            'type': 'ir.actions.act_window_close'
+            'type': 'ir.actions.client',
+            'tag': 'reload',
         }

@@ -1,90 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="repair_order_form_view_inherit" model="ir.ui.view">
-        <field name="name">repair.order.form.worksheet.inherit</field>
-        <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.view_repair_order_form"/>
-        <field name="arch" type="xml">
-            <!-- Añadir campo de plantilla obligatorio -->
-            <xpath expr="//field[@name='partner_id']" position="before">
-                <field name="worksheet_template_id"
-                    options="{'no_open': True, 'no_quick_create': True}"
-                    context="{'default_res_model': 'repair.order'}"
-                    required="1"/>
-            </xpath>
-
-            <!-- Añadir botón en el header -->
-            <xpath expr="//header/button[@name='action_repair_end'][last()]" position="after">
-                <button name="action_fsm_worksheet"
-                    type="object"
-                    string="Rellenar Hoja de Trabajo"
-                    class="oe_highlight"
-                    attrs="{'invisible': [('state', 'in', ['draft', 'done', 'cancel'])]}"
-                    data-hotkey="w"/>
-            </xpath>
-
-            <!-- Añadir botones estadísticos para la hoja de trabajo -->
-            <xpath expr="//div[@name='button_box']" position="inside">
-                <field name="worksheet_count" invisible="1"/>
-                <button
-                    class="oe_stat_button oe_worksheet"
-                    name="action_view_worksheet"
-                    type="object"
-                    icon="fa-pencil"
-                    attrs="{'invisible': ['|', ('worksheet_signature', '!=', False), ('worksheet_count', '=', 0)]}">
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Hoja de</span>
-                        <span class="o_stat_text">Trabajo</span>
-                    </div>
-                </button>
-                <button
-                    class="oe_stat_button oe_worksheet_completed text-success"
-                    name="action_view_worksheet"
-                    type="object"
-                    icon="fa-check"
-                    attrs="{'invisible': ['|', ('worksheet_signature', '=', False), ('worksheet_count', '=', 0)]}">
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Hoja</span>
-                        <span class="o_stat_text">Firmada</span>
-                    </div>
-                </button>
-            </xpath>
-
-            <!-- Añadir botón de firma en el header -->
-            <xpath expr="//header" position="inside">
-                <button name="action_worksheet_sign"
-                        string="Firmar Hoja de Trabajo"
-                        type="object"
-                        class="btn-primary"
-                        attrs="{'invisible': ['|', '|',
-                            ('worksheet_template_id', '=', False),
-                            ('worksheet_signature', '!=', False),
-                            ('state', 'not in', ['confirmed', 'under_repair'])]}"/>
-            </xpath>
-            
-            <!-- Añadir página de hoja de trabajo -->
-            <xpath expr="//sheet/notebook" position="inside">
-                <page string="Hoja de Trabajo" name="worksheet"
-                      attrs="{'invisible': [('worksheet_template_id', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="worksheet_signature" widget="signature" readonly="1"
-                                   attrs="{'invisible': [('worksheet_signature', '=', False)]}"/>
-                            <field name="worksheet_signature_date" readonly="1"
-                                   attrs="{'invisible': [('worksheet_signature', '=', False)]}"/>
-                            <field name="worksheet_signed_by" readonly="1"
-                                   attrs="{'invisible': [('worksheet_signature', '=', False)]}"/>
-                        </group>
-                        <group>
-                            <field name="worksheet_document_id" readonly="1" widget="many2one_binary"
-                                   attrs="{'invisible': [('worksheet_document_id', '=', False)]}"/>
-                        </group>
-                    </group>
-                </page>
-            </xpath>
-        </field>
-    </record>
-
     <!-- Vista para las plantillas de hojas de trabajo -->
     <record id="repair_worksheet_template_form_view" model="ir.ui.view">
         <field name="name">repair.worksheet.template.form</field>
@@ -98,15 +13,17 @@
                     <group>
                         <group>
                             <field name="active"/>
+                            <field name="sequence"/>
                             <field name="document_folder_id"/>
                             <field name="require_signature"/>
                             <field name="signature_type" 
                                    attrs="{'invisible': [('require_signature', '=', False)],
-                                          'required': [('require_signature', '=', True)]}"/>
+                                           'required': [('require_signature', '=', True)]}"/>
                         </group>
                         <group>
                             <field name="report_view_id"/>
                             <field name="worksheet_template_sequence"/>
+                            <field name="worksheet_count" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
@@ -118,7 +35,7 @@
             </form>
         </field>
     </record>
-
+    
     <record id="repair_worksheet_template_tree_view" model="ir.ui.view">
         <field name="name">repair.worksheet.template.tree</field>
         <field name="model">repair.worksheet.template</field>
@@ -129,19 +46,74 @@
                 <field name="document_folder_id"/>
                 <field name="require_signature"/>
                 <field name="worksheet_count"/>
+                <field name="active"/>
             </tree>
         </field>
     </record>
-
+    
     <record id="action_repair_worksheet_template" model="ir.actions.act_window">
         <field name="name">Plantillas de Hojas de Trabajo</field>
         <field name="res_model">repair.worksheet.template</field>
         <field name="view_mode">tree,form</field>
     </record>
-
+    
     <menuitem id="menu_repair_worksheet_template"
               name="Plantillas de Hojas de Trabajo"
               parent="repair.menu_repair_config"
               action="action_repair_worksheet_template"
               sequence="20"/>
+    
+    <!-- Vista para el wizard de hoja de trabajo -->
+    <record id="repair_worksheet_wizard_form_view" model="ir.ui.view">
+        <field name="name">repair.worksheet.wizard.form</field>
+        <field name="model">repair.worksheet.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Hoja de Trabajo">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="repair_id" invisible="1"/>
+                            <field name="template_id" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="notes" placeholder="Añada notas sobre el trabajo realizado..."/>
+                        </group>
+                    </group>
+                    <group string="Firma" attrs="{'invisible': [('template_id', '=', False)]}">
+                        <field name="worksheet_signature" widget="signature"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Confirmar" name="action_confirm" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Vista para el wizard de firma -->
+    <record id="repair_worksheet_signature_wizard_form_view" model="ir.ui.view">
+        <field name="name">repair.worksheet.signature.wizard.form</field>
+        <field name="model">repair.worksheet.signature.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Firmar Hoja de Trabajo">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="repair_id" invisible="1"/>
+                            <field name="partner_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Firma">
+                        <field name="worksheet_signature" widget="signature" required="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Firmar" name="action_sign" type="object" class="btn-primary" data-hotkey="s"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel" data-hotkey="c"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>
