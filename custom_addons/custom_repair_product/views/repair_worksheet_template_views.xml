@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vista de búsqueda heredada para worksheet.template -->
+    <!-- Vista de búsqueda para worksheet.template -->
     <record id="custom_repair_worksheet_template_search" model="ir.ui.view">
         <field name="name">worksheet.template.search.repair</field>
         <field name="model">worksheet.template</field>
-        <field name="inherit_id" ref="industry_fsm.industry_fsm_worksheet_template_view_search"/>
         <field name="arch" type="xml">
-            <field name="name" position="after">
-                <filter string="Reparaciones" 
-                        name="repair_templates" 
-                        domain="[('res_model', '=', 'repair.order')]"/>
-            </field>
+            <search>
+                <field name="name"/>
+                <field name="sequence"/>
+                <field name="active"/>
+                <filter string="Archivado" name="inactive" domain="[('active', '=', False)]"/>
+                <filter string="Reparaciones" name="repair_templates" domain="[('res_model', '=', 'repair.order')]"/>
+            </search>
         </field>
     </record>
 
-    <!-- Vista de árbol específica para el campo Many2one -->
-    <record id="custom_repair_worksheet_template_tree_m2o" model="ir.ui.view">
-        <field name="name">worksheet.template.tree.repair.m2o</field>
+    <!-- Vista de árbol para worksheet.template -->
+    <record id="repair_worksheet_template_tree" model="ir.ui.view">
+        <field name="name">worksheet.template.tree.repair</field>
         <field name="model">worksheet.template</field>
-        <field name="priority">20</field>
-        <field name="mode">primary</field>
         <field name="arch" type="xml">
             <tree string="Plantillas de Hojas de Trabajo">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="worksheet_count"/>
-                <button string="Plantilla de diseño"
+                <field name="active"/>
+                <button string="Editar en Studio"
                         type="object"
                         name="action_edit_template"
                         class="btn btn-link"
@@ -34,18 +33,58 @@
         </field>
     </record>
 
-    <!-- Configuración de ventana para el campo Many2one -->
-    <record id="custom_repair_worksheet_template_m2o_action" model="ir.actions.act_window">
+    <!-- Vista de formulario para worksheet.template -->
+    <record id="repair_worksheet_template_form" model="ir.ui.view">
+        <field name="name">worksheet.template.form.repair</field>
+        <field name="model">worksheet.template</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla de Hoja de Trabajo">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_edit_template"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil">
+                            <div class="o_stat_info">
+                                <span>Editar en</span>
+                                <span>Studio</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="res_model" invisible="1"/>
+                            <field name="model_id" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción de ventana para worksheet.template -->
+    <record id="action_repair_worksheet_template" model="ir.actions.act_window">
         <field name="name">Plantillas de Hojas de Trabajo</field>
         <field name="res_model">worksheet.template</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('res_model', '=', 'repair.order')]</field>
         <field name="context">{
-            'default_res_model': 'repair.order',
-            'search_default_repair_templates': 1
+            'default_res_model': 'repair.order'
         }</field>
-        <field name="search_view_id" ref="custom_repair_worksheet_template_search"/>
-        <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('custom_repair_worksheet_template_tree_m2o')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay plantillas de hojas de trabajo definidas
+            </p>
+            <p>
+                Cree una nueva plantilla de hoja de trabajo para reparaciones
+            </p>
+        </field>
     </record>
+</odoo>
 </odoo>
