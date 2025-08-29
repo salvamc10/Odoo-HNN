@@ -19,7 +19,7 @@
         'industry_fsm'
     ],
     'data': [   
-       'security/repair_worksheet_security.xml',
+       
        'security/ir.model.access.csv',         
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',
