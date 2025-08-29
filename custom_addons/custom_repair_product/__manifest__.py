@@ -1,5 +1,5 @@
 {
-    'name': 'custom_repair_product',
+    'name': 'Productos para la reparación',
     'version': '18.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',
