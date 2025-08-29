@@ -5,13 +5,12 @@ class RepairWorksheetTemplate(models.Model):
     _description = 'Plantilla de Hoja de Trabajo de Reparación'
     _inherit = ['mail.thread']
 
-    name = fields.Char('Nombre', required=True, translate=True)
+    name = fields.Char('Nombre', translate=True)
     description = fields.Html('Descripción', translate=True)
     active = fields.Boolean(default=True)
     document_folder_id = fields.Many2one(
         'documents.folder',
         string='Carpeta de Documentos',
-        required=True,
         tracking=True
     )
     worksheet_count = fields.Integer(compute='_compute_worksheet_count', string='Número de Hojas de Trabajo')

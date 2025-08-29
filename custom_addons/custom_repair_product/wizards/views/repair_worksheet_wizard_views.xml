@@ -17,7 +17,7 @@
                         </group>
                     </group>
                     <group>
-                        <field name="worksheet_signature" widget="signature" required="1"/>
+                        <field name="worksheet_signature" widget="signature"/>
                     </group>
                 </sheet>
                 <footer>

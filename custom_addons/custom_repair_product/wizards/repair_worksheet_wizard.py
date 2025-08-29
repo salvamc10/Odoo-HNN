@@ -5,10 +5,10 @@ class RepairWorksheetWizard(models.TransientModel):
     _name = 'repair.worksheet.wizard'
     _description = 'Wizard para rellenar hoja de trabajo de reparación'
 
-    repair_id = fields.Many2one('repair.order', string='Orden de Reparación', required=True)
-    template_id = fields.Many2one('repair.worksheet.template', string='Plantilla', required=True)
+    repair_id = fields.Many2one('repair.order', string='Orden de Reparación')
+    template_id = fields.Many2one('repair.worksheet.template', string='Plantilla')
     partner_id = fields.Many2one(related='repair_id.partner_id', readonly=True)
-    worksheet_signature = fields.Binary(string='Firma', required=True)
+    worksheet_signature = fields.Binary(string='Firma')
     notes = fields.Text(string='Notas del Trabajo')
     
     @api.model

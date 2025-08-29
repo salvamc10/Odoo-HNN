@@ -31,8 +31,7 @@
                    <field name="type"/>
                    <field name="worksheet_template_id" 
                           options="{'no_open': True, 'no_quick_create': True}"
-                          context="{'default_res_model': 'repair.order'}"
-                          required="True"/>
+                          context="{'default_res_model': 'repair.order'}"/>
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
