@@ -36,9 +36,9 @@
                    <field name="type"/>
                    <field name="worksheet_template_id" 
                           options="{
-                              'no_quick_create': True,
-                              'no_create_edit': True,
-                              'no_open': True
+                              'no_quick_create': False,
+                              'no_create_edit': False,
+                              'no_open': False
                           }"
                           context="{
                               'form_view_ref': 'industry_fsm.industry_fsm_worksheet_template_view_form',
