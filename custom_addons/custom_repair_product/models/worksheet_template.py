@@ -9,16 +9,25 @@ class WorksheetTemplate(models.Model):
         """Abre el editor de Studio para personalizar la plantilla"""
         self.ensure_one()
         if not self.model_id:
-            raise UserError(_('El modelo técnico aún no se ha creado. Por favor, guarde primero la plantilla.'))
+            # Crear el modelo si no existe
+            model_name = f'x_repair_worksheet_{self.id}'
+            self.env['ir.model'].sudo().create({
+                'name': self.name,
+                'model': model_name,
+                'state': 'manual',
+                'transient': False,
+            })
+            # Actualizar el modelo_id
+            self._compute_model_id()
 
         # Abrir Studio para el modelo dinámico
         return {
             'type': 'ir.actions.client',
-            'tag': 'studio.open',
+            'tag': 'studio.edit_view',
             'params': {
                 'model': self.model_id.model,
                 'mode': 'edit',
-                'action': f'worksheet_{self.id}',
+                'view_type': 'form',
                 'studio': True
             },
             'target': 'current',
