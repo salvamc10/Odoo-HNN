@@ -1,58 +1,92 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
 from odoo import fields, models, api
 from odoo.exceptions import UserError
 from odoo import _
+import logging
+
+_logger = logging.getLogger(__name__)
+
 class RepairOrder(models.Model):
     _inherit = 'repair.order'
     
     consulta_ids = fields.One2many('repair.consulta', 'repair_order_id', string="Consultas")
+    
     type = fields.Selection(
-            string="Tipo",
-            selection=[('Reparación', 'Reparación'), ('Recambios', 'Recambios')],
-            ondelete={'Reparación': 'cascade', 'Recambios': 'cascade'}
-        )
+        string="Tipo",
+        selection=[('Reparación', 'Reparación'), ('Recambios', 'Recambios')],
+        ondelete={'Reparación': 'cascade', 'Recambios': 'cascade'}
+    )
     
     worksheet_template_id = fields.Many2one(
         'repair.worksheet.template',
         string='Plantilla de Hoja de Trabajo',
         tracking=True
     )
-    worksheet_count = fields.Integer(compute='_compute_worksheet_count', string='Hojas de Trabajo')
+    
+    worksheet_count = fields.Integer(
+        compute='_compute_worksheet_count', 
+        string='Hojas de Trabajo'
+    )
+    
     worksheet_signature = fields.Binary(string='Firma')
     worksheet_signature_date = fields.Datetime(string='Fecha de Firma')
-    worksheet_signed_by = fields.Many2one('res.partner', string='Firmado por')
+    
+    worksheet_signed_by = fields.Many2one(
+        'res.partner', 
+        string='Firmado por',
+        ondelete='set null'
+    )
+    
     worksheet_document_id = fields.Many2one(
         'documents.document',
         string='Documento de Hoja de Trabajo',
-        copy=False
+        copy=False,
+        ondelete='set null'
     )
     
     def _compute_worksheet_count(self):
+        """Computa el número de documentos de hoja de trabajo"""
         for record in self:
-            record.worksheet_count = self.env['documents.document'].search_count([
-                ('res_id', '=', record.id),
-                ('res_model', '=', 'repair.order')
-            ])
+            if hasattr(self.env, 'documents.document'):
+                record.worksheet_count = self.env['documents.document'].search_count([
+                    ('res_id', '=', record.id),
+                    ('res_model', '=', 'repair.order')
+                ])
+            else:
+                record.worksheet_count = 0
 
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
         """Guarda el formulario cuando se modifican las consultas."""
-        if self._origin and self.consulta_ids:
-            # Actualiza las consultas existentes en la base de datos
-            self.write({'consulta_ids': [(1, consulta.id, {
-                'consulta_text': consulta.consulta_text,
-                'refer': consulta.refer,
-                'product_uom_qty': consulta.product_uom_qty,
-                'picked': consulta.picked,
-                'product_id': consulta.product_id.id if consulta.product_id else False,
-            }) for consulta in self.consulta_ids if consulta._origin]})
+        if not self._origin or not self.consulta_ids:
+            return
+            
+        # Solo procesar consultas que ya existen en la base de datos
+        existing_consultas = self.consulta_ids.filtered('id')
+        if existing_consultas:
+            updates = []
+            for consulta in existing_consultas:
+                if consulta._origin:
+                    updates.append((1, consulta.id, {
+                        'consulta_text': consulta.consulta_text,
+                        'refer': consulta.refer,
+                        'product_uom_qty': consulta.product_uom_qty,
+                        'picked': consulta.picked,
+                        'product_id': consulta.product_id.id if consulta.product_id else False,
+                    }))
+            if updates:
+                self.write({'consulta_ids': updates})
 
     def action_worksheet_sign(self):
         """Abre el asistente de firma para la hoja de trabajo."""
         self.ensure_one()
+        
         if not self.worksheet_template_id:
             raise UserError(_('Esta orden de reparación no tiene una plantilla de hoja de trabajo asignada.'))
+            
         if not self.worksheet_template_id.require_signature:
             raise UserError(_('Esta plantilla no requiere firma.'))
         
@@ -68,41 +102,61 @@ class RepairOrder(models.Model):
     def _generate_worksheet_document(self):
         """Genera el documento PDF y lo guarda en la carpeta configurada."""
         self.ensure_one()
+        
         if not self.worksheet_template_id or not self.worksheet_template_id.document_folder_id:
             return
 
+        # Verificar si el módulo documents está instalado
+        if not hasattr(self.env, 'documents.document'):
+            return
+
         folder = self.worksheet_template_id.document_folder_id
-        # Generar PDF
         report_template = self.worksheet_template_id.report_view_id
-        pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
-            report_template.id, [self.id]
-        )
+        
+        if not report_template:
+            return
+            
+        try:
+            # Generar PDF
+            pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+                report_template.id, [self.id]
+            )
 
-        # Crear documento
-        document = self.env['documents.document'].create({
-            'name': f"Hoja de trabajo - {self.name}",
-            'folder_id': folder.id,
-            'partner_id': self.partner_id.id,
-            'owner_id': self.user_id.id,
-            'datas': pdf_content,
-            'mimetype': 'application/pdf',
-            'res_id': self.id,
-            'res_model': 'repair.order',
-        })
+            # Crear documento
+            document = self.env['documents.document'].create({
+                'name': f"Hoja de trabajo - {self.name}",
+                'folder_id': folder.id,
+                'partner_id': self.partner_id.id if self.partner_id else False,
+                'owner_id': self.user_id.id if self.user_id else False,
+                'datas': pdf_content,
+                'mimetype': 'application/pdf',
+                'res_id': self.id,
+                'res_model': 'repair.order',
+            })
 
-        self.worksheet_document_id = document.id
-        return document
+            self.worksheet_document_id = document
+            return document
+            
+        except Exception as e:
+            # Log del error pero no fallar el proceso
+            _logger.warning(f"Error generando documento de hoja de trabajo: {e}")
+            return False
 
     def action_validate(self):
         """Sobreescribe el método de validación para incluir la generación del documento."""
         res = super().action_validate()
-        if self.worksheet_template_id and self.worksheet_template_id.document_folder_id:
+        
+        if (self.worksheet_template_id and 
+            self.worksheet_template_id.document_folder_id and
+            hasattr(self.env, 'documents.document')):
             self._generate_worksheet_document()
+            
         return res
 
     def action_fsm_worksheet(self):
         """Abre el wizard para rellenar y firmar la hoja de trabajo."""
         self.ensure_one()
+        
         if not self.worksheet_template_id:
             raise UserError(_('Es necesario seleccionar una plantilla de hoja de trabajo.'))
 
@@ -115,18 +169,18 @@ class RepairOrder(models.Model):
             'context': {
                 'default_repair_id': self.id,
                 'default_template_id': self.worksheet_template_id.id,
-                'form_view_ref': 'custom_repair_product.repair_worksheet_wizard_form_view',
             }
         }
 
     def action_view_worksheet(self):
         """Abre o genera la hoja de trabajo."""
         self.ensure_one()
+        
         if not self.worksheet_template_id:
             raise UserError(_('No hay una plantilla de hoja de trabajo configurada.'))
 
         # Si ya existe un documento, lo mostramos
-        if self.worksheet_document_id:
+        if self.worksheet_document_id and self.worksheet_document_id.exists():
             return {
                 'type': 'ir.actions.act_url',
                 'url': f'/web/content/{self.worksheet_document_id.id}',
@@ -156,6 +210,7 @@ class RepairOrder(models.Model):
                     ref_str=ref_str,
                 ),
             )
+            
         # Check if partner_id is set
         if any(not repair.partner_id for repair in self):
             concerned_ro = self.filtered(lambda ro: not ro.partner_id)
@@ -172,7 +227,7 @@ class RepairOrder(models.Model):
             sale_order_values_list.append({
                 "company_id": repair.company_id.id,
                 "partner_id": repair.partner_id.id,
-                "warehouse_id": repair.picking_type_id.warehouse_id.id,
+                "warehouse_id": repair.picking_type_id.warehouse_id.id if repair.picking_type_id.warehouse_id else False,
                 "repair_order_ids": [(6, 0, [repair.id])],
             })
         
@@ -190,16 +245,18 @@ class RepairOrder(models.Model):
                 sale_order = sale_orders.filtered(lambda so: repair.id in so.repair_order_ids.ids)
                 if sale_order:
                     for move in stock_moves:
-                        self.env['sale.order.option'].create({
-                            'order_id': sale_order.id,
-                            'product_id': move.product_id.id,
-                            'name': move.product_id.name,
-                            'quantity': move.product_uom_qty,
-                            'uom_id': move.product_uom.id,
-                            'price_unit': move.product_id.lst_price,
-                        })
+                        if hasattr(self.env, 'sale.order.option'):
+                            self.env['sale.order.option'].create({
+                                'order_id': sale_order.id,
+                                'product_id': move.product_id.id,
+                                'name': move.product_id.name,
+                                'quantity': move.product_uom_qty,
+                                'uom_id': move.product_uom.id,
+                                'price_unit': move.product_id.lst_price,
+                            })
             else:
                 # For other types, use the default behavior to add to sale.order.line
-                repair.move_ids._create_repair_sale_order_line()
+                if hasattr(repair, 'move_ids'):
+                    repair.move_ids._create_repair_sale_order_line()
         
         return self.action_view_sale_order()
