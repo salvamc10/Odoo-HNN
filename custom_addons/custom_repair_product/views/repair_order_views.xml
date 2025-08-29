@@ -22,8 +22,8 @@
                                 type="object" 
                                 string="Rellenar Hoja de Trabajo" 
                                 class="oe_highlight" 
-                                invisible="(not is_fsm and not partner_id) or not worksheet_template_id or worksheet_count"
-                                data-hotkey="w"/>
+                                invisible="state not in ('confirmed', 'under_repair') or not worksheet_template_id"
+                                data-hotkey="f"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,under_repair,done"/>
                     </header>
                 </xpath>
@@ -32,7 +32,7 @@
                    <field name="worksheet_template_id" 
                           options="{'no_open': True, 'no_quick_create': True}"
                           context="{'default_res_model': 'repair.order'}"
-                          required="1"/>
+                          required="True"/>
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
