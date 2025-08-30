@@ -3,8 +3,8 @@ from odoo import api, fields, models, _
 class RepairWorksheet(models.AbstractModel):
     _name = 'repair.worksheet'
     _description = 'Repair Worksheet'
-    _inherit = 'worksheet'
-
+    _inherit = 'worksheet.x'
+    
     repair_id = fields.Many2one('repair.order', string="Orden de Reparación", ondelete='cascade')
     template_id = fields.Many2one('worksheet.template', string="Plantilla", ondelete='cascade')
     notes = fields.Text(string="Notas")
