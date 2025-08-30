@@ -20,12 +20,12 @@
     ],
     'data': [   
        
-       'security/ir.model.access.csv',         
+       'security/ir.model.access.csv',
+       'security/repair_worksheet_security.xml',         
        'views/repair_product_views.xml',
-       'views/repair_order_views.xml',
-    #    'views/repair_worksheet_views.xml',
-       'views/repair_worksheet_template_views.xml',   
-       'reports/repair_worksheet_report.xml',   
+       'views/repair_order_views.xml',       
+       'views/repair_worksheet_template_views.xml',
+       'reports/repair_worksheet_report.xml',
     ],
     'installable': True,
     'application': False,

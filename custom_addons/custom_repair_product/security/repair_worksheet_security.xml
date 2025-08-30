@@ -1,0 +1,10 @@
+<record id="rule_worksheet_template_repair_access" model="ir.rule">
+    <field name="name">Worksheet Template: Repair Access</field>
+    <field name="model_id" ref="worksheet.model_worksheet_template"/>
+    <field name="domain_force">[('res_model', '=', 'repair.order')]</field>
+    <field name="groups" eval="[(4, ref('base.group_user'))]"/> <!-- Acceso para todos los usuarios -->
+    <field name="perm_create" eval="True"/>
+    <field name="perm_read" eval="True"/>
+    <field name="perm_write" eval="True"/>
+    <field name="perm_unlink" eval="True"/>
+</record>
