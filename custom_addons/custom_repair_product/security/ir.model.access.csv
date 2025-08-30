@@ -4,5 +4,4 @@ custom_repair_product.access_repair_consulta,access_repair_consulta,custom_repai
 custom_repair_product.access_product_template,access_product_template,product.model_product_template,base.group_user,1,1,1,1
 custom_repair_product.access_repair_order,access_repair_order,repair.model_repair_order,base.group_user,1,1,1,1
 custom_repair_product.access_worksheet_template,access_worksheet_template,worksheet.model_worksheet_template,base.group_user,1,1,1,1
-access_repair_worksheet_wizard,access_repair_worksheet_wizard,model_repair_worksheet_wizard,base.group_user,1,1,1,1
 access_worksheet_template_all,access.worksheet.template.all,worksheet.model_worksheet_template,base.group_user,1,1,1,1
