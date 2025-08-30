@@ -182,3 +182,12 @@ class RepairOrder(models.Model):
                     repair.move_ids._create_repair_sale_order_line()
         
         return self.action_view_sale_order()
+    
+    def action_load_worksheet_template(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'worksheet.template.load.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_repair_id': self.id},
+        }

@@ -1,19 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vista de búsqueda para worksheet.template -->
-    <record id="custom_repair_worksheet_template_search" model="ir.ui.view">
-        <field name="name">worksheet.template.search.repair</field>
-        <field name="model">worksheet.template</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="sequence"/>
-                <field name="active"/>
-                <filter string="Archivado" name="inactive" domain="[('active', '=', False)]"/>
-                <filter string="Reparaciones" name="repair_templates" domain="[('res_model', '=', 'repair.order')]"/>
-            </search>
-        </field>
-    </record>
+       
 
     <!-- Vista de árbol para worksheet.template -->
     <record id="repair_worksheet_template_tree" model="ir.ui.view">

@@ -4,6 +4,8 @@ from odoo.exceptions import UserError
 class WorksheetTemplate(models.Model):
     _inherit = 'worksheet.template'
 
+    res_model = fields.Char('Host Model', default='repair.order', help="The model that is using this template")
+
     @api.depends('name')
     def _compute_model_id(self):
         IrModel = self.env['ir.model']
@@ -38,7 +40,6 @@ class WorksheetTemplate(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Sobrescribe create para asegurar la creación del modelo dinámico en lotes"""
         for vals in vals_list:
             if not vals.get('res_model'):
                 vals['res_model'] = 'repair.order'

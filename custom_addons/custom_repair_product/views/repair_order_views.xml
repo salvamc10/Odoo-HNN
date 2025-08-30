@@ -7,39 +7,26 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
-                <!-- Botón de worksheet en el panel de control -->
                 <xpath expr="//div[@name='button_box']/button[@name='action_view_sale_order']" position="after">
-                                                 
-                                    <button name="action_fsm_worksheet" 
-                                        type="object"
-                                        class="btn btn-primary"
-                                        string="Hoja de Trabajo"
-                                        data-hotkey="f"
-                                        icon="fa-file-text-o"                                        
-                                        help="Abrir hoja de trabajo"/>
-                               
+                    <button name="action_fsm_worksheet" 
+                            type="object"
+                            class="btn btn-primary"
+                            string="Hoja de Trabajo"
+                            data-hotkey="f"
+                            icon="fa-file-text-o"                                        
+                            help="Abrir hoja de trabajo"/>
                 </xpath>
-                
                 <xpath expr="//sheet/group/group[1]" position="inside">
                     <field name="allow_worksheets" invisible="1"/>
-                </xpath>
-                
-                <xpath expr="//header" position="inside">
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,under_repair,done"/>
-                </xpath>
-                <xpath expr="//sheet/group/group[1]" position="inside">
-                   <field name="type"/>
-                   <field name="worksheet_template_id" 
-                          options="{
-                              'no_create_edit': True,
-                              'no_create': True
-                          }"
-                          
-                          context="{
-                              'tree_view_ref': 'custom_repair_product.repair_worksheet_template_tree',
-                              'form_view_ref': 'custom_repair_product.repair_worksheet_template_form',
-                              'default_res_model': 'repair.order'
-                          }"/>
+                    <field name="type"/>
+                    <field name="worksheet_template_id"
+                           options="{'no_create': True, 'no_create_edit': True}"
+                           domain="[('res_model', '=', 'repair.order'), ('active', '=', True)]"
+                           context="{
+                            'tree_view_ref': 'custom_repair_product.repair_worksheet_template_tree',
+                            'form_view_ref': 'custom_repair_product.repair_worksheet_template_form',
+                            'default_res_model': 'repair.order'
+                            }"/>
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
@@ -62,7 +49,14 @@
                         <div class="oe_clear"/>
                     </page>
                 </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_load_worksheet_template" 
+                            type="object"
+                            string="Load Worksheet Template"
+                            icon="fa-upload"
+                            class="oe_stat_button"/>
+                </xpath>
             </field>
-        </record>         
+        </record>  
     </data>
 </odoo>

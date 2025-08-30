@@ -25,6 +25,8 @@
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',       
        'views/repair_worksheet_template_views.xml',
+       'views/worksheet_template_views.xml',
+       'views/worksheet_template_load_views.xml',
        'reports/repair_worksheet_report.xml',
     ],
     'installable': True,
