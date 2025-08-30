@@ -19,6 +19,9 @@ class RepairWorksheetSignatureWizard(models.TransientModel):
         string='Firma', 
         required=True
     )
+    
+    worksheet_id = fields.Integer(string='ID de Hoja de Trabajo')  # Temporal, del contexto
+    worksheet_model = fields.Char(string='Modelo de Hoja de Trabajo')  # Del contexto
 
     @api.model
     def default_get(self, fields_list):
@@ -32,42 +35,13 @@ class RepairWorksheetSignatureWizard(models.TransientModel):
             
         return defaults
 
-    def action_sign(self) -> dict:
-        """
-        Procesa la firma de la hoja de trabajo.
-
-        Guarda la firma en la orden de reparación, actualiza la fecha y el firmante,
-        y genera el documento firmado.
-
-        Raises:
-            UserError: Si no se especifica la orden de reparación o la firma.
-
-        Returns:
-            dict: Acción para recargar la vista del cliente.
-
-        Ejemplo:
-            wizard.action_sign()
-        """
+    def action_sign(self):
         self.ensure_one()
-
-        if not self.repair_id:
-            raise UserError(_('No se ha especificado una orden de reparación.'))
-
-        if not self.worksheet_signature:
-            raise UserError(_('Debe proporcionar una firma.'))
-
-        try:
-            self.repair_id.write({
-                'worksheet_signature': self.worksheet_signature,
-                'worksheet_signature_date': fields.Datetime.now(),
-                'worksheet_signed_by': self.partner_id.id,
-            })
-            self.repair_id._generate_worksheet_document()
-        except Exception as exc:
-            # Manejo de errores al guardar la firma o generar el documento
-            raise UserError(_('Error al procesar la firma: %s') % str(exc))
-
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'reload',
-        }
+        worksheet = self.env[self.worksheet_model].browse(self.worksheet_id)
+        worksheet.write({
+            'worksheet_signature': self.worksheet_signature,
+            'worksheet_signature_date': fields.Datetime.now(),
+            'worksheet_signed_by': self.partner_id.id,
+        })
+        self.repair_id._generate_worksheet_document()
+        return {'type': 'ir.actions.client', 'tag': 'reload'}

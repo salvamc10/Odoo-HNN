@@ -1,0 +1,21 @@
+<odoo>
+    <report
+        id="action_report_repair_worksheet"
+        model="repair.worksheet"  
+                              string="Hoja de Trabajo de Reparación"
+                              report_type="qweb-pdf"
+                              name="custom_repair_product.report_repair_worksheet_template"
+                              file="custom_repair_product.report_repair_worksheet"
+                              />
+        
+        <template id="report_repair_worksheet_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <div class="page">
+                        <t t-call-assets="web.report_assets_common"/>
+                        <t t-raw="0" t-call="{{doc._name}}.form_view"/>  <!-- Renderiza la vista form del modelo dinámico como HTML -->
+                    </div>
+                </t>
+            </t>
+        </template>
+    </odoo>

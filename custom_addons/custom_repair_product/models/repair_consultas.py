@@ -16,7 +16,8 @@ class RepairConsulta(models.Model):
     product_id = fields.Many2one(
         'product.product', 'Product',
         check_company=True,
-        domain="[('type', '=', 'consu')]", index=True)
+        domain="[('type', '=', 'consu'), ('company_id', 'in', [company_id, False])]", index=True)
+    company_id = fields.Many2one('res.company', string='Empresa')
     
 
     @api.onchange('refer')
@@ -80,16 +81,16 @@ class RepairConsulta(models.Model):
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Sobrescribe create para actualizar repair.consulta después de crear el producto."""
-        product = super().create(vals)
-        
+        products = super(ProductTemplate, self).create(vals_list)
+
         # Verifica si el contexto incluye un repair_consulta_id
         consulta_id = self._context.get('repair_consulta_id')
         if consulta_id:
             consulta = self.env['repair.consulta'].browse(consulta_id)
-            if consulta.exists() and product.product_variant_id:
-                consulta.write({'product_id': product.product_variant_id.id})
-                
-        return product
+            if consulta.exists() and products.product_variant_id:
+                consulta.write({'product_id': products.product_variant_id.id})
+
+        return products

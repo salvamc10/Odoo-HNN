@@ -36,32 +36,31 @@ class RepairOrder(models.Model):
         help="Seleccione una plantilla para personalizar la hoja de trabajo"
     )
     
-    worksheet_count = fields.Integer(
-        compute='_compute_worksheet_count', 
-        string='Hojas de Trabajo'
-    )
-    
-    def _compute_worksheet_count(self):
-        """Computa el número de hojas de trabajo"""
-        for record in self:
-            # Por ahora solo consideramos si tiene una plantilla asignada y está permitido
-            record.worksheet_count = 1 if record.worksheet_template_id and record.allow_worksheets else 0
-    
-    worksheet_signature = fields.Binary(string='Firma')
-    worksheet_signature_date = fields.Datetime(string='Fecha de Firma')
-    
-    worksheet_signed_by = fields.Many2one(
-        'res.partner', 
-        string='Firmado por',
-        ondelete='set null'
-    )
-            
-    def _compute_worksheet_count(self):
-        """Computa el número de hojas de trabajo"""
-        for record in self:
-            # Por ahora solo consideramos si tiene una plantilla asignada
-            record.worksheet_count = 1 if record.worksheet_template_id else 0
+    worksheet_count = fields.Integer(compute='_compute_worksheet_count')
 
+    def _compute_worksheet_count(self):
+        for record in self:
+            if record.worksheet_template_id and record.worksheet_template_id.model_id:
+                model = record.worksheet_template_id.model_id.model
+                record.worksheet_count = self.env[model].search_count([('repair_id', '=', record.id)])
+            else:
+                record.worksheet_count = 0
+    
+
+    def _get_worksheet_record(self):
+            """Obtiene o crea el registro de hoja de trabajo dinámico."""
+            self.ensure_one()
+            if not self.worksheet_template_id:
+                raise UserError(_('Seleccione una plantilla primero.'))
+            model = self.worksheet_template_id.model_id.model
+            worksheet = self.env[model].search([('repair_id', '=', self.id)], limit=1)
+            if not worksheet:
+                worksheet = self.env[model].create({
+                    'repair_id': self.id,
+                    'template_id': self.worksheet_template_id.id,
+                })
+            return worksheet
+    
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
         """Guarda el formulario cuando se modifican las consultas."""
@@ -85,75 +84,42 @@ class RepairOrder(models.Model):
                 self.write({'consulta_ids': updates})
 
     def action_worksheet_sign(self):
-        """Abre el asistente de firma para la hoja de trabajo."""
+        """Abre wizard de firma, que actualiza el worksheet dinámico."""
         self.ensure_one()
-        
-        if not self.worksheet_template_id:
-            raise UserError(_('Esta orden de reparación no tiene una plantilla de hoja de trabajo asignada.'))
-            
-        if not self.worksheet_template_id.require_signature:
-            raise UserError(_('Esta plantilla no requiere firma.'))
-        
+        worksheet = self._get_worksheet_record()
         return {
             'type': 'ir.actions.act_window',
             'name': _('Firmar Hoja de Trabajo'),
             'res_model': 'repair.worksheet.signature.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_repair_id': self.id}
+            'context': {'default_repair_id': self.id, 'default_worksheet_model': worksheet._name, 'default_worksheet_id': worksheet.id},
         }
 
     def _generate_worksheet_document(self):
-        """Genera el documento de hoja de trabajo."""
+        """Genera informe PDF renderizando la vista form del worksheet."""
         self.ensure_one()
-        
-        if not self.worksheet_template_id:
-            return False
-            
-        return True
+        worksheet = self._get_worksheet_record()
+        return self.env.ref('custom_repair_product.action_report_repair_worksheet')._render_qweb_pdf([worksheet.id])[0]  # Ajusta action
 
     def action_validate(self):
         """Sobreescribe el método de validación."""
         return super().action_validate()
 
     def action_fsm_worksheet(self):
-        """Abre el wizard para rellenar y firmar la hoja de trabajo."""
+        """Abre la hoja de trabajo dinámica."""
         self.ensure_one()
-        
-        if not self.worksheet_template_id:
-            raise UserError(_('Es necesario seleccionar una plantilla de hoja de trabajo.'))
-
+        worksheet = self._get_worksheet_record()
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Hoja de Trabajo'),
-            'res_model': 'repair.worksheet.wizard',
+            'res_model': worksheet._name,
             'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_repair_id': self.id,
-                'default_template_id': self.worksheet_template_id.id,
-            }
+            'res_id': worksheet.id,
+            'target': 'current',  # O 'new' para ventana emergente
+            'context': {'form_view_initial_mode': 'edit'},
         }
 
-    def action_view_worksheet(self):
-        """Abre la hoja de trabajo."""
-        self.ensure_one()
-        
-        if not self.worksheet_template_id:
-            raise UserError(_('No hay una plantilla de hoja de trabajo configurada.'))
-
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Hoja de Trabajo'),
-            'res_model': 'repair.worksheet.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_repair_id': self.id,
-                'default_template_id': self.worksheet_template_id.id,
-            }
-        }
-        
+            
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""
         # Check if any repair order is already linked to a sale order
