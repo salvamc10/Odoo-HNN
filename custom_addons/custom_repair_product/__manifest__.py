@@ -23,7 +23,7 @@
        'security/ir.model.access.csv',         
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',
-       'views/repair_worksheet_views.xml',
+    #    'views/repair_worksheet_views.xml',
        'views/repair_worksheet_template_views.xml',   
        'reports/repair_worksheet_report.xml',   
     ],
