@@ -28,6 +28,8 @@
        'views/worksheet_template_views.xml',
        'views/worksheet_template_load_views.xml',
        'reports/repair_worksheet_report.xml',
+       'reports/project_task_burndown_chart.xml',
+       'wizards/wizard_load_worksheet_template.xml'
     ],
     'installable': True,
     'application': False,
