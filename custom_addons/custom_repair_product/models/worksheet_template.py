@@ -46,8 +46,9 @@ class WorksheetTemplate(models.Model):
             },
         }
 
-    @api.model
-    def create(self, vals):
-        template = super().create(vals)
-        template._compute_model_id()  # Asegura creación inmediata
-        return template
+    @api.model_create_multi
+    def create(self, vals_list):
+        templates = super().create(vals_list)
+        for template in templates:
+            template._compute_model_id()  # Asegura creación inmediata
+        return templates
