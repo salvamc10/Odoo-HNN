@@ -170,7 +170,4 @@ class RepairOrder(models.Model):
             },
         }
 
-    # @api.model
-    # def _get_repair_order_manager_group(self):
-    #     """Devuelve el grupo de gerentes para las hojas de trabajo de repair.order."""
-    #     return self.env.ref('custom_repair_product.group_custom_repair_manager').id
+    

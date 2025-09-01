@@ -18,14 +18,11 @@
         'worksheet',
         'base',
     ],
-    'data': [   
-       
-       'security/ir.model.access.csv',
-       'security/repair_worksheet_security.xml',         
+    'data': [          
+       'security/ir.model.access.csv',            
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',
        'wizards/repair_worksheet_wizard_views.xml'
-
     ],
     'installable': True,
     'application': False,
