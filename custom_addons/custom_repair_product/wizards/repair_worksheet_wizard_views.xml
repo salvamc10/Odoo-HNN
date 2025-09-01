@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_repair_worksheet_template_load_form" model="ir.ui.view">
+        <field name="name">view.repair.worksheet.template.load.wizard.form</field>
+        <field name="model">repair.worksheet.template.load.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <p>
+                        Personaliza plantillas de hojas de trabajo para órdenes de reparación. Comparte fácilmente el contenido con clientes y solicita sus firmas para validar el trabajo.
+                    </p>
+                    <p>
+                        Prueba con una plantilla de ejemplo. Puedes eliminarla en cualquier momento.
+                    </p>
+                    <group>
+                        <field name="repair_order_id" required="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Cargar Plantilla" name="action_generate_new_template" type="object" class="btn-primary"/>
+                    <button string="Iniciar en Blanco" name="action_open_template" type="object" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_repair_worksheet_template_load" model="ir.actions.act_window">
+    <field name="name">Cargar Plantilla de Hoja de Trabajo</field>
+    <field name="res_model">repair.worksheet.template.load.wizard</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+    <field name="context">{'default_repair_order_id': active_id}</field>
+</record>
+
+<menuitem id="menu_repair_worksheet_template_load"
+         name="Cargar Plantilla"
+         parent="repair.menu_repair_order"
+         action="action_repair_worksheet_template_load"
+         sequence="20"/>
+</odoo>
