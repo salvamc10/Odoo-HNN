@@ -16,7 +16,8 @@ class RepairConsulta(models.Model):
     product_id = fields.Many2one(
         'product.product', 'Product',
         check_company=True,
-        domain="[('type', '=', 'consu')]", index=True)
+        domain="[('type', '=', 'consu'), ('company_id', 'in', [company_id, False])]", index=True)
+    company_id = fields.Many2one('res.company', string='Empresa')
     
 
     @api.onchange('refer')
@@ -48,8 +49,9 @@ class RepairConsulta(models.Model):
             'target': 'new',
             'context': {
                 'default_type': 'consu',
-                'default_default_code': self.refer,  # Prellenar el campo default_code con refer
-                'repair_consulta_id': self.id,  # Pasar el ID de la consulta para usarlo después
+                'default_default_code': self.refer or '',
+                'default_name': self.consulta_text or '',
+                'repair_consulta_id': self.id,
             },
         }
 
@@ -58,26 +60,37 @@ class RepairConsulta(models.Model):
         self.ensure_one()
         if not self.product_id:
             return
+            
         repair_order = self.repair_order_id
         if repair_order:
+            # Crear el stock.move
             self.env['stock.move'].create({
                 'repair_id': repair_order.id,
                 'product_id': self.product_id.id,
                 'product_uom_qty': self.product_uom_qty or 1.0,
+                'product_uom': self.product_id.uom_id.id,
+                'location_id': repair_order.location_id.id,
+                'location_dest_id': repair_order.location_dest_id.id,
                 'repair_line_type': 'add',
-                
+                'name': self.product_id.name,
+                'state': 'draft',
             })
+            # Eliminar la consulta después de añadirla
             self.unlink()
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         """Sobrescribe create para actualizar repair.consulta después de crear el producto."""
-        product = super(ProductTemplate, self).create(vals)
+        products = super(ProductTemplate, self).create(vals_list)
+
         # Verifica si el contexto incluye un repair_consulta_id
-        if self._context.get('repair_consulta_id'):
-            consulta = self.env['repair.consulta'].browse(self._context.get('repair_consulta_id'))
-            if consulta and product.product_variant_id:
-                consulta.write({'product_id': product.product_variant_id.id})
-        return product
+        consulta_id = self._context.get('repair_consulta_id')
+        if consulta_id:
+            consulta = self.env['repair.consulta'].browse(consulta_id)
+            if consulta.exists() and products.product_variant_id:
+                consulta.write({'product_id': products.product_variant_id.id})
+
+        return products

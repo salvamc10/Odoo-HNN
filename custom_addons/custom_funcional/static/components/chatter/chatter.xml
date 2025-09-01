@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_funcional.Chatter" t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//div[hassclass('o-mail-Chatter-topbar')]/button" position="after">
+            <div class="oe_button_box" name="button_box">
+                <button 
+                    class="btn btn-link"
+                    t-att-class="{ 'fa fa-lg fa-star o-mail-Message-starred': this.state.favorite, 'fa fa-lg fa-star': !this.state.favorite }"
+                    t-on-click="onToggleFavorite"
+                />
+            </div>
+        </xpath>
+    </t>    
+</templates>

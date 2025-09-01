@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+       
+
+    <!-- Vista de árbol para worksheet.template -->
+    <record id="repair_worksheet_template_tree" model="ir.ui.view">
+        <field name="name">worksheet.template.tree.repair</field>
+        <field name="model">worksheet.template</field>
+        <field name="type">list</field>
+        <field name="arch" type="xml">
+            <list string="Plantillas de Hojas de Trabajo">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+                <button string="Editar en Studio"
+                        type="object"
+                        name="action_edit_template"
+                        class="btn btn-link"
+                        icon="fa-pencil"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="repair_worksheet_template_form" model="ir.ui.view">
+        <field name="name">worksheet.template.form.repair</field>
+        <field name="model">worksheet.template</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla de Hoja de Trabajo">
+                <sheet>
+                    <group>
+                        <field name="name" required="1"/>
+                        <field name="sequence"/>
+                        <field name="active" default="1"/>
+                        <field name="res_model" invisible="1"/>
+                        <field name="model_id" readonly="1"/>
+                    </group>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_edit_template"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil"
+                                invisible="not model_id">
+                            <div class="o_stat_info">
+                                <span>Editar en</span>
+                                <span>Studio</span>
+                            </div>
+                        </button>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- Acción de ventana para worksheet.template -->
+    <record id="action_repair_worksheet_template" model="ir.actions.act_window">
+        <field name="name">Plantillas de Hojas de Trabajo</field>
+        <field name="res_model">worksheet.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('res_model', '=', 'repair.order')]</field>
+        <field name="context">{
+            'default_res_model': 'repair.order',
+            'search_default_repair_templates': 1
+            }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay plantillas de hojas de trabajo definidas
+            </p>
+            <p>
+                Cree una nueva plantilla de hoja de trabajo para reparaciones desde este menú.
+            </p>
+        </field>
+    </record>
+</odoo>
+

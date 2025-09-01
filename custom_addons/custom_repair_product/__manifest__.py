@@ -1,5 +1,5 @@
 {
-    'name': 'custom_repair_product',
+    'name': 'Productos para la reparación',
     'version': '18.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',
@@ -14,11 +14,22 @@
         'repair',
         'product',
         'stock',
+        'web_studio',
+        'worksheet',
+        'industry_fsm'
     ],
     'data': [   
-       'security/ir.model.access.csv',         
+       
+       'security/ir.model.access.csv',
+       'security/repair_worksheet_security.xml',         
        'views/repair_product_views.xml',
-       'views/repair_order_views.xml',     
+       'views/repair_order_views.xml',       
+       'views/repair_worksheet_template_views.xml',
+       'views/worksheet_template_views.xml',
+       'views/worksheet_template_load_views.xml',
+       'reports/repair_worksheet_report.xml',
+       'reports/project_task_burndown_chart.xml',
+       'wizards/wizard_load_worksheet_template.xml'
     ],
     'installable': True,
     'application': False,
