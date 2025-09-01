@@ -1,0 +1,30 @@
+<!-- views/split_summary.xml -->
+<odoo>
+    <template id="split_summary" name="Resumen división" inherit_id="website.layout">
+        <xpath expr="//main" position="inside">
+        <section class="container mt-4 mb-5">
+            <h2>Se han creado 2 pedidos</h2>
+            <p>Selecciona cuál quieres pagar ahora.</p>
+            <div class="row">
+            <t t-foreach="orders" t-as="so">
+                <div class="col-12 col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                    <h4><t t-esc="so.name"/></h4>
+                    <p>Total: <t t-esc="so.amount_total"/> <t t-esc="so.currency_id.symbol"/></p>
+                    <t t-if="so.id == current_order_id">
+                        <a href="/shop/payment" class="btn btn-primary">Pagar este pedido</a>
+                    </t>
+                    <t t-if="so.id != current_order_id">
+                        <a t-att-href="'/shop/switch_order/%s' % so.id" class="btn btn-secondary">Cambiar y pagar este</a>
+                    </t>
+                    </div>
+                </div>
+                </div>
+            </t>
+            </div>
+            <a href="/shop/cart" class="btn btn-link">Volver al carrito</a>
+        </section>
+        </xpath>
+    </template>
+</odoo>

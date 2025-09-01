@@ -10,6 +10,7 @@
     'depends': ['website_sale', 'sale_management'],
     'data': [
         'views/website_settings_views.xml',
+        'views/split_summary.xml',
     ],
     'installable': True,
     'application': False,
