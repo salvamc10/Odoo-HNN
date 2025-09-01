@@ -17,14 +17,10 @@ class RepairOrder(models.Model):
     )
         
     worksheet_template_id = fields.Many2one(
-        'worksheet.template',
+        "worksheet.template",
         string="Plantilla de trabajo",
-        domain="[('res_model', '=', 'repair.order')]",
-    )
-    worksheet_id = fields.Many2one(
-        'fsm.report',
-        string="Hoja de trabajo",
-        copy=False,
+        domain=[("res_model", "=", "repair.order")],
+        help="Plantilla de worksheet creada con Studio para órdenes de reparación."
     )
 
 
@@ -116,12 +112,46 @@ class RepairOrder(models.Model):
 
     
     def action_view_worksheet(self):
-        """Abre o crea la hoja de trabajo (fsm.report) vinculada a la reparación"""
+        """
+        Abre (o crea si no existe) la instancia de worksheet correspondiente
+        a esta reparación, usando la plantilla seleccionada.
+        En v18 las instancias se guardan en el modelo dinámico de la plantilla
+        (template.model_id.model) y se vinculan con x_<res_model>_id.
+        """
         self.ensure_one()
-        if not self.worksheet_id:
-            report = self.env['fsm.report'].create({
-                'repair_id': self.id,
-                'worksheet_template_id': self.worksheet_template_id.id,
-            })
-            self.worksheet_id = report
-        return self.worksheet_id.action_view()
+        template = self.worksheet_template_id
+        if not template:
+            raise UserError(_("Selecciona una plantilla de trabajo."))
+
+        # Modelo dinámico generado por la plantilla (ej.: x_worksheet_fsm_123)
+        model_name = template.model_id.model
+        Model = self.env[model_name]
+
+        # Nombre del campo de enlace (convención de worksheets/Studio)
+        link_field = f"x_{self._name.replace('.', '_')}_id"   # -> x_repair_order_id
+
+        # Buscar si ya existe un worksheet para esta reparación
+        rec = Model.search([(link_field, "=", self.id)], limit=1)
+
+        # Si no existe, crearlo con mínimos defaults
+        if not rec:
+            vals = {link_field: self.id}
+            # Si la plantilla tiene un campo 'x_name', úsalo
+            if "x_name" in Model._fields:
+                vals["x_name"] = self.name or ""
+            rec = Model.create(vals)
+
+        # Abrir el formulario del registro dinámico
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": model_name,
+            "view_mode": "form",
+            "res_id": rec.id,
+            "target": "current",
+            "context": {
+                f"default_{link_field}": self.id,
+                "from_repair_order": True,
+                # útil si quieres abrir con Studio disponible:
+                # "studio": True,
+            },
+        }

@@ -18,12 +18,12 @@
             </xpath>
             <xpath expr="//sheet/group/group[1]" position="inside">                
                 <field name="type"/>
-                 <field name="worksheet_template_id"/>
-                 <field name="worksheet_id" readonly="1"/>
-                 <button name="action_view_worksheet"
-                        type="object"
-                        string="Abrir Hoja de Trabajo"
-                        class="btn-primary"/> 
+                <field name="worksheet_template_id"
+                   context="{'default_res_model': 'repair.order'}"/>
+                <button name="action_view_worksheet"
+                    type="object"
+                    string="Abrir hoja de trabajo"
+                    class="btn-primary"/>
             </xpath>
             <xpath expr="//notebook/page[@name='parts']" position="before">
                 <page string="Consultas" name="consultas">                      
