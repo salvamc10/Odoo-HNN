@@ -21,7 +21,7 @@
     'data': [   
        
        'security/ir.model.access.csv',
-    #    'security/repair_worksheet_security.xml',         
+       'security/repair_worksheet_security.xml',         
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',
        'wizards/repair_worksheet_wizard_views.xml'
