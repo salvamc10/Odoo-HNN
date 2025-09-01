@@ -24,7 +24,7 @@ class RepairOrder(models.Model):
     )
 
 
-    @api.depends('consulta_ids')
+    @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
         """Guarda el formulario cuando se modifican las consultas."""
         if not self._origin or not self.consulta_ids:
@@ -43,8 +43,8 @@ class RepairOrder(models.Model):
                         'picked': consulta.picked,
                         'product_id': consulta.product_id.id if consulta.product_id else False,
                     }))
-            if updates:
-                self.write({'consulta_ids': updates})
+            # if updates:
+            #     self.write({'consulta_ids': updates})
 
                
     def action_create_sale_order(self):
@@ -125,6 +125,12 @@ class RepairOrder(models.Model):
 
         # Modelo dinámico generado por la plantilla (ej.: x_worksheet_fsm_123)
         model_name = template.model_id.model
+        if not model_name:
+            raise UserError(_("La plantilla seleccionada no tiene un modelo generado. Es posible que esté dañada. Por favor crea o selecciona otra."))
+    
+        if model_name not in self.env:
+            raise UserError(_("El modelo dinámico '%s' no está disponible. Puede que se haya eliminado o no se haya generado correctamente.") % model_name)
+
         Model = self.env[model_name]
 
         # Nombre del campo de enlace (convención de worksheets/Studio)
@@ -152,22 +158,30 @@ class RepairOrder(models.Model):
                 f"default_{link_field}": self.id,
                 "from_repair_order": True,
                 "studio": True,
+                "resModel": model_name,
             },
         }
 
-    def action_fsm_worksheet(self):
+    def _get_repair_order_manager_group(self):
+        # usa el tuyo o el nativo de repair
+        return "custom_repair_product.group_repair_manager"  # ó "repair.group_repair_manager"
+
+    def _get_repair_order_user_group(self):
+        # grupo con permisos de usuario sobre las worksheets de repair
+        return "repair.group_repair_user"
+
+    def action_open_repair_worksheet(self):
+        """Abre (o crea) la hoja de trabajo usando la plantilla asignada."""
         self.ensure_one()
-        if self.x_repair_worksheet_template_id:
-            # Si ya tiene plantilla, abre el worksheet con esa plantilla
-            return self.x_repair_worksheet_template_id.action_open_worksheet(self)
-        return {
-            "type": "ir.actions.act_window",
-            "res_model": "worksheet.template",
-            "views": [[False, "form"]],
-            "target": "new",
-            "context": {
-                "default_res_model": self._name,  
-            },
-        }
-
+        if not self.x_repair_worksheet_template_id:
+            # Si no hay plantilla, abre el formulario de selección
+            return {
+                "type": "ir.actions.act_window",
+                "res_model": "worksheet.template",
+                "view_mode": "form",
+                "target": "new",
+                "context": {"default_res_model":"repair.order"},
+            }
+        # Método estándar de worksheet que genera el registro dinámico
+        return self.x_repair_worksheet_template_id.action_open_worksheet(self)
     

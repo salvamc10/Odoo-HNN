@@ -1,9 +1,8 @@
 <odoo>
-    <record id="custom_repair_product_rule_worksheet_template" model="ir.rule">
-        <field name="name">Access all worksheet templates</field>
+    <record id="rule_worksheet_template_user_access" model="ir.rule">
+        <field name="name">Worksheet Template full access for internal users</field>
         <field name="model_id" ref="worksheet.model_worksheet_template"/>
         <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-        <!-- Dominio vacío = acceso a todos los registros -->
         <field name="domain_force">[(1,'=',1)]</field>
     </record>
 </odoo>

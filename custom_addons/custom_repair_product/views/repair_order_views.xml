@@ -1,52 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-<data>
-    <!-- Vista del formulario de repair.order -->
-    <record id="custom_view_repair_order_form_inherit_consultas" model="ir.ui.view">
-        <field name="name">repair.order.form.inherit.consultas</field>
-        <field name="model">repair.order</field>
-        <field name="inherit_id" ref="repair.view_repair_order_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//div[@name='button_box']/button[@name='action_view_sale_order']" position="after">
-                <button name="action_fsm_worksheet" 
-                        type="object"
-                        class="btn btn-primary"
-                        string="Hoja de Trabajo"
-                        data-hotkey="f"
-                        icon="fa-file-text-o"                                        
-                        help="Abrir hoja de trabajo"/>
-            </xpath>
-            <xpath expr="//sheet/group/group[1]" position="inside">                
-                <field name="type"/>
-                <field name="x_repair_worksheet_template_id"
-                   context="{'default_res_model': 'repair.order'}"/>
-                <button name="action_view_worksheet"
-                    type="object"
-                    string="Abrir hoja de trabajo"
-                    class="btn-primary"/>
-            </xpath>
-            <xpath expr="//notebook/page[@name='parts']" position="before">
-                <page string="Consultas" name="consultas">                      
-                    <field name="consulta_ids" context="{'default_repair_order_id': id}">
-                        <list editable="bottom">
-                            <control>
-                                <create string="Añadir consulta"/>
-                            </control>
-                            <field name="consulta_text" string="Producto a consultar"/>
-                            <field name="refer" string="Referencia"/>
-                            <field name="product_uom_qty" string="Cantidad"/>
-                            <field name="picked" string="Usado"/>
-                            <field name="product_id" readonly="1" force_save="1"/>
-                            <button string="Crear Producto" type="object" name="action_create_product" 
-                                    invisible="product_id != False" class="btn-primary"/>
-                            <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" 
-                                    invisible="product_id == False" class="btn-primary"/>
-                        </list>
-                    </field>
-                    <div class="oe_clear"/>
-                </page>
-            </xpath>           
-        </field>
-    </record>  
-</data> 
+    <data>
+        <!-- Vista del formulario de repair.order -->
+        <record id="custom_view_repair_order_form_inherit_consultas" model="ir.ui.view">
+            <field name="name">repair.order.form.inherit.consultas</field>
+            <field name="model">repair.order</field>
+            <field name="inherit_id" ref="repair.view_repair_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']/button[@name='action_view_sale_order']" position="after">
+                    <button name="action_view_worksheet" 
+                            type="object"
+                            class="btn btn-primary"
+                            string="Hoja de Trabajo"
+                            data-hotkey="f"
+                            icon="fa-file-text-o"                                        
+                            help="Hoja de trabajo"/>
+                </xpath>
+                <xpath expr="//sheet/group/group[1]" position="inside">                
+                    <field name="type"/>
+                    <field name="x_repair_worksheet_template_id"
+                           context="{'default_res_model': 'repair.order'}"/>
+                    
+                </xpath>
+                <xpath expr="//notebook/page[@name='parts']" position="before">
+                    <page string="Consultas" name="consultas">                      
+                        <field name="consulta_ids" context="{'default_repair_order_id': id}">
+                            <list editable="bottom">
+                                <control>
+                                    <create string="Añadir consulta"/>
+                                </control>
+                                <field name="consulta_text" string="Producto a consultar"/>
+                                <field name="refer" string="Referencia"/>
+                                <field name="product_uom_qty" string="Cantidad"/>
+                                <field name="picked" string="Usado"/>
+                                <field name="product_id" readonly="1" force_save="1"/>
+                                <button string="Crear Producto" type="object" name="action_create_product" 
+                                        invisible="product_id != False" class="btn-primary"/>
+                                <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" 
+                                        invisible="product_id == False" class="btn-primary"/>
+                            </list>
+                        </field>
+                        <div class="oe_clear"/>
+                    </page>
+                </xpath>           
+            </field>
+        </record>  
+    </data> 
 </odoo>
