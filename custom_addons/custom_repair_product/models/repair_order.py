@@ -155,3 +155,18 @@ class RepairOrder(models.Model):
                 # "studio": True,
             },
         }
+
+    def action_fsm_worksheet(self):
+        self.ensure_one()
+        if self.x_repair_worksheet_template_id:
+            # Si ya tiene plantilla, abre el worksheet con esa plantilla
+            return self.x_repair_worksheet_template_id.action_open_worksheet(self)
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "worksheet.template",
+            "views": [[False, "form"]],
+            "target": "new",
+            "context": {
+                "default_res_model": self._name,  # aquí será 'repair.order'
+            },
+        }
