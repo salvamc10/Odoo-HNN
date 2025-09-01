@@ -45,14 +45,7 @@
                     </field>
                     <div class="oe_clear"/>
                 </page>
-            </xpath>
-            <xpath expr="//div[@name='button_box']" position="inside">
-                <button name="action_load_worksheet_template" 
-                        type="object"
-                        string="Load Worksheet Template"
-                        icon="fa-upload"
-                        class="oe_stat_button"/>
-            </xpath>
+            </xpath>           
         </field>
     </record>  
 </data> 
