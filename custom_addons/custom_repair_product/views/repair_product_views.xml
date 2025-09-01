@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 <?xml version="1.0" encoding="utf-8"?>
->>>>>>> 27c7bb81ec06f125a8c55964a4f3df7be30abb3f
 <odoo>
        <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
        <record id="view_stock_move_repair_list" model="ir.ui.view">

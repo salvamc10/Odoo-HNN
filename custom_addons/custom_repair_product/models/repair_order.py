@@ -16,7 +16,7 @@ class RepairOrder(models.Model):
         selection=[('Reparación', 'Reparación'), ('Recambios', 'Recambios')],        
     )
         
-    repair_worksheet_template_id = fields.Many2one(
+    x_repair_worksheet_template_id = fields.Many2one(
         "worksheet.template",
         string="Plantilla de trabajo",
         domain=[("res_model", "=", "repair.order")],
