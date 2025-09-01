@@ -16,7 +16,8 @@
         'stock',
         'web_studio',
         'worksheet',
-        'industry_fsm_report'
+        'industry_fsm',
+        'industry_fsm_report',
     ],
     'data': [   
        
