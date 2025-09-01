@@ -151,8 +151,7 @@ class RepairOrder(models.Model):
             "context": {
                 f"default_{link_field}": self.id,
                 "from_repair_order": True,
-                # útil si quieres abrir con Studio disponible:
-                # "studio": True,
+                "studio": True,
             },
         }
 
