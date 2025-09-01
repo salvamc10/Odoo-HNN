@@ -16,7 +16,7 @@
         'stock',
         'web_studio',
         'worksheet',
-        
+        'base',
     ],
     'data': [   
        
