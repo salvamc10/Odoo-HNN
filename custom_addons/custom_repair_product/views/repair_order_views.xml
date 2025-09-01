@@ -18,7 +18,7 @@
             </xpath>
             <xpath expr="//sheet/group/group[1]" position="inside">                
                 <field name="type"/>
-                <field name="worksheet_template_id"
+                <field name="repair_worksheet_template_id"
                    context="{'default_res_model': 'repair.order'}"/>
                 <button name="action_view_worksheet"
                     type="object"
