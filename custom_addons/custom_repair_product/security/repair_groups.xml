@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="group_repair_manager" model="res.groups">
+        <field name="name">Repair Worksheet Manager</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+    <record id="group_repair_user" model="res.groups">
+        <field name="name">Repair Worksheet User</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+</odoo>

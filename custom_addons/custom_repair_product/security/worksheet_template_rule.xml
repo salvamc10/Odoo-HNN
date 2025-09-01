@@ -1,0 +1,8 @@
+<odoo>
+    <record id="rule_worksheet_template_user_access" model="ir.rule">
+        <field name="name">Worksheet Template full access for internal users</field>
+        <field name="model_id" ref="worksheet.model_worksheet_template"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[(1,'=',1)]</field>
+    </record>
+</odoo>
