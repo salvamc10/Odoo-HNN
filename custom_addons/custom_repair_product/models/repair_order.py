@@ -119,7 +119,7 @@ class RepairOrder(models.Model):
         (template.model_id.model) y se vinculan con x_<res_model>_id.
         """
         self.ensure_one()
-        template = self.worksheet_template_id
+        template = self.x_repair_worksheet_template_id
         if not template:
             raise UserError(_("Selecciona una plantilla de trabajo."))
 
@@ -166,7 +166,7 @@ class RepairOrder(models.Model):
             "views": [[False, "form"]],
             "target": "new",
             "context": {
-                "default_res_model": self._name,  # aquí será 'repair.order'
+                "default_res_model": self._name,  
             },
         }
 

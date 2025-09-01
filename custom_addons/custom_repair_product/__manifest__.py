@@ -19,7 +19,8 @@
         'base',
     ],
     'data': [          
-       'security/ir.model.access.csv',            
+       'security/ir.model.access.csv',  
+       'security/worksheet_template_rule.xml',
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',
        'wizards/repair_worksheet_wizard_views.xml'
