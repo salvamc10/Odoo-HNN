@@ -49,7 +49,7 @@ class SaleOrder(models.Model):
             'fiscal_position_id': self.fiscal_position_id.id,
             'website_id': self.website_id.id,
             'sale_order_template_id': tmpl.id if tmpl else False,
-            'origin': self.origin or False,
+            'origin': self.name,  # << clave
         }
         return self.sudo().create(vals)
 
@@ -70,43 +70,30 @@ class SaleOrder(models.Model):
     # --- núcleo del split ---
 
     def split_web_cart_by_category(self):
-        """Reutiliza el carrito para Máquinas. Crea pedido Recambios si procede.
-        Mueve líneas, aplica plantillas y marca como dividido.
-        Devuelve dict {'maquinas': so?, 'recambios': so?}.
-        """
         self.ensure_one()
         if self.split_done:
-            return {'maquinas': self}
-
+            return {'maquinas' if self.order_line and
+                    self._line_group_key(self.order_line[0]) == 'maquinas' else 'recambios': self}
+    
         groups = {'maquinas': [], 'recambios': []}
         for line in self.order_line:
             groups[self._line_group_key(line)].append(line.id)
-
-        if not groups['recambios'] or not self.website_id.split_by_web_category:
-            self._apply_template_by_group('maquinas')
+    
+        # si está desactivado o SOLO hay un grupo, no crear el “otro”
+        if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
+            key = 'recambios' if groups['recambios'] else 'maquinas'
+            self._apply_template_by_group(key)
             self.split_done = True
-            return {'maquinas': self}
-
-        orders = {}
-        if groups['maquinas']:
-            orders['maquinas'] = self
-            self._apply_template_by_group('maquinas')
-        else:
-            orders['recambios'] = self
-            self._apply_template_by_group('recambios')
-
-        other = 'recambios' if 'maquinas' in orders else 'maquinas'
-        orders[other] = orders.get(other) or self._create_child_order_for_group(other)
-
-        # mover líneas al pedido objetivo
-        for grp, line_ids in groups.items():
-            if not line_ids:
-                continue
-            target = orders[grp]
-            self.env['sale.order.line'].browse(line_ids).write({'order_id': target.id})
-
-        # marcar como dividido (los importes se recalculan vía dependencias)
+            return {key: self}
+    
+        # dos grupos: mantener self para máquinas y crear hijo para recambios
+        orders = {'maquinas': self}
+        self._apply_template_by_group('maquinas')
+        orders['recambios'] = self._create_child_order_for_group('recambios')
+    
+        # mover solo las líneas de recambios al hijo
+        self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
+    
         for so in orders.values():
             so.split_done = True
-
         return orders

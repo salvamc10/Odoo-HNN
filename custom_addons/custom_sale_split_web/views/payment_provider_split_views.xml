@@ -1,0 +1,15 @@
+<odoo>
+  <record id="view_payment_provider_form_split" model="ir.ui.view">
+    <field name="name">payment.provider.form.split.flags</field>
+    <field name="model">payment.provider</field>
+    <field name="inherit_id" ref="payment.payment_provider_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//sheet/notebook/page[@name='configuration']" position="inside">
+        <group string="Restricciones por tipo de pedido">
+          <field name="allow_for_maquinas"/>
+          <field name="allow_for_recambios"/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+</odoo>
