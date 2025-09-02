@@ -7,8 +7,20 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//sheet/group/group[1]" position="inside">
-                   <field name="type"/>
+                <xpath expr="//div[@name='button_box']/button[@name='action_view_sale_order']" position="after">
+                    <button name="action_view_worksheet" 
+                            type="object"
+                            class="btn btn-primary"
+                            string="Hoja de Trabajo"
+                            data-hotkey="f"
+                            icon="fa-file-text-o"                                        
+                            help="Hoja de trabajo"/>
+                </xpath>
+                <xpath expr="//sheet/group/group[1]" position="inside">                
+                    <field name="type"/>
+                    <field name="x_repair_worksheet_template_id"
+                           context="{'default_res_model': 'repair.order'}"/>
+                    
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
@@ -30,8 +42,8 @@
                         </field>
                         <div class="oe_clear"/>
                     </page>
-                </xpath>
+                </xpath>           
             </field>
-        </record>         
-    </data>
+        </record>  
+    </data> 
 </odoo>
