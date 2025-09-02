@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista para agregar campos de firma de correo en res.company -->
+    <record id="view_res_company_form_signature_mail" model="ir.ui.view">
+        <field name="name">res.company.form.signature.mail</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/notebook" position="inside">
+                <page string="Firma de correo">
+                    <group>
+                        <field name="mail_signature" placeholder="Firma para correos salientes"/>
+                        <field name="mail_signature_enabled"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
