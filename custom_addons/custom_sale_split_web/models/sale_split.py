@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
+from uuid import uuid4
 
 class Website(models.Model):
     _inherit = 'website'
@@ -15,6 +16,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     split_done = fields.Boolean(default=False, copy=False)
+    split_group_uid = fields.Char(index=True, copy=False)
 
     # --- helpers ---
 
@@ -30,12 +32,23 @@ class SaleOrder(models.Model):
     def _line_group_key(self, line):
         return 'recambios' if self._product_is_recambio(line.product_id) else 'maquinas'
 
+    def _is_countable_product_line(self, line):
+        if getattr(line, 'display_type', False):
+            return False
+        if not line.product_id:
+            return False
+        if getattr(line, 'is_delivery', False):
+            return False
+        if getattr(line, 'is_downpayment', False):
+            return False
+        if getattr(line, 'is_reward', False):
+            return False
+        return True
+
     def _apply_template_by_group(self, group_key):
-        # Usa los nombres de plantilla que has confirmado: "Maquina" y "Recambio"
         name_map = {'maquinas': 'Maquina', 'recambios': 'Recambio'}
         tmpl = self.env['sale.order.template'].search([('name', '=', name_map[group_key])], limit=1)
         if tmpl and self.state in ('draft', 'sent'):
-            # Tu write() reasigna la secuencia según la plantilla
             self.write({'sale_order_template_id': tmpl.id})
 
     def _create_child_order_for_group(self, group_key):
@@ -49,7 +62,8 @@ class SaleOrder(models.Model):
             'fiscal_position_id': self.fiscal_position_id.id,
             'website_id': self.website_id.id,
             'sale_order_template_id': tmpl.id if tmpl else False,
-            'origin': self.name,  # << clave
+            'origin': self.name,
+            'split_group_uid': self.split_group_uid,  # clave común
         }
         return self.sudo().create(vals)
 
@@ -71,29 +85,43 @@ class SaleOrder(models.Model):
 
     def split_web_cart_by_category(self):
         self.ensure_one()
-        if self.split_done:
-            return {'maquinas' if self.order_line and
-                    self._line_group_key(self.order_line[0]) == 'maquinas' else 'recambios': self}
-    
+
+        countable = self.order_line.filtered(self._is_countable_product_line)
+        if not countable:
+            # No hay productos reales que dividir
+            if not self.split_group_uid:
+                self.split_group_uid = str(uuid4())
+            self.split_done = True
+            return {'maquinas': self}
+
         groups = {'maquinas': [], 'recambios': []}
-        for line in self.order_line:
+        for line in countable:
             groups[self._line_group_key(line)].append(line.id)
-    
-        # si está desactivado o SOLO hay un grupo, no crear el “otro”
+
+        # asegurar UID de grupo
+        if not self.split_group_uid:
+            self.split_group_uid = str(uuid4())
+
+        # ya estaba split_done y ahora es homogéneo -> nada que hacer
+        if self.split_done and (not groups['maquinas'] or not groups['recambios']):
+            key = 'recambios' if groups['recambios'] else 'maquinas'
+            return {key: self}
+
+        # si está desactivado o SOLO hay un grupo, marcar y salir
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self._apply_template_by_group(key)
             self.split_done = True
             return {key: self}
-    
-        # dos grupos: mantener self para máquinas y crear hijo para recambios
+
+        # hay dos grupos: mantener self para máquinas y crear hijo para recambios
         orders = {'maquinas': self}
         self._apply_template_by_group('maquinas')
         orders['recambios'] = self._create_child_order_for_group('recambios')
-    
-        # mover solo las líneas de recambios al hijo
+
+        # mover SOLO las líneas de recambios al hijo
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
-    
+
         for so in orders.values():
             so.split_done = True
         return orders
