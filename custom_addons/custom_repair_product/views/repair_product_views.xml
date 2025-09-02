@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
        <!-- Vista tipo lista: movimientos ligados a órdenes de reparación -->
        <record id="view_stock_move_repair_list" model="ir.ui.view">
