@@ -18,6 +18,7 @@
         'worksheet',
         'base',
         'project',
+        'documents',
     ],
     'data': [
        'security/repair_groups.xml',
@@ -25,6 +26,8 @@
        'security/worksheet_template_rule.xml',       
        'views/repair_product_views.xml',
        'views/repair_order_views.xml',
+        'views/repair_order_list_custom_view.xml',      
+        'report/worksheet_report.xml',
        'wizards/repair_worksheet_wizard_views.xml'
     ],
     'installable': True,

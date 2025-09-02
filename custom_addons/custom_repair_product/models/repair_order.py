@@ -133,6 +133,9 @@ class RepairOrder(models.Model):
 
         Model = self.env[model_name]
 
+        if not self.env.user.has_group('base.group_user'):  # O el grupo específico
+            raise UserError(_("No tienes permisos para acceder a los registros de esta plantilla. Contacta a tu administrador."))
+
         # Nombre del campo de enlace (convención de worksheets/Studio)
         link_field = f"x_{self._name.replace('.', '_')}_id"   # -> x_repair_order_id
 

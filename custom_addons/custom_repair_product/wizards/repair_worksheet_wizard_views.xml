@@ -17,7 +17,6 @@
                     </group>
                 </sheet>
                 <footer>
-                    <!-- <button string="Cargar Plantilla" name="action_generate_new_template" type="object" class="btn-primary"/> -->
                     <button string="Iniciar en Blanco" name="action_open_template" type="object" class="btn-secondary"/>
                 </footer>
             </form>
