@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="custom_signature_mail_for_company.SignatureField" owl="1">
+        <div class="o_field_signature" t-att-class="{ readonly: props.readonly }">
+            <textarea 
+                class="o_input"
+                t-att-readonly="props.readonly"
+                t-model="props.value"
+            />
+        </div>
+    </t>
+</templates>
