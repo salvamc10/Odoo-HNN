@@ -38,6 +38,7 @@
             'custom_signature_mail_for_company/static/src/xml/signature_field.xml',
         ],
     },
+    
     'demo': [],
     'installable': True,
     'application': False,
