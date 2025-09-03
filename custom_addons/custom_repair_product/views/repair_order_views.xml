@@ -7,6 +7,7 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
+
                 <xpath expr="//div[@name='button_box']/button[@name='action_view_sale_order']" position="after">
                     <button name="action_view_worksheet" 
                             type="object"
@@ -21,6 +22,7 @@
                     <field name="x_repair_worksheet_template_id"
                            context="{'default_res_model': 'repair.order'}"/>
                     
+
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
@@ -42,8 +44,10 @@
                         </field>
                         <div class="oe_clear"/>
                     </page>
+
                 </xpath>           
             </field>
         </record>  
     </data> 
+
 </odoo>

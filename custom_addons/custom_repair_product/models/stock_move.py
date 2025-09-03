@@ -3,6 +3,7 @@ from odoo import fields, models, api
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
+
     lot_id = fields.Many2one(
         'stock.lot', 
         string="Lot/Serial Number", 
@@ -55,6 +56,7 @@ class StockMove(models.Model):
             ('Stock', 'Stock'),
             ('Montado/servido', 'Montado/servido')
         ],
+
         compute='_compute_estado_recambio',  # ✅ CORREGIDO
         store=True
     )
@@ -91,9 +93,11 @@ class StockMove(models.Model):
             location_dest = record.location_dest_id
 
             # Si no hay ubicación, no podemos determinar el estado
+
             if not location:
                 record.estado_recambio = estado
                 continue
+
 
             # Determinar estado basado en ubicación y tipo de ubicación
             if location.usage == 'internal':
@@ -119,3 +123,4 @@ class StockMove(models.Model):
                     estado = 'Stock'
             
             record.estado_recambio = estado
+
