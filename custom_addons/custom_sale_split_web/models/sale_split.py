@@ -64,6 +64,8 @@ class SaleOrder(models.Model):
             'sale_order_template_id': tmpl.id if tmpl else False,
             'origin': self.name,
             'split_group_uid': self.split_group_uid,  # clave común
+            # heredar transportista si existe
+            'carrier_id': getattr(self, 'carrier_id', False) and self.carrier_id.id or False,
         }
         return self.sudo().create(vals)
 
@@ -122,6 +124,14 @@ class SaleOrder(models.Model):
         # mover SOLO las líneas de recambios al hijo
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
 
+        # marcar y recalcular portes en ambos si procede
         for so in orders.values():
             so.split_done = True
+            if hasattr(so, '_update_delivery_price') and getattr(so, 'carrier_id', False):
+                try:
+                    so._update_delivery_price()
+                except Exception:
+                    # silencioso: si no hay delivery o tarifa, continuar
+                    pass
+
         return orders

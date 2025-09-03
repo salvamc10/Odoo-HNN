@@ -7,10 +7,12 @@
     'description': 'Este módulo permite dividir los pedidos realizados en '
     'la tienda online en dos categorías: Máquinas y Recambios, facilitando así la gestión de los mismos.'
     'esto sirve para mejorar la organización y el control de los pedidos al separarlos por categoría.',
-    'depends': ['website_sale', 'sale_management'],
+    'depends': ['website_sale', 'sale_management', 'delivery'],
     'data': [
-        'views/website_settings_views.xml',
         'views/payment_provider_split_views.xml',
+        'views/payment_split_banner.xml',
+        'views/website_settings_views.xml',
+        'views/checkout_extra_info.xml',
     ],
     'installable': True,
     'application': False,

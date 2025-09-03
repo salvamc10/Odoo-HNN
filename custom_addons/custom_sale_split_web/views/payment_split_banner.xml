@@ -1,0 +1,43 @@
+<odoo>
+  <template id="payment_split_banner" inherit_id="website_sale.payment">
+    <xpath expr="//div[@id='payment_method']" position="before">
+      <t t-if="split_banner">
+        <div class="alert alert-primary shadow-sm rounded-3 mb-3" role="status">
+          <div class="d-flex align-items-start">
+            <span class="badge rounded-pill bg-primary me-3">
+              Pago <t t-esc="split_banner.get('step_idx')"/> de <t t-esc="split_banner.get('total')"/>
+            </span>
+
+            <div>
+              <h5 class="mb-1">
+                <t t-if="split_banner.get('mode') == 'first'">
+                  Estás en el primer pago
+                </t>
+                <t t-else="">
+                  Último paso
+                </t>
+              </h5>
+
+              <div class="text-muted">
+                <t t-if="split_banner.get('mode') == 'first'">
+                  Ahora pagarás el
+                  <t t-if="split_banner.get('curr_is_recambios')">pedido de recambios</t>
+                  <t t-else="">pedido de máquina</t>.
+                  Al finalizar te llevaremos automáticamente a pagar el
+                  <t t-if="split_banner.get('other_is_recambios')">pedido de recambios</t>
+                  <t t-else="">pedido de máquina</t>.
+                </t>
+                <t t-else="">
+                  Ahora pagarás el
+                  <t t-if="split_banner.get('curr_is_recambios')">pedido de recambios</t>
+                  <t t-else="">pedido de máquina</t>.
+                  El otro pedido ya se ha confirmado.
+                </t>
+              </div>
+            </div>
+          </div>
+        </div>
+      </t>
+    </xpath>
+  </template>
+</odoo>
