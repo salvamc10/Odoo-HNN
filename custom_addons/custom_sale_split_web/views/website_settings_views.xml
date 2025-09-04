@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_website_form_split_settings" model="ir.ui.view">
+    <field name="name">website.form.split.settings</field>
+    <field name="model">website</field>
+    <field name="inherit_id" ref="website.view_website_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//sheet" position="inside">
+        <group string="Split de pedidos por categoría web" name="bhior_split_settings">
+          <field name="split_by_web_category"/>
+          <field name="recambios_root_public_categ_id" invisible="not split_by_web_category"/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+</odoo>
