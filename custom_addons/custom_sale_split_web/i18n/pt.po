@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-04 09:05+0000\n"
-"PO-Revision-Date: 2025-09-04 09:05+0000\n"
+"POT-Creation-Date: 2025-09-04 12:11+0000\n"
+"PO-Revision-Date: 2025-09-04 12:11+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -19,43 +19,54 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
 msgid ""
 ".\n"
-"                    El otro pedido ya se ha confirmado."
-msgstr ".\n                    O outro pedido já foi confirmado."
+" Al finalizar te llevaremos automáticamente a pagar el"
+msgstr ""
+".\n"
+" Ao finalizar, levaremos você automaticamente para pagar o"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid ". In the end, we will automatically take you to pay the"
-msgstr ". Ao finalizar, levaremos você automaticamente para pagar o"
+msgid ""
+".\n"
+" El otro pedido ya se ha confirmado."
+msgstr ""
+".\n"
+" O outro pedido já foi confirmado."
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "Ahora pagarás el"
+msgstr "Agora você pagará o"
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,field_description:custom_sale_split_web.field_payment_provider__allowed_public_categ_ids
 msgid "Categorías web permitidas"
-msgstr ""
+msgstr "Categorias web permitidas"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.view_payment_provider_form_split
 msgid "Disponibilidad por categoría web"
-msgstr ""
+msgstr "Disponibilidade por categoria web"
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,field_description:custom_sale_split_web.field_website__split_by_web_category
 msgid "Dividir pedidos por categoría web"
-msgstr ""
+msgstr "Dividir pedidos por categoria web"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "Estás en el primer pago"
+msgstr "Você está no primeiro pagamento"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.checkout_extra_info_msg
 msgid "Información importante sobre la separación de pedidos"
-msgstr ""
+msgstr "Informação importante sobre a separação de pedidos"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid "Now you will pay the"
-msgstr "Agora você pagará o"
-
-#. module: custom_sale_split_web
-#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid "Payment"
-msgstr "Pago"
+msgid "Pago"
+msgstr "Pagamento"
 
 #. module: custom_sale_split_web
 #: model:ir.model,name:custom_sale_split_web.model_payment_provider
@@ -66,12 +77,12 @@ msgstr "Provedor de Pagamentos"
 #. odoo-python
 #: code:addons/custom_sale_split_web/models/sale_split.py:0
 msgid "Productos publicados sin categoría web: %s"
-msgstr ""
+msgstr "Produtos publicados sem categoria web: %s"
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,field_description:custom_sale_split_web.field_website__recambios_root_public_categ_id
 msgid "Raíz Recambios (categoría web)"
-msgstr ""
+msgstr "Raiz Peças de reposição (categoria web)"
 
 #. module: custom_sale_split_web
 #: model:ir.model,name:custom_sale_split_web.model_sale_order
@@ -82,28 +93,30 @@ msgstr "Ordem de Venda"
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.checkout_extra_info_msg
 msgid ""
 "Si su carrito contiene máquinas y recambios, el sistema creará dos pedidos.\n"
-"            Primero completará el pago de uno y luego será redirigido para pagar el segundo."
+" Primero completará el pago de uno y luego será redirigido para pagar el segundo."
 msgstr ""
+"Se o seu carrinho contiver máquinas e peças de reposição, o sistema criará dois pedidos.\n"
+" Primeiro você completará o pagamento de um e depois será redirecionado para pagar o segundo."
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,field_description:custom_sale_split_web.field_sale_order__split_done
 msgid "Split Done"
-msgstr ""
+msgstr "Divisão concluída"
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,field_description:custom_sale_split_web.field_sale_order__split_group_uid
 msgid "Split Group Uid"
-msgstr ""
+msgstr "UID do grupo de divisão"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.view_website_form_split_settings
 msgid "Split de pedidos por categoría web"
-msgstr ""
+msgstr "Divisão de pedidos por categoria web"
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,help:custom_sale_split_web.field_website__recambios_root_public_categ_id
 msgid "Toda categoría web descendiente se considera Recambios."
-msgstr ""
+msgstr "Toda categoria web descendente é considerada Peças de reposição."
 
 #. module: custom_sale_split_web
 #: model:ir.model.fields,help:custom_sale_split_web.field_payment_provider__allowed_public_categ_ids
@@ -112,30 +125,28 @@ msgid ""
 "proveedor solo aparece cuando todas las líneas del pedido pertenecen a "
 "alguna de esas categorías o sus descendientes."
 msgstr ""
+"Vazio: disponível para todas as categorias web. Se selecionado, o provedor "
+"só aparece quando todas as linhas do pedido pertencem a uma dessas "
+"categorias ou suas descendentes."
 
 #. module: custom_sale_split_web
 #: model:ir.model,name:custom_sale_split_web.model_website
 msgid "Website"
-msgstr ""
+msgstr "Website"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid "You are on the first payment"
-msgstr "Você está no primeiro pagamento"
-
-#. module: custom_sale_split_web
-#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid "machine order"
-msgstr "pedido de máquina"
-
-#. module: custom_sale_split_web
-#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid "of"
+msgid "de"
 msgstr "de"
 
 #. module: custom_sale_split_web
 #: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
-msgid "spare parts order"
+msgid "pedido de máquina"
+msgstr "pedido de máquina"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "pedido de recambios"
 msgstr "pedido de peças de reposição"
 
 #. module: custom_sale_split_web
