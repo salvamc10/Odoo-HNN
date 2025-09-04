@@ -18,8 +18,6 @@ class SaleOrder(models.Model):
     split_done = fields.Boolean(default=False, copy=False)
     split_group_uid = fields.Char(index=True, copy=False)
 
-    # --- helpers ---
-
     def _product_is_recambio(self, product):
         root = self.website_id.recambios_root_public_categ_id
         if not root:
@@ -63,13 +61,10 @@ class SaleOrder(models.Model):
             'website_id': self.website_id.id,
             'sale_order_template_id': tmpl.id if tmpl else False,
             'origin': self.name,
-            'split_group_uid': self.split_group_uid,  # clave común
-            # heredar transportista si existe
+            'split_group_uid': self.split_group_uid,
             'carrier_id': getattr(self, 'carrier_id', False) and self.carrier_id.id or False,
         }
         return self.sudo().create(vals)
-
-    # --- validaciones ---
 
     @api.constrains('order_line')
     def _check_web_categ_on_published_products(self):
@@ -81,16 +76,13 @@ class SaleOrder(models.Model):
             )
             if bad:
                 raise ValidationError(_("Productos publicados sin categoría web: %s") %
-                                      ", ".join(bad.mapped('product_id.display_name')))
-
-    # --- núcleo del split ---
+                                    ", ".join(bad.mapped('product_id.display_name')))
 
     def split_web_cart_by_category(self):
         self.ensure_one()
 
         countable = self.order_line.filtered(self._is_countable_product_line)
         if not countable:
-            # No hay productos reales que dividir
             if not self.split_group_uid:
                 self.split_group_uid = str(uuid4())
             self.split_done = True
@@ -100,38 +92,31 @@ class SaleOrder(models.Model):
         for line in countable:
             groups[self._line_group_key(line)].append(line.id)
 
-        # asegurar UID de grupo
         if not self.split_group_uid:
             self.split_group_uid = str(uuid4())
 
-        # ya estaba split_done y ahora es homogéneo -> nada que hacer
         if self.split_done and (not groups['maquinas'] or not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             return {key: self}
 
-        # si está desactivado o SOLO hay un grupo, marcar y salir
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self._apply_template_by_group(key)
             self.split_done = True
             return {key: self}
 
-        # hay dos grupos: mantener self para máquinas y crear hijo para recambios
         orders = {'maquinas': self}
         self._apply_template_by_group('maquinas')
         orders['recambios'] = self._create_child_order_for_group('recambios')
 
-        # mover SOLO las líneas de recambios al hijo
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
 
-        # marcar y recalcular portes en ambos si procede
         for so in orders.values():
             so.split_done = True
             if hasattr(so, '_update_delivery_price') and getattr(so, 'carrier_id', False):
                 try:
                     so._update_delivery_price()
                 except Exception:
-                    # silencioso: si no hay delivery o tarifa, continuar
                     pass
 
         return orders
