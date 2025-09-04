@@ -28,7 +28,7 @@
                   <t t-elif="f.type == 'binary' and ('sign' in name or 'firma' in name)">
                     <p><strong><t t-esc="f.string or name"/>:</strong></p>
                     <img t-if="doc[name]" t-att-src="'data:image/png;base64,%s' % doc[name]"
-                         style="max-width:100%;max-height:250px;"/>
+                        style="max-width:100%;max-height:250px;"/>
                   </t>
     
                   <!-- tipos simples -->
