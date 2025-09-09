@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <odoo>
     <record id="view_stock_move_repair_list" model="ir.ui.view">
         <field name="name">stock.move.repair.list</field>
         <field name="model">stock.move</field>
         <field name="mode">primary</field>
         <field name="arch" type="xml">
-            <list string="Piezas" create="false" delete="false">
+            <list string="Piezas" create="false" delete="True">
                 <field name="repair_state"/>
                 <field name="partner_repair_id"/>
                 <field name="estado_recambio"/>
@@ -21,6 +20,7 @@
                 <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart" invisible="forecast_availability &lt; 0 and repair_line_type == 'add'"/>
                 <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart text-danger" invisible="forecast_availability &gt;= 0 or repair_line_type != 'add'"/>
                 <field name="forecast_availability" string="Forecasted" widget="forecast_widget"/>
+                <button string="Volver a Consultas" type="object" name="action_add_to_consultas_lines" class="btn-primary"/>
             </list>
         </field>
     </record>
@@ -34,6 +34,7 @@
                 <field name="repair_order_id"/>
                 <field name="consulta_text"/>
                 <field name="refer"/>
+                <field name="x_supplier_reference"/>
                 <field name="product_id"/>
                 <field name="product_uom_qty"/>
                 <field name="picked"/>
@@ -50,7 +51,7 @@
         <field name="res_model">stock.move</field>
         <field name="view_mode">list</field>
         <field name="view_id" ref="view_stock_move_repair_list"/>
-        <field name="domain">[('repair_id', '!=', False)]</field>
+        <field name="domain">[('repair_id', '!=', False), ('repair_line_type', '!=', False)]</field>
         <field name="context">{'default_repair_state': 'confirmed'}</field>
         <field name="help" type="html">
             <p>Aquí puedes consultar todos los productos que se han añadido o retirado en las órdenes de reparación con estado no recogido.</p>

@@ -14,7 +14,7 @@
         </field>
     </record>
 
-    <record id="view_worksheet_template_list_custom" model="ir.ui.view">
+     <record id="view_worksheet_template_list_custom" model="ir.ui.view">
         <field name="name">worksheet.template.list.custom</field>
         <field name="model">worksheet.template</field>
         <field name="arch" type="xml">
@@ -77,7 +77,8 @@
         parent="repair.repair_menu_config"
         action="custom_repair_order_server_config"
         sequence="4"
-    />
+       />
+
         
     <menuitem id="menu_worksheet_config"
     name="Plantillas de trabajo"
