@@ -1,0 +1,155 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* custom_sale_split_web
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-04 12:11+0000\n"
+"PO-Revision-Date: 2025-09-04 12:11+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid ""
+".\n"
+" Al finalizar te llevaremos automáticamente a pagar el"
+msgstr ""
+".\n"
+" À la fin, nous vous emmènerons automatiquement pour payer le"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid ""
+".\n"
+" El otro pedido ya se ha confirmado."
+msgstr ""
+".\n"
+" L'autre commande a déjà été confirmée."
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "Ahora pagarás el"
+msgstr "Vous allez maintenant payer le"
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,field_description:custom_sale_split_web.field_payment_provider__allowed_public_categ_ids
+msgid "Categorías web permitidas"
+msgstr "Catégories web autorisées"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.view_payment_provider_form_split
+msgid "Disponibilidad por categoría web"
+msgstr "Disponibilité par catégorie web"
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,field_description:custom_sale_split_web.field_website__split_by_web_category
+msgid "Dividir pedidos por categoría web"
+msgstr "Diviser les commandes par catégorie web"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "Estás en el primer pago"
+msgstr "Vous êtes sur le premier paiement"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.checkout_extra_info_msg
+msgid "Información importante sobre la separación de pedidos"
+msgstr "Informations importantes sur la séparation des commandes"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "Pago"
+msgstr "Paiement"
+
+#. module: custom_sale_split_web
+#: model:ir.model,name:custom_sale_split_web.model_payment_provider
+msgid "Payment Provider"
+msgstr "Fournisseur de paiement"
+
+#. module: custom_sale_split_web
+#. odoo-python
+#: code:addons/custom_sale_split_web/models/sale_split.py:0
+msgid "Productos publicados sin categoría web: %s"
+msgstr "Produits publiés sans catégorie web : %s"
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,field_description:custom_sale_split_web.field_website__recambios_root_public_categ_id
+msgid "Raíz Recambios (categoría web)"
+msgstr "Racine Pièces détachées (catégorie web)"
+
+#. module: custom_sale_split_web
+#: model:ir.model,name:custom_sale_split_web.model_sale_order
+msgid "Sales Order"
+msgstr "Commande client"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.checkout_extra_info_msg
+msgid ""
+"Si su carrito contiene máquinas y recambios, el sistema creará dos pedidos.\n"
+" Primero completará el pago de uno y luego será redirigido para pagar el segundo."
+msgstr ""
+"Si votre panier contient des machines et des pièces détachées, le système créera deux commandes.\n"
+" Vous compléterez d'abord le paiement de l'une puis serez redirigé pour payer la seconde."
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,field_description:custom_sale_split_web.field_sale_order__split_done
+msgid "Split Done"
+msgstr "Division terminée"
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,field_description:custom_sale_split_web.field_sale_order__split_group_uid
+msgid "Split Group Uid"
+msgstr "UID du groupe de division"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.view_website_form_split_settings
+msgid "Split de pedidos por categoría web"
+msgstr "Division des commandes par catégorie web"
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,help:custom_sale_split_web.field_website__recambios_root_public_categ_id
+msgid "Toda categoría web descendiente se considera Recambios."
+msgstr "Toute catégorie web descendante est considérée comme Pièces détachées."
+
+#. module: custom_sale_split_web
+#: model:ir.model.fields,help:custom_sale_split_web.field_payment_provider__allowed_public_categ_ids
+msgid ""
+"Vacío: disponible para todas las categorías web. Si se seleccionan, el "
+"proveedor solo aparece cuando todas las líneas del pedido pertenecen a "
+"alguna de esas categorías o sus descendientes."
+msgstr ""
+"Vide : disponible pour toutes les catégories web. Si sélectionné, le "
+"fournisseur n'apparaît que lorsque toutes les lignes de la commande "
+"appartiennent à l'une de ces catégories ou à leurs descendantes."
+
+#. module: custom_sale_split_web
+#: model:ir.model,name:custom_sale_split_web.model_website
+msgid "Website"
+msgstr "Site Web"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "de"
+msgstr "de"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "pedido de máquina"
+msgstr "commande de machine"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "pedido de recambios"
+msgstr "commande de pièces détachées"
+
+#. module: custom_sale_split_web
+#: model_terms:ir.ui.view,arch_db:custom_sale_split_web.payment_split_banner
+msgid "Último paso"
+msgstr "Dernière étape"

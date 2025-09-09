@@ -1,0 +1,15 @@
+<odoo>
+  <template id="checkout_extra_info_msg" inherit_id="website_sale.extra_info">
+    <xpath expr="//section[hasclass('s_website_form')]" position="before">
+      <t t-if="request.website.split_by_web_category">
+        <div class="alert alert-info shadow-sm rounded-3 mb-4">
+          <h5 class="mb-2" t-translation="on">Información importante sobre la separación de pedidos</h5>
+          <p class="mb-0" t-translation="on">
+            Si su carrito contiene máquinas y recambios, el sistema creará dos pedidos.
+            Primero completará el pago de uno y luego será redirigido para pagar el segundo.
+          </p>
+        </div>
+      </t>
+    </xpath>
+  </template>
+</odoo>

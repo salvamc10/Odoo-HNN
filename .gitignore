@@ -1,0 +1,30 @@
+# Archivos y carpetas de IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+*.log
+
+# Entornos virtuales
+.env
+.venv/
+venv/
+ENV/
+
+# Odoo específico
+*.zip
+*.pot
+*.mo
+*.po~
+*.swp
