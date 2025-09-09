@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-    'name': 'custom_repair_product',
-=======
     'name': 'Productos para la reparación',
->>>>>>> caca6b2872ea7009554fa3da87c15fa6b3ed7290
     'version': '18.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',

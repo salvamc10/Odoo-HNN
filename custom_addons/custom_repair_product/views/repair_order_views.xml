@@ -18,9 +18,8 @@
                 </xpath>
                 <xpath expr="//sheet/group/group[1]" position="inside">                
                     <field name="type"/>
-                    <field name="x_repair_worksheet_template_id"
-                           context="{'default_res_model': 'repair.order'}"/>
-                    
+                    <field name="x_repair_worksheet_template_id" context="{'default_res_model': 'repair.order'}"/>
+
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">                      
@@ -46,4 +45,5 @@
             </field>
         </record>  
     </data> 
+
 </odoo>
