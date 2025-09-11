@@ -1,7 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
 custom_repair_product.access_stock_move,access_stock_move,custom_repair_product.model_stock_move,base.group_user,1,1,1,1
 custom_repair_product.access_repair_consulta,access_repair_consulta,custom_repair_product.model_repair_consulta,base.group_user,1,1,1,1
 custom_repair_product.access_repair_order,access_repair_order,custom_repair_product.model_repair_order,base.group_user,1,1,1,1
 custom_repair_product.access_stock_lot,access_stock_lot,custom_repair_product.model_stock_lot,base.group_user,1,1,1,1
 custom_repair_product.access_worksheet_template,access_worksheet_template,worksheet.model_worksheet_template,base.group_user,1,1,1,1
 custom_repair_product.access_repair_worksheet_template_load_wizard,access_repair_worksheet_template_load_wizard,custom_repair_product.model_repair_worksheet_template_load_wizard,base.group_user,1,0,0,0
+

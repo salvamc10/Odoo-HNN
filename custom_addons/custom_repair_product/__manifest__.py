@@ -23,14 +23,14 @@
         'documents',
     ],
     'data': [
-        'security/repair_groups.xml',
-        'security/ir.model.access.csv',  
-        'security/worksheet_template_rule.xml',       
-        'views/repair_product_views.xml',
-        'views/repair_order_views.xml',
-            'views/repair_order_list_custom_view.xml',      
-            'report/worksheet_report.xml',
-        'wizards/repair_worksheet_wizard_views.xml'
+       'security/repair_groups.xml',
+       'security/ir.model.access.csv',  
+       'security/worksheet_template_rule.xml',       
+       'views/repair_product_views.xml',
+       'views/repair_order_views.xml',
+        'views/repair_order_list_custom_view.xml',      
+        'report/worksheet_report.xml',
+       'wizards/repair_worksheet_wizard_views.xml'
     ],
     'installable': True,
     'application': False,
