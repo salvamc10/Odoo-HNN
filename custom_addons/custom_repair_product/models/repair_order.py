@@ -1,5 +1,4 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from odoo import fields, models, api
 from odoo.exceptions import UserError
 from odoo import _
@@ -7,12 +6,10 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
 class RepairOrder(models.Model):
     _inherit = 'repair.order'
     
     consulta_ids = fields.One2many('repair.consulta', 'repair_order_id', string="Consultas")
-
     
     type = fields.Selection(
         string="Tipo",
@@ -26,12 +23,16 @@ class RepairOrder(models.Model):
         help="Plantilla de worksheet creada con Studio para órdenes de reparación."
     )
 
-
+    machine_lot_id = fields.Many2one(
+        'stock.lot',
+        string="Lote/Número de Máquina",
+        domain="[('product_id', '=', product_id)]",
+        help="Lote o número de serie de la máquina a reparar"
+    )
 
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
         """Guarda el formulario cuando se modifican las consultas."""
-
         if not self._origin or not self.consulta_ids:
             return
             
@@ -51,25 +52,23 @@ class RepairOrder(models.Model):
             # if updates:
             #     self.write({'consulta_ids': updates})
 
-               
-
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""
         # Check if any repair order is already linked to a sale order
         if any(repair.sale_order_id for repair in self):
             concerned_ro = self.filtered('sale_order_id')
-            ref_str = "\n".join(ro.name for ro in concerned_ro)
+            ref_str = "\n".join(concerned_ro.mapped('name'))
             raise UserError(
                 _(
                     "You cannot create a quotation for a repair order that is already linked to an existing sale order.\nConcerned repair order(s):\n%(ref_str)s",
                     ref_str=ref_str,
                 ),
             )
-
+            
         # Check if partner_id is set
         if any(not repair.partner_id for repair in self):
             concerned_ro = self.filtered(lambda ro: not ro.partner_id)
-            ref_str = "\n".join(ro.name for ro in concerned_ro)
+            ref_str = "\n".join(concerned_ro.mapped('name'))
             raise UserError(
                 _(
                     "You need to define a customer for a repair order in order to create an associated quotation.\nConcerned repair order(s):\n%(ref_str)s",
@@ -82,27 +81,24 @@ class RepairOrder(models.Model):
             sale_order_values_list.append({
                 "company_id": repair.company_id.id,
                 "partner_id": repair.partner_id.id,
-
                 "warehouse_id": repair.picking_type_id.warehouse_id.id if repair.picking_type_id.warehouse_id else False,
-
                 "repair_order_ids": [(6, 0, [repair.id])],
             })
         
         # Create sale orders
-        sale_orders = self.env['sale.order'].create(sale_order_values_list)
-        
-        # Handle stock.move products based on type
-        for repair in self:
-            if repair.type == 'Recambios':
-                # For 'Recambios', add stock.move products to sale.order.option
-                stock_moves = self.env['stock.move'].search([
-                    ('repair_id', '=', repair.id),
-                    ('state', '!=', 'cancel')
-                ])
-                sale_order = sale_orders.filtered(lambda so: repair.id in so.repair_order_ids.ids)
-                if sale_order:
-                    for move in stock_moves:
+        sale_orders = self.env['sale.order'].create(vals_list)
+        sale_orders_by_repair = dict(zip(self.ids, sale_orders))
 
+        for repair in self:
+            sale_order = sale_orders_by_repair[repair.id]
+            sale_order.ensure_one()
+    
+            if (repair.type or '').lower() == 'recambios':
+                stock_moves = repair.move_ids.filtered(lambda m: m.state != 'cancel') if hasattr(repair, 'move_ids') else self.env['stock.move'].search([('repair_id', '=', repair.id), ('state', '!=', 'cancel')])
+    
+                if 'sale.order.option' in self.env:
+                    Option = self.env['sale.order.option']
+                    for move in stock_moves:
                         if hasattr(self.env, 'sale.order.option'):
                             self.env['sale.order.option'].create({
                                 'order_id': sale_order.id,
@@ -197,4 +193,15 @@ class RepairOrder(models.Model):
         # Método estándar de worksheet que genera el registro dinámico
         return self.x_repair_worksheet_template_id.action_open_worksheet(self)
     
+
+    def action_add_to_consultas_lines(self):
+        """
+        Puente para revertir una línea desde parts a repair.consulta usando la lógica de stock.move.
+        Llama al método action_add_to_consultas_lines de los movimientos relacionados.
+        """
+        for repair in self:
+            moves = getattr(repair, 'move_ids', self.env['stock.move']).filtered(lambda m: hasattr(m, 'action_add_to_consultas_lines'))
+            for move in moves:
+                move.action_add_to_consultas_lines()
+        return True
 

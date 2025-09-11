@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
         <!-- Vista del formulario de repair.order -->
@@ -7,25 +7,16 @@
             <field name="model">repair.order</field>
             <field name="inherit_id" ref="repair.view_repair_order_form"/>
             <field name="arch" type="xml">
-
                 <xpath expr="//div[@name='button_box']/button[@name='action_view_sale_order']" position="after">
-                    <button name="action_view_worksheet" 
-                            type="object"
-                            class="btn btn-primary"
-                            string="Hoja de Trabajo"
-                            data-hotkey="f"
-                            icon="fa-file-text-o"                                        
-                            help="Hoja de trabajo"/>
+                    <button name="action_view_worksheet" type="object" class="btn btn-primary" string="Hoja de Trabajo" data-hotkey="f" icon="fa-file-text-o" help="Hoja de trabajo"/>
                 </xpath>
-                <xpath expr="//sheet/group/group[1]" position="inside">                
+                <xpath expr="//sheet/group/group[1]" position="inside">
                     <field name="type"/>
-                    <field name="x_repair_worksheet_template_id"
-                           context="{'default_res_model': 'repair.order'}"/>
-                    
+                    <field name="x_repair_worksheet_template_id" context="{'default_res_model': 'repair.order'}"/>
 
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
-                    <page string="Consultas" name="consultas">                      
+                    <page string="Consultas" name="consultas">
                         <field name="consulta_ids" context="{'default_repair_order_id': id}">
                             <list editable="bottom">
                                 <control>
@@ -36,18 +27,17 @@
                                 <field name="product_uom_qty" string="Cantidad"/>
                                 <field name="picked" string="Usado"/>
                                 <field name="product_id" readonly="1" force_save="1"/>
-                                <button string="Crear Producto" type="object" name="action_create_product" 
-                                        invisible="product_id != False" class="btn-primary"/>
-                                <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" 
-                                        invisible="product_id == False" class="btn-primary"/>
+                                <button string="Crear Producto" type="object" name="action_create_product" invisible="product_id != False" class="btn-primary"/>
+                                <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" invisible="product_id == False" class="btn-primary"/>
                             </list>
                         </field>
                         <div class="oe_clear"/>
                     </page>
-
-                </xpath>           
+                </xpath>
+                <xpath expr="//notebook/page[@name='parts']/field[@name='move_ids']/list" position="inside">
+                     <button string="Volver a Consultas" type="object" name="action_add_to_consultas_lines" class="btn-primary"/>
+                </xpath>
             </field>
-        </record>  
-    </data> 
-
+        </record>
+    </data>
 </odoo>

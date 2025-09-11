@@ -3,7 +3,6 @@ from odoo import fields, models, api
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-
     lot_id = fields.Many2one(
         'stock.lot', 
         string="Lot/Serial Number", 
@@ -56,7 +55,6 @@ class StockMove(models.Model):
             ('Stock', 'Stock'),
             ('Montado/servido', 'Montado/servido')
         ],
-
         compute='_compute_estado_recambio',  # ✅ CORREGIDO
         store=True
     )
@@ -93,11 +91,9 @@ class StockMove(models.Model):
             location_dest = record.location_dest_id
 
             # Si no hay ubicación, no podemos determinar el estado
-
             if not location:
                 record.estado_recambio = estado
                 continue
-
 
             # Determinar estado basado en ubicación y tipo de ubicación
             if location.usage == 'internal':
@@ -124,3 +120,20 @@ class StockMove(models.Model):
             
             record.estado_recambio = estado
 
+    def action_add_to_consultas_lines(self):
+        """Añade la pieza consultada a las líneas de consulta."""
+        self.ensure_one()
+        if not self.product_id:
+            return
+            
+        repair_order = self.repair_id  # Cambiado de repair_order_id a repair_id
+        if repair_order:
+            # Crear el registro en repair.consulta
+            self.env['repair.consulta'].create({
+                'repair_order_id': repair_order.id,  # Asegúrate de usar repair_order_id aquí, ya que es el campo en repair.consulta
+                'product_id': self.product_id.id,
+                'product_uom_qty': self.product_uom_qty or 0.0,
+                'refer': self.product_id.default_code or '',
+            })
+            # Eliminar la pieza después de añadirla
+            self.unlink()

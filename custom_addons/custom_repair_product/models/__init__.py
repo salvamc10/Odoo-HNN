@@ -4,4 +4,3 @@ from . import repair_consulta
 from . import stock_lot
 from . import project_task
 from . import worksheet_template
-
