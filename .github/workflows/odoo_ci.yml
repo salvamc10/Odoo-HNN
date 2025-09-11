@@ -2,35 +2,49 @@ name: Odoo CI
 
 on:
   push:
-<<<<<<< HEAD
-    branches:
-      - test
-      - main
-      - dev
-  pull_request:
-    branches:
-      - test
-      - main
-      - dev
-=======
-
     branches: [dev, test, main]
   pull_request:
     branches: [dev, test, main]
-
->>>>>>> fa564c68c58d72b7d90427d683e9d227c505a725
 
 jobs:
+  quick-checks:
+    name: Quick Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-quality
+          
+      - name: Install tools
+        run: pip install flake8 black
+        
+      - name: Check code formatting
+        run: black --check custom_addons/ || echo "::warning::Consider running 'black custom_addons/'"
+        
+      - name: Lint code
+        run: flake8 custom_addons --max-line-length=120 --extend-ignore=E203,W503
+
   odoo-tests:
     runs-on: ubuntu-latest
-
+    needs: quick-checks
+    
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_DB: odoo
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -38,42 +52,86 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+          --tmpfs /var/lib/postgresql/data:rw,size=512m
 
     container:
       image: odoo:18
-      options: --user root
+      options: --user root --tmpfs /tmp:rw,size=256m
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Instalar dependencias del sistema
-        run: |
-          apt-get update && apt-get install -y git python3-flake8
+      - name: Cache apt packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-odoo18
 
-      - name: Validar estilo de código con flake8
+      - name: Install system dependencies
         run: |
-          flake8 custom_addons --max-line-length=120 || true
+          apt-get update -qq
+          apt-get install -y --no-install-recommends git python3-pip
+          rm -rf /var/lib/apt/lists/*
 
-      - name: Definir módulos a testear si no se proporciona
+      - name: Smart module detection
+        id: modules
         run: |
-          if [ -z "$MODS" ]; then
-            export MODS=$(find custom_addons -maxdepth 1 -type d -not -name '__pycache__' -not -name 'custom_addons' -exec basename {} \; | paste -sd "," -)
-            echo "MODS=$MODS" >> $GITHUB_ENV
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Solo módulos modificados en PR
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+            MODS=$(echo "$CHANGED_FILES" | grep "^custom_addons/" | cut -d'/' -f2 | sort -u | paste -sd "," -)
+          else
+            # Todos los módulos
+            MODS=$(find custom_addons -maxdepth 1 -type d -name "*" ! -name "__pycache__" ! -name "custom_addons" -exec basename {} \; | paste -sd "," -)
           fi
+          
+          # Filtrar módulos válidos
+          VALID_MODS=""
+          IFS=',' read -ra MOD_ARRAY <<< "$MODS"
+          for mod in "${MOD_ARRAY[@]}"; do
+            if [ -d "custom_addons/$mod" ] && [ -f "custom_addons/$mod/__manifest__.py" ]; then
+              VALID_MODS="${VALID_MODS}${VALID_MODS:+,}$mod"
+            fi
+          done
+          
+          echo "modules=$VALID_MODS" >> $GITHUB_OUTPUT
+          echo "Testing modules: $VALID_MODS"
 
-      - name: Ejecutar pruebas de Odoo
+      - name: Run Odoo tests
+        if: steps.modules.outputs.modules != ''
         env:
           PGHOST: postgres
           PGPORT: 5432
           PGUSER: odoo
           PGPASSWORD: odoo
-          MODS: ${{ env.MODS }}
+          MODS: ${{ steps.modules.outputs.modules }}
         run: |
-          echo "Instalando módulos: $MODS"
+          echo "Installing and testing modules: $MODS"
+          
           odoo --addons-path=/usr/lib/python3/dist-packages/odoo/addons,custom_addons \
             --db_user=odoo \
+            --db_password=odoo \
+            --db_host=postgres \
             --init=$MODS \
             --test-enable \
             --stop-after-init \
-            --log-level=test
+            --log-level=test \
+            --no-http \
+            2>&1 | tee test_output.log
+            
+          # Check for critical errors
+          if grep -q "CRITICAL\|At least one test failed" test_output.log; then
+            echo "::error::Tests failed!"
+            exit 1
+          fi
+
+      - name: Upload test logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: test-logs
+          path: test_output.log
+          retention-days: 7
