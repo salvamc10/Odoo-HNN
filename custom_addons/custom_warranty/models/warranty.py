@@ -16,6 +16,7 @@ class SaleOrder(models.Model):
         help='Meses de duración de la garantía para productos con número de serie.',
     )
 
+
 class StockLot(models.Model):
     _inherit = 'stock.lot'
 
@@ -57,6 +58,7 @@ class StockLot(models.Model):
                 lot.warranty_expiration_date = lot.warranty_start_date + relativedelta(months=int(lot.warranty_months))
             else:
                 lot.warranty_expiration_date = False
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
