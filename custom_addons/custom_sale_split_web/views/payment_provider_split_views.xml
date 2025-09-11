@@ -1,0 +1,15 @@
+<odoo>
+  <record id="view_payment_provider_form_split" model="ir.ui.view">
+    <field name="name">payment.provider.form.split.flags</field>
+    <field name="model">payment.provider</field>
+    <field name="inherit_id" ref="payment.payment_provider_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//sheet/notebook/page[@name='configuration']" position="inside">
+        <group string="Disponibilidad por categoría web">
+          <field name="allowed_public_categ_ids" widget="many2many_tags"
+                options="{'no_create_edit': True}"/>
+        </group>
+      </xpath>
+    </field>
+  </record>
+</odoo>
