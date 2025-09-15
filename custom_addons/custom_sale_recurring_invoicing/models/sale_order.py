@@ -1,4 +1,3 @@
-# sale_recurring_invoicing/models/sale_order.py
 from odoo import models
 from datetime import date, timedelta
 

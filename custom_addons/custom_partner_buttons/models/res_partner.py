@@ -1,4 +1,4 @@
-from odoo import models, fields, api # type: ignore
+from odoo import models, fields, api
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
@@ -29,7 +29,6 @@ class CrmLead(models.Model):
             else:
                 lead.x_lead_partner_id = False
                 lead.x_opportunity_partner_id = False
-
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'

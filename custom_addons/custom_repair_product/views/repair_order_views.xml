@@ -35,7 +35,7 @@
                     </page>
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']/field[@name='move_ids']/list" position="inside">
-                     <button string="Volver a Consultas" type="object" name="action_add_to_consultas_lines" class="btn-primary"/>
+                    <button string="Volver a Consultas" type="object" name="action_add_to_consultas_lines" class="btn-primary"/>
                 </xpath>
             </field>
         </record>

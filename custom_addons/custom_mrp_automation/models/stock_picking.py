@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 import logging
 
 from odoo import models, _
 
 _logger = logging.getLogger(__name__)
-
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
@@ -104,7 +102,6 @@ class StockPicking(models.Model):
             debug_msg += "<br/>"
         self.message_post(body=debug_msg)
 
-
         # Buscar BOMs que contengan alguno de los componentes recibidos
         matching_boms = []
         for product_id in received_components.keys():
@@ -140,7 +137,6 @@ class StockPicking(models.Model):
 
                 if comp_id in received_components:
                     available_components[comp_id] = bom_line.product_qty
-
                 else:
                     missing_components.append(bom_line.product_id.name)
 
@@ -253,7 +249,5 @@ class StockPicking(models.Model):
             self.message_post(body="✅ Automatización completada: {} órdenes de fabricación creadas para la orden de compra '{}'.".format(
                 orders_created, purchase_order.name))
         else:
-          
             self.message_post(body="⚠️ No se crearon órdenes de fabricación para la orden de compra '{}'. Posibles causas: componentes insuficientes o BOMs incompletas.".format(
-
                 purchase_order.name))

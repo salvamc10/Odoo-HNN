@@ -55,7 +55,7 @@ class StockMove(models.Model):
             ('Stock', 'Stock'),
             ('Montado/servido', 'Montado/servido')
         ],
-        compute='_compute_estado_recambio',  # ✅ CORREGIDO
+        compute='_compute_estado_recambio',
         store=True
     )
 

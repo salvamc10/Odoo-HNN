@@ -127,7 +127,6 @@ function handleVariantChange() {
             console.warn("Variant Selector: x_studio_descripcion_1 not in result");
         }
 
-       
     })
     .catch(err => {
         console.error("Variant Selector: Error fetching combination info:", err);
