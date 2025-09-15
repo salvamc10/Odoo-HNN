@@ -1,17 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Módulo: custom_assign_machine_number
-
-Este módulo asigna un número de máquina mediante una secuencia personalizada a los lotes creados,
-salvo que el producto esté en cualquiera de las categorías seleccionadas.
-
-Reemplaza una automatización previa creada con Odoo Studio.
-
-Autor: Salva M  
-Fecha: abril 2025
-"""
-
-from odoo import models, fields, api  # type: ignore
+from odoo import models, fields, api
 
 class StockLot(models.Model):
     _inherit = 'stock.lot'

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <template id="payment_split_banner" inherit_id="website_sale.payment">
     <xpath expr="//div[@id='payment_method']" position="before">

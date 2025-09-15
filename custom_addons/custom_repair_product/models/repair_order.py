@@ -9,13 +9,12 @@ class RepairOrder(models.Model):
     _inherit = 'repair.order'
     
     consulta_ids = fields.One2many('repair.consulta', 'repair_order_id', string="Consultas")
-
     
     type = fields.Selection(
         string="Tipo",
         selection=[('Reparación', 'Reparación'), ('Recambios', 'Recambios')],        
     )
-        
+    
     x_repair_worksheet_template_id = fields.Many2one(
         "worksheet.template",
         string="Plantilla de trabajo",
@@ -41,7 +40,7 @@ class RepairOrder(models.Model):
                         'picked': consulta.picked,
                         'product_id': consulta.product_id.id if consulta.product_id else False,
                     }))
-               
+
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""
         if any(repair.sale_order_id for repair in self):

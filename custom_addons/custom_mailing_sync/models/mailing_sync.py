@@ -1,4 +1,4 @@
-from odoo import models, fields, api # type: ignore
+from odoo import models, fields, api
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'

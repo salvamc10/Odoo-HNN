@@ -1,4 +1,4 @@
-from odoo import models, fields, api # type: ignore
+from odoo import models, fields, api
 from datetime import datetime
 
 class ProductTemplate(models.Model):

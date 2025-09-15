@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="mail_activity_rule_user_only" model="ir.rule">
         <field name="name">Ver solo mis actividades</field>

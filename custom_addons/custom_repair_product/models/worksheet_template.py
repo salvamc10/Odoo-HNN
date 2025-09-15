@@ -1,4 +1,3 @@
-# models/worksheet_template.py
 from odoo import api, models, _
 import base64, logging
 _logger = logging.getLogger(__name__)
@@ -50,14 +49,14 @@ class WorksheetTemplate(models.Model):
             target = "//sheet" if has_sheet else "//form"
             arch = f"""
             <xpath expr="{target}" position="inside">
-              <div class="oe_button_box" name="button_box">
-                <button type="action"
-                        name="{act.id}"
-                        class="oe_stat_button btn-primary oe_highlight">
-                  <i class="fa fa-cloud-upload"/>
-                  <span class="o_stat_text">Guardar en Documentos</span>
-                </button>
-              </div>
+                <div class="oe_button_box" name="button_box">
+                    <button type="action"
+                            name="{act.id}"
+                            class="oe_stat_button btn-primary oe_highlight">
+                    <i class="fa fa-cloud-upload"/>
+                    <span class="o_stat_text">Guardar en Documentos</span>
+                    </button>
+                </div>
             </xpath>
             """
             View.create({
@@ -84,7 +83,7 @@ class WorksheetTemplate(models.Model):
                 'report_name': 'custom_repair_product.report_worksheet_generic',
                 'print_report_name': "('Hoja de Trabajo - %s' % (object.display_name,))",
             })
-           
+
             self.env['ir.model.data'].sudo().create({
                 'module': 'custom_repair_product',
                 'name': f"report_ws_{model.model.replace('.', '_')}",
@@ -199,8 +198,6 @@ class WorksheetTemplate(models.Model):
             _logger.error("❌ Failed to save attachment/document: %s", e, exc_info=True)
             return
 
-
-
     @api.model
     def _find_related_repair_order(self, rec):
         for fname, field in rec._fields.items():
@@ -218,7 +215,6 @@ class WorksheetTemplate(models.Model):
             Folder = self.env['documents.folder'].sudo()
             folder = Folder.search([('name', '=', 'Hojas de Trabajo')], limit=1)
             return folder or Folder.create({'name': 'Hojas de Trabajo', 'sequence': 10})
-
 
     @api.model
     def _save_and_reset(self, records):
@@ -243,8 +239,7 @@ class WorksheetTemplate(models.Model):
                 vals[fname] = False
         if vals:
             rec.sudo().write(vals)
-    
-   
+
     def _get_repair_order_manager_group(self):
         return self.env.ref("custom_repair_product.group_repair_manager")
     
