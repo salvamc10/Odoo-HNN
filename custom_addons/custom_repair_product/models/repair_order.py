@@ -22,6 +22,56 @@ class RepairOrder(models.Model):
         help="Plantilla de worksheet creada con Studio para órdenes de reparación."
     )
 
+    x_studio_direccion = fields.Many2one(
+        comodel_name='res.partner',
+        string='Dirección de Contacto',
+    )
+
+    display_address = fields.Char(
+        string='Dirección de Contacto Mostrada',
+        compute='_compute_display_address',
+        readonly=True,
+    )
+
+    @api.depends('x_studio_direccion')
+    def _compute_display_address(self):
+        """Calcula la dirección completa basada en x_studio_direccion."""
+        for record in self:
+            if record.x_studio_direccion:
+                address = record.x_studio_direccion
+                address_lines = [
+                    address.street or '',
+                    address.city or '',
+                    address.zip or '',
+                    address.state_id.name or '',
+                    address.country_id.name or ''
+                ]
+                record.display_address = ', '.join(filter(None, address_lines))
+            else:
+                record.display_address = ''
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        """Limpia el campo x_studio_direccion si cambia el partner_id."""
+        if self.partner_id:
+            self.x_studio_direccion = False  
+            return {
+                'domain': {
+                    'x_studio_direccion': [
+                        '|',
+                        ('id', '=', self.partner_id.id),
+                        '&',
+                        ('parent_id', '=', self.partner_id.id),
+                        ('type', '=', 'other')
+                    ]
+                }
+            }
+        return {
+            'domain': {
+                'x_studio_direccion': []
+            }
+        }
+
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
         """Guarda el formulario cuando se modifican las consultas."""
