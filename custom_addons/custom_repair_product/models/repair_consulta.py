@@ -27,6 +27,7 @@ class RepairConsulta(models.Model):
         help="Código de referencia del proveedor para buscar un producto."
     )
 
+    
     @api.onchange('x_supplier_reference')
     def _onchange_supplier_reference(self):
         """Busca un producto basado en la referencia del proveedor (product_code) y actualiza product_id."""

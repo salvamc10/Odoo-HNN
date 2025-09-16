@@ -15,11 +15,16 @@
                 <field name="quantity"/>
                 <field name="location_id"/>
                 <field name="repair_line_type"/>
-                <field name="forecast_availability"/>
+                <field name="x_forecast_state" widget="badge"
+                   decoration-success="x_forecast_state == 'available'"
+                   decoration-warning="x_forecast_state == 'forecasted'"
+                   decoration-danger="x_forecast_state == 'unavailable'"
+                   options="{'badge_class': {'available': 'bg-success', 'forecasted': 'bg-warning', 'unavailable': 'bg-danger'}}"/>
+                <field name="x_earliest_forecast_date" invisible="x_forecast_state != 'forecasted'"/>
                 <field name="picked"/>
                 <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart" invisible="forecast_availability &lt; 0 and repair_line_type == 'add'"/>
                 <button type="object" name="action_product_forecast_report" title="Forecast Report" icon="fa-area-chart text-danger" invisible="forecast_availability &gt;= 0 or repair_line_type != 'add'"/>
-                <field name="forecast_availability" string="Forecasted" widget="forecast_widget"/>
+                
                 <button string="Volver a Consultas" type="object" name="action_add_to_consultas_lines" class="btn-primary"/>
             </list>
         </field>
