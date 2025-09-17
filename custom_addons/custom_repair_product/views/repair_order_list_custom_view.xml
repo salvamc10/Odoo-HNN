@@ -48,10 +48,6 @@
         <field name="code">action = env['ir.actions.act_window']._for_xml_id('custom_repair_product.action_worksheet_window_config')
         </field>
     </record>
-<<<<<<< HEAD
-
-=======
->>>>>>> 084b882d4b6ce55852a185fce50f49700da3a1da
     
     <record id="action_repair_order_window_config" model="ir.actions.act_window">
         <field name="name">Manage Repair Orders</field>
@@ -80,20 +76,12 @@
     </field>
 </record>
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 084b882d4b6ce55852a185fce50f49700da3a1da
     <menuitem id="menu_repair_order_config"
         name="Manage Repair Orders"
         parent="repair.repair_menu_config"
         action="custom_repair_order_server_config"
         sequence="4"
-<<<<<<< HEAD
-       />
-=======
     />
->>>>>>> 46ef0393e286f09dd77b29b263fc3e0df62ea1b6
 
         
     <menuitem id="menu_worksheet_config"
