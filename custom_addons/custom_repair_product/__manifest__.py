@@ -1,4 +1,5 @@
 {
+
     'name': 'Productos para la reparación',
     'version': '18.0.1.0',
     'author': 'Pedro M',
@@ -27,7 +28,7 @@
         'views/repair_product_views.xml',
         'views/repair_order_views.xml',
         'views/repair_order_list_custom_view.xml',      
-        s'report/worksheet_report.xml',
+        'report/worksheet_report.xml',
         'wizards/repair_worksheet_wizard_views.xml'
     ],
     'installable': True,
