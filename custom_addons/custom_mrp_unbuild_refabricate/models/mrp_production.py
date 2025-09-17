@@ -15,7 +15,7 @@ class MrpProduction(models.Model):
             self._create_and_validate_unbuild(production, ctx)
             bom_refab = self._find_refabrication_bom(production)
             new_production = self._create_new_refab_mo(production, bom_refab)
-            new_production.action_confirm()  # Confirmar la nueva MO para generar movimientos de stock
+            new_production.action_confirm()  
             self._assign_tracked_lots_to_new_mo(production, new_production)
             new_production.action_assign()  # Asignar/reservar stock en la nueva MO
         return True
@@ -31,7 +31,7 @@ class MrpProduction(models.Model):
         ctx.update({
             'active_model': 'mrp.production',
             'active_id': production.id,
-            'default_mo_id': production.id,  # Requerido para componentes rastreados
+            'default_mo_id': production.id,  
         })
         return ctx
 
@@ -50,7 +50,7 @@ class MrpProduction(models.Model):
         """Busca la BOM de refabricación con distintivo '-R'."""
         bom_refab = self.env['mrp.bom'].search([
             ('product_tmpl_id', '=', production.product_tmpl_id.id),
-            ('name', 'ilike', '-R')
+            ('code', 'ilike', '-R')
         ], limit=1)
         if not bom_refab:
             raise UserError(_(f"No se encontró una BOM de refabricación con distintivo '-R' para el producto {production.product_id.name}."))
@@ -62,7 +62,7 @@ class MrpProduction(models.Model):
             'product_id': production.product_id.id,
             'product_uom_id': production.product_uom_id.id,
             'bom_id': bom_refab.id,
-            'product_qty': production.qty_produced,  # Cantidad producida original
+            'product_qty': production.qty_produced, 
             'lot_producing_id': production.lot_producing_id.id if production.lot_producing_id else False,
             'company_id': production.company_id.id,
             'location_src_id': production.location_src_id.id,
@@ -82,11 +82,10 @@ class MrpProduction(models.Model):
             if matching_original_moves:
                 for original_move in matching_original_moves:
                     for orig_line in original_move.move_line_ids:
-                        if new_raw_move.product_id.tracking != 'none':  # Solo si tiene trazabilidad
+                        if new_raw_move.product_id.tracking != 'none': 
                             new_line_vals = {
                                 'move_id': new_raw_move.id,
                                 'product_id': new_raw_move.product_id.id,
-                                'product_uom_id': new_raw_move.product_uom_id.id,
                                 'qty_done': min(orig_line.qty_done, new_raw_move.product_uom_qty),
                                 'lot_id': orig_line.lot_id.id if orig_line.lot_id else False,
                                 'package_id': orig_line.package_id.id if orig_line.package_id else False,
