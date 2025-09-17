@@ -12,8 +12,12 @@
                 </xpath>
                 <xpath expr="//sheet/group/group[1]" position="inside">
                     <field name="type"/>
+                    <field name="x_studio_direccion"
+                                   widget="many2one"
+                                   context="{'show_address': 1, 'show_address_only': True}"
+                                   domain="['|', ('id', '=', partner_id), '&amp;', ('parent_id', '=', partner_id), ('type', '=', 'other')]"/>
+                    
                     <field name="x_repair_worksheet_template_id" context="{'default_res_model': 'repair.order'}"/>
-
                 </xpath>
                 <xpath expr="//notebook/page[@name='parts']" position="before">
                     <page string="Consultas" name="consultas">
@@ -24,8 +28,8 @@
                                 </control>
                                 <field name="consulta_text" string="Producto a consultar"/>
                                 <field name="refer" string="Referencia"/>
-                                <field name="product_uom_qty" string="Cantidad"/>
-                                <field name="picked" string="Usado"/>
+                                <field name="x_supplier_reference"/>
+                                <field name="product_uom_qty" string="Cantidad"/>                                
                                 <field name="product_id" readonly="1" force_save="1"/>
                                 <button string="Crear Producto" type="object" name="action_create_product" invisible="product_id != False" class="btn-primary"/>
                                 <button string="Añadir a Reparación" type="object" name="action_add_to_repair_lines" invisible="product_id == False" class="btn-primary"/>
