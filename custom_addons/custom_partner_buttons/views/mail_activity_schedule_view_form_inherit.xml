@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="mail_activity_schedule_view_form_custom" model="ir.ui.view">
         <field name="name">mail.activity.schedule.view.form.custom</field>

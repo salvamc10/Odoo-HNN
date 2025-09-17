@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <template id="checkout_extra_info_msg" inherit_id="website_sale.extra_info">
     <xpath expr="//section[hasclass('s_website_form')]" position="before">

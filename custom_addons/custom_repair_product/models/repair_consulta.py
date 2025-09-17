@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from odoo import models, fields, api
+=======
+from odoo import models, fields, api, _
+>>>>>>> 46ef0393e286f09dd77b29b263fc3e0df62ea1b6
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -27,12 +31,17 @@ class RepairConsulta(models.Model):
         help="Código de referencia del proveedor para buscar un producto."
     )
 
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 46ef0393e286f09dd77b29b263fc3e0df62ea1b6
     @api.onchange('x_supplier_reference')
     def _onchange_supplier_reference(self):
         """Busca un producto basado en la referencia del proveedor (product_code) y actualiza product_id."""
         _logger.info("Referencia del proveedor: %s, Compañía: %s, Contexto: %s", self.x_supplier_reference, self.company_id.id, self.env.context)
         self.ensure_one()
         if self.x_supplier_reference:
+<<<<<<< HEAD
             company_id = self.company_id.id or self.env.context.get('default_company_id', self.env.company.id)
             domain = [
                 ('product_code', 'ilike', self.x_supplier_reference),
@@ -53,6 +62,24 @@ class RepairConsulta(models.Model):
                     product = supplier_info.product_tmpl_id.product_variant_id
                     _logger.info("Asignando desde product_tmpl_id: %s (variante %s)", 
                                  supplier_info.product_tmpl_id.id, product.id if product else 'Ninguna')
+=======
+            domain = [('product_code', '=', self.x_supplier_reference)]
+            _logger.info("Buscando con dominio: %s", domain)
+            supplier_info = self.env['product.supplierinfo'].search(domain, limit=1)
+            _logger.info("Supplier info encontrado: %s", supplier_info)
+            if supplier_info:
+                _logger.info("Supplier info detalles: product_id=%s, product_tmpl_id=%s, company_id=%s", 
+                            supplier_info.product_id.id if supplier_info.product_id else False, 
+                            supplier_info.product_tmpl_id.id if supplier_info.product_tmpl_id else False,
+                            supplier_info.company_id.id if supplier_info.company_id else False)
+                if supplier_info.product_id:
+                    _logger.info("Asignando product_id directo: %s", supplier_info.product_id.id)
+                    self.product_id = supplier_info.product_id.id
+                elif supplier_info.product_tmpl_id:
+                    product = supplier_info.product_tmpl_id.product_variant_id
+                    _logger.info("Asignando desde product_tmpl_id: %s (variante %s)", 
+                                supplier_info.product_tmpl_id.id, product.id if product else 'Ninguna')
+>>>>>>> 46ef0393e286f09dd77b29b263fc3e0df62ea1b6
                     self.product_id = product.id if product else False
                 else:
                     _logger.info("No hay product_id ni product_tmpl_id en supplier_info")
@@ -60,6 +87,18 @@ class RepairConsulta(models.Model):
             else:
                 _logger.info("No se encontró supplier_info para product_code: %s", self.x_supplier_reference)
                 self.product_id = False
+<<<<<<< HEAD
+=======
+                # Depuración adicional: listar todos los product_code disponibles
+                all_supplier_codes = self.env['product.supplierinfo'].search([]).mapped('product_code')
+                _logger.info("Códigos de proveedor disponibles: %s", all_supplier_codes)
+                return {
+                    'warning': {
+                        'title': _("Advertencia"),
+                        'message': _("No se encontró un producto con la referencia del proveedor: %s") % self.x_supplier_reference
+                    }
+                }
+>>>>>>> 46ef0393e286f09dd77b29b263fc3e0df62ea1b6
         else:
             self.product_id = False
             
@@ -71,7 +110,7 @@ class RepairConsulta(models.Model):
         if self.refer:
             # Dominio para buscar productos que coincidan con refer
             domain = [
-                ('default_code', 'ilike', self.refer),
+                ('default_code', '=', self.refer),
                 ('type', '=', 'consu')
             ]
             # Busca el primer producto que coincida
