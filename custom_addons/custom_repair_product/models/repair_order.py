@@ -33,6 +33,49 @@ class RepairOrder(models.Model):
         readonly=True,
     )
 
+    x_numero_consultas = fields.Float(
+        string="Numero de consultas pendientes",
+        compute='_compute_x_numero_consultas',
+        store=False,  
+    )
+
+    x_forecast_availibility = fields.Float(            
+        string="Numero de recambios pte servir",
+        compute='_compute_forecast_availability',
+        store=False,  
+    )
+    
+    @api.depends('consulta_ids', 'consulta_ids.product_id')
+    def _compute_x_numero_consultas(self):
+        for record in self:
+            # Contar consultas pendientes: aquellas donde product_id no está establecido
+            record.x_numero_consultas = len(record.consulta_ids.filtered(lambda c: not c.product_id))
+
+    @api.depends('move_ids', 'move_ids.forecast_availability', 'move_ids.product_uom_qty', 'move_ids.state', 'move_ids.product_id', 'move_ids.picking_id', 'move_ids.picking_id.state')
+    def _compute_forecast_availability(self):
+        for record in self:
+            # Filtrar movimientos relevantes (no completados ni cancelados)
+            moves = record.move_ids.filtered(lambda m: m.state not in ('done', 'cancel'))
+            count = 0
+            for move in moves:
+                if not move.product_id or move.product_uom_qty <= 0:
+                    continue
+                # Contar si no está disponible (forecast_availability < product_uom_qty)
+                if move.forecast_availability < move.product_uom_qty:
+                    count += 1
+                    continue
+                # Contar si hay movimientos de entrada pendientes (compra confirmada no validada)
+                incoming_moves = self.env['stock.move'].search([
+                    ('product_id', '=', move.product_id.id),
+                    ('state', 'in', ('confirmed', 'assigned', 'partially_available')),
+                    ('picking_type_id.code', '=', 'incoming'),
+                    ('id', '!=', move.id),
+                    ('picking_id.state', '!=', 'done'),  # Solo compras no validadas
+                ])
+                if incoming_moves:
+                    count += 1
+            record.x_forecast_availibility = count
+            
     @api.depends('x_studio_direccion')
     def _compute_display_address(self):
         """Calcula la dirección completa basada en x_studio_direccion."""
