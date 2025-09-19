@@ -1,15 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Módulo: custom_sale_sequence
-
-Este módulo personaliza la numeración de pedidos de venta en función de la plantilla seleccionada.
-También detecta si el presupuesto proviene de una reparación para asignar automáticamente
-la plantilla y secuencia correspondiente.
-
-Autor: Salva M
-Fecha: julio 2025
-"""
-
 from odoo import models, api, fields
 
 class SaleOrder(models.Model):
@@ -63,4 +51,3 @@ class SaleOrder(models.Model):
                             vals['name'] = new_seq
 
         return super().write(vals)
-        

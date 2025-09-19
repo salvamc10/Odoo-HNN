@@ -1,11 +1,9 @@
 from odoo import models, fields
 
-
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     x_studio_descripcion_1 = fields.Html(string="Descripción Custom")
-    
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -30,11 +28,10 @@ class ProductTemplate(models.Model):
         combination_info['x_studio_descripcion_1'] = product.x_studio_descripcion_1 or ''
 
         return combination_info
-        
 
 class ProductTemplateAttributeValue(models.Model):
     _inherit = 'product.template.attribute.value'
-    
+
     def _get_combination_name(self):
         """Exclude values from single value lines or from no_variant attributes."""
         ptavs = self._without_no_variant_attributes().with_prefetch(self._prefetch_ids)

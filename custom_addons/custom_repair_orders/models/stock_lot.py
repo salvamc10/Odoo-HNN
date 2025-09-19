@@ -20,4 +20,3 @@ class StockLot(models.Model):
             # Busca por nº de serie o nº de máquina
             args = ['|', ('name', operator, name), ('x_machine_number', operator, name)] + args
         return self._search(args, limit=limit, access_rights_uid=name_get_uid)
-        

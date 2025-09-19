@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Acción para mostrar Oportunidades desde Partner -->
     <record id="action_crm_lead_opportunity_from_partner" model="ir.actions.act_window">

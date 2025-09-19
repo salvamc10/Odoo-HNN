@@ -9,19 +9,111 @@ class RepairOrder(models.Model):
     _inherit = 'repair.order'
     
     consulta_ids = fields.One2many('repair.consulta', 'repair_order_id', string="Consultas")
-
     
     type = fields.Selection(
         string="Tipo",
         selection=[('Reparación', 'Reparación'), ('Recambios', 'Recambios')],        
     )
-        
+    
     x_repair_worksheet_template_id = fields.Many2one(
         "worksheet.template",
         string="Plantilla de trabajo",
         domain=[("res_model", "=", "repair.order")],
         help="Plantilla de worksheet creada con Studio para órdenes de reparación."
     )
+
+    x_studio_direccion = fields.Many2one(
+        comodel_name='res.partner',
+        string='Dirección de Contacto',
+    )
+
+    display_address = fields.Char(
+        string='Dirección de Contacto Mostrada',
+        compute='_compute_display_address',
+        readonly=True,
+    )
+
+    x_numero_consultas = fields.Float(
+        string="Numero de consultas pendientes",
+        compute='_compute_x_numero_consultas',
+        store=False,  
+    )
+
+    x_forecast_availibility = fields.Float(            
+        string="Numero de recambios pte servir",
+        compute='_compute_forecast_availability',
+        store=False,  
+    )
+    
+    @api.depends('consulta_ids', 'consulta_ids.product_id')
+    def _compute_x_numero_consultas(self):
+        for record in self:
+            # Contar consultas pendientes: aquellas donde product_id no está establecido
+            record.x_numero_consultas = len(record.consulta_ids.filtered(lambda c: not c.product_id))
+
+    @api.depends('move_ids', 'move_ids.forecast_availability', 'move_ids.product_uom_qty', 'move_ids.state', 'move_ids.product_id', 'move_ids.picking_id', 'move_ids.picking_id.state')
+    def _compute_forecast_availability(self):
+        for record in self:
+            # Filtrar movimientos relevantes (no completados ni cancelados)
+            moves = record.move_ids.filtered(lambda m: m.state not in ('done', 'cancel'))
+            count = 0
+            for move in moves:
+                if not move.product_id or move.product_uom_qty <= 0:
+                    continue
+                # Contar si no está disponible (forecast_availability < product_uom_qty)
+                if move.forecast_availability < move.product_uom_qty:
+                    count += 1
+                    continue
+                # Contar si hay movimientos de entrada pendientes (compra confirmada no validada)
+                incoming_moves = self.env['stock.move'].search([
+                    ('product_id', '=', move.product_id.id),
+                    ('state', 'in', ('confirmed', 'assigned', 'partially_available')),
+                    ('picking_type_id.code', '=', 'incoming'),
+                    ('id', '!=', move.id),
+                    ('picking_id.state', '!=', 'done'),  # Solo compras no validadas
+                ])
+                if incoming_moves:
+                    count += 1
+            record.x_forecast_availibility = count
+            
+    @api.depends('x_studio_direccion')
+    def _compute_display_address(self):
+        """Calcula la dirección completa basada en x_studio_direccion."""
+        for record in self:
+            if record.x_studio_direccion:
+                address = record.x_studio_direccion
+                address_lines = [
+                    address.street or '',
+                    address.city or '',
+                    address.zip or '',
+                    address.state_id.name or '',
+                    address.country_id.name or ''
+                ]
+                record.display_address = ', '.join(filter(None, address_lines))
+            else:
+                record.display_address = ''
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        """Limpia el campo x_studio_direccion si cambia el partner_id."""
+        if self.partner_id:
+            self.x_studio_direccion = False  
+            return {
+                'domain': {
+                    'x_studio_direccion': [
+                        '|',
+                        ('id', '=', self.partner_id.id),
+                        '&',
+                        ('parent_id', '=', self.partner_id.id),
+                        ('type', '=', 'other')
+                    ]
+                }
+            }
+        return {
+            'domain': {
+                'x_studio_direccion': []
+            }
+        }
 
     @api.onchange('consulta_ids')
     def _onchange_consulta_ids(self):
@@ -41,7 +133,7 @@ class RepairOrder(models.Model):
                         'picked': consulta.picked,
                         'product_id': consulta.product_id.id if consulta.product_id else False,
                     }))
-               
+
     def action_create_sale_order(self):
         """Override to add stock.move products to sale.order.option for type 'Recambios'."""
         if any(repair.sale_order_id for repair in self):

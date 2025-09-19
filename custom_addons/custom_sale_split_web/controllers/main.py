@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 from odoo.addons.payment.controllers.portal import PaymentPortal
 from odoo import http

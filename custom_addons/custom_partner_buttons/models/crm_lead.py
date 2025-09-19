@@ -1,5 +1,5 @@
-from odoo import models, fields, api # type: ignore
-from odoo.exceptions import UserError # type: ignore
+from odoo import models, fields, api
+from odoo.exceptions import UserError
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'

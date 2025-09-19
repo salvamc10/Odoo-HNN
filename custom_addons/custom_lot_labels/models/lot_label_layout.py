@@ -1,6 +1,5 @@
 from collections import defaultdict
-from odoo import models, fields  # type: ignore
-
+from odoo import models, fields
 
 class LotLabelLayout(models.TransientModel):
     _inherit = 'lot.label.layout'

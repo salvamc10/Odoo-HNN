@@ -7,7 +7,7 @@
     'description': """
     Este módulo asigna automáticamente un número de máquina a los lotes (números de serie)
     cuando se crean, usando una secuencia con prefijo "B" y formato de 6 dígitos.
-    Solo se aplica a productos en categorías válidas.
+    Solo se aplica a productos en categorías válidas especificadas en el módulo.
     """,
     'category': 'Inventory/Stock',
     'depends': ['stock', 'mrp'],

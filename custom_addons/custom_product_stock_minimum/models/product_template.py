@@ -1,5 +1,4 @@
-from odoo import models, fields, api # type: ignore
-from datetime import datetime
+from odoo import models, fields, api
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -8,14 +7,6 @@ class ProductTemplate(models.Model):
         string='Unidades faltantes para mínimo',
         compute='_compute_stock_below_minimum_qty',
         store=True
-    )
-
-    stock_counted = fields.Boolean(
-        string='Recuento Inventario'
-    )
-
-    stock_count_marked_date = fields.Datetime(
-        string='Fecha último recuento'
     )
 
     @api.depends('product_variant_ids.qty_available')
@@ -33,8 +24,3 @@ class ProductTemplate(models.Model):
                 template.stock_below_minimum_qty = missing if missing > 0 else 0.0
             else:
                 template.stock_below_minimum_qty = 0.0
-
-    def write(self, vals):
-        if 'stock_counted' in vals and vals['stock_counted']:
-            vals['stock_count_marked_date'] = datetime.now()
-        return super().write(vals)

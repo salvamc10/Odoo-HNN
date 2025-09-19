@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Vista lista personalizada con el campo lead_type -->
     <record id="view_mail_activity_list_with_lead_type" model="ir.ui.view">

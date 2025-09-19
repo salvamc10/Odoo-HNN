@@ -1,4 +1,7 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class RepairConsulta(models.Model):
     _name = 'repair.consulta'
@@ -19,6 +22,53 @@ class RepairConsulta(models.Model):
         domain="[('type', '=', 'consu'), ('company_id', 'in', [company_id, False])]", index=True)
     company_id = fields.Many2one('res.company', string='Empresa')
     
+    x_supplier_reference = fields.Char(
+        string="Referencia del Proveedor",
+        help="Código de referencia del proveedor para buscar un producto."
+    )
+
+    
+    @api.onchange('x_supplier_reference')
+    def _onchange_supplier_reference(self):
+        """Busca un producto basado en la referencia del proveedor (product_code) y actualiza product_id."""
+        _logger.info("Referencia del proveedor: %s, Compañía: %s, Contexto: %s", self.x_supplier_reference, self.company_id.id, self.env.context)
+        self.ensure_one()
+        if self.x_supplier_reference:
+            domain = [('product_code', '=', self.x_supplier_reference)]
+            _logger.info("Buscando con dominio: %s", domain)
+            supplier_info = self.env['product.supplierinfo'].search(domain, limit=1)
+            _logger.info("Supplier info encontrado: %s", supplier_info)
+            if supplier_info:
+                _logger.info("Supplier info detalles: product_id=%s, product_tmpl_id=%s, company_id=%s", 
+                            supplier_info.product_id.id if supplier_info.product_id else False, 
+                            supplier_info.product_tmpl_id.id if supplier_info.product_tmpl_id else False,
+                            supplier_info.company_id.id if supplier_info.company_id else False)
+                if supplier_info.product_id:
+                    _logger.info("Asignando product_id directo: %s", supplier_info.product_id.id)
+                    self.product_id = supplier_info.product_id.id
+                elif supplier_info.product_tmpl_id:
+                    product = supplier_info.product_tmpl_id.product_variant_id
+                    _logger.info("Asignando desde product_tmpl_id: %s (variante %s)", 
+                                supplier_info.product_tmpl_id.id, product.id if product else 'Ninguna')
+                    self.product_id = product.id if product else False
+                else:
+                    _logger.info("No hay product_id ni product_tmpl_id en supplier_info")
+                    self.product_id = False
+            else:
+                _logger.info("No se encontró supplier_info para product_code: %s", self.x_supplier_reference)
+                self.product_id = False
+                # Depuración adicional: listar todos los product_code disponibles
+                all_supplier_codes = self.env['product.supplierinfo'].search([]).mapped('product_code')
+                _logger.info("Códigos de proveedor disponibles: %s", all_supplier_codes)
+                return {
+                    'warning': {
+                        'title': _("Advertencia"),
+                        'message': _("No se encontró un producto con la referencia del proveedor: %s") % self.x_supplier_reference
+                    }
+                }
+        else:
+            self.product_id = False
+            
 
     @api.onchange('refer')
     def _onchange_refer(self):
@@ -27,7 +77,7 @@ class RepairConsulta(models.Model):
         if self.refer:
             # Dominio para buscar productos que coincidan con refer
             domain = [
-                ('default_code', 'ilike', self.refer),
+                ('default_code', '=', self.refer),
                 ('type', '=', 'consu')
             ]
             # Busca el primer producto que coincida
@@ -67,7 +117,7 @@ class RepairConsulta(models.Model):
             self.env['stock.move'].create({
                 'repair_id': repair_order.id,
                 'product_id': self.product_id.id,
-                'product_uom_qty': self.product_uom_qty or 1.0,
+                'product_uom_qty': self.product_uom_qty or 0.0,
                 'product_uom': self.product_id.uom_id.id,
                 'location_id': repair_order.location_id.id,
                 'location_dest_id': repair_order.location_dest_id.id,
