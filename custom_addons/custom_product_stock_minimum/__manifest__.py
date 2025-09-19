@@ -1,6 +1,6 @@
 {
     'name': 'Diferencia con stock mínimo en productos',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': 'Salva M',
     'license': 'LGPL-3',
     'summary': 'Campo calculado que indica cuántas unidades faltan para llegar al stock mínimo del producto',

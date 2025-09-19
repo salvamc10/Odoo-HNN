@@ -1,6 +1,6 @@
 {
     'name': 'Selección de variantes web',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'summary': 'customiza la vista de las variantes de la web',
     'description': """
     Este módulo permite personalizar la vista de las variantes de productos con categoría recambios

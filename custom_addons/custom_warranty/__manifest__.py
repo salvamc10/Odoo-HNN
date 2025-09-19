@@ -1,6 +1,6 @@
 {
     "name": "Gestión de garantías",
-    "version": "18.0.1.0",
+    "version": "19.0.1.0",
     "author": "Salva M",
     "license": "LGPL-3",
     "summary": "Gestión automática de garantías por número de serie desde ventas",

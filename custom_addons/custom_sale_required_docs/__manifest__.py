@@ -1,6 +1,6 @@
 {
     'name': 'Documentos obligatorios en plantillas de presupuesto',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'summary': 'Marca documentos obligatorios por plantilla y precárgalos en el pedido',
     'license': 'LGPL-3',
     'author': 'Salva M',

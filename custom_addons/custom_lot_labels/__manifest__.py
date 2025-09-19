@@ -1,6 +1,6 @@
 {
     'name': 'Etiquetas personalizadas para números de serie/lote',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'summary': 'Impresión de etiquetas Dymo y A4 para números de serie o lote',
     'license': 'LGPL-3',
     'author': 'Salva M',

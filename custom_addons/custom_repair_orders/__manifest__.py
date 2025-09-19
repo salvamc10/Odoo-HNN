@@ -1,6 +1,6 @@
 {
     'name': 'Reparaciones por número de serie/máquina',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'summary': 'Gestión de reparaciones asociadas a productos por número de serie/máquina',

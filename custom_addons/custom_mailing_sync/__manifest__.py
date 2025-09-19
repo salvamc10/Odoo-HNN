@@ -1,6 +1,6 @@
 {
     'name': "Sincronización de email del contacto con Mailing List",
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'summary': "Automatiza la incorporación y actualización de contactos en la lista de mailing a partir de los registros en res.partner.",
     'description': """
     Este módulo añade la funcionalidad para que:

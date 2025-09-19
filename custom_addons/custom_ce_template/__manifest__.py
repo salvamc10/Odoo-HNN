@@ -7,7 +7,7 @@
     en la factura, facilitando el cumplimiento de normativas y la entrega de información relevante al
     cliente.
     """,
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'category': 'Sales/CRM',

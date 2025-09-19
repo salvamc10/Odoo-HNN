@@ -1,6 +1,6 @@
 {
     'name': 'Asignación automática de número de máquina',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': 'Salva M',
     'license': 'LGPL-3',
     'summary': 'Asigna un número de máquina con formato personalizado usando una secuencia',

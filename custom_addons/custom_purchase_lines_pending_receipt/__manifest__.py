@@ -1,6 +1,6 @@
 {
     'name': 'Líneas de compra pendientes de recepción',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': 'Pedro M',
     'license': 'LGPL-3',
     'summary': 'Vista de líneas de pedido donde la cantidad pedida supera la recibida',

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Facturas de alquiler recurrentes',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'summary': 'Gestión de facturación recurrente en ventas.',
     'author': 'Pedro M',    
     'category': 'Sales',

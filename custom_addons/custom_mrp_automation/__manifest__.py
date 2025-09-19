@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Órdenes de fabricación automáticas',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'summary': 'Automatiza la creación de órdenes de fabricación tras validar recepciones',
     'description': """
     Este módulo permite automatizar la creación de órdenes de fabricación en Odoo 18

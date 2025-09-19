@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Vista para la fabricación de productos",
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': "Salva M",
     'category': 'Inventory',
     'summary': 'Vista personalizada para la fabricación de productos con número de serie',

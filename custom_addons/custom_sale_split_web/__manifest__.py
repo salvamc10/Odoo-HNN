@@ -1,6 +1,6 @@
 {
     'name': 'Dividir pedidos web por categoría',
-    'version': '18.0.1.0',
+    'version': '19.0.1.0',
     'author': 'Salva M',
     'license': 'LGPL-3',
     'summary': 'Divide el carrito en pedidos de Máquinas y Recambios usando categoría web',
