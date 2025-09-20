@@ -5,7 +5,8 @@ class MrpProduction(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        context = dict(self._context or {})
+        # Usar self.env.context en lugar del antiguo método de acceso al contexto
+        context = dict(self.env.context or {})
         skip_auto_confirm = context.pop('skip_auto_confirm', False)
         no_create_moves = context.pop('no_create_moves', False)
 

@@ -1,6 +1,6 @@
 # HUNNISA Odoo Custom Addons
 
-Repositorio oficial de **HUNNISA MACHINERY PARTS SL** que contiene desarrollos personalizados sobre Odoo 18 Enterprise.
+Repositorio oficial de **HUNNISA MACHINERY PARTS SL** que contiene desarrollos personalizados sobre Odoo 19 Enterprise.
 
 ---
 

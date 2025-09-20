@@ -9,9 +9,18 @@ class StockLot(models.Model):
     def create(self, vals_list):
         lots = super().create(vals_list)
 
+        # Verificar si estamos en modo de instalación o carga de datos
+        if self.env.context.get('install_mode') or self.env.context.get('module') or self.env.context.get('import_file'):
+            # Durante la instalación o importación, no intentamos heredar el número de máquina
+            return lots
+
         for lot in lots:
             if not lot.x_machine_number:
-                lot._try_inherit_machine_number_from_mo()
+                try:
+                    lot._try_inherit_machine_number_from_mo()
+                except Exception:
+                    # Capturamos cualquier excepción para evitar que falle la creación del lote
+                    pass
 
         return lots
 
@@ -21,11 +30,22 @@ class StockLot(models.Model):
         intenta heredar el número de máquina desde los lotes consumidos.
         """
         self.ensure_one()
-
-        # Buscar producción que produzca este lote
-        production = self.env['mrp.production'].search([
-            ('lot_producing_id', '=', self.id)
-        ], limit=1)
+        
+        # Verificar si estamos en modo de instalación de datos demo
+        if self.env.context.get('install_mode'):
+            # Saltamos este proceso durante la instalación de datos demo
+            return
+            
+        # Buscar producción relacionada con este lote
+        # Solo usar lot_producing_ids que es el campo en Odoo 19
+        production = False
+        try:
+            production = self.env['mrp.production'].search([
+                ('lot_producing_ids', 'in', self.id),
+            ], limit=1)
+        except Exception:
+            # Si hay cualquier error en la búsqueda, simplemente continuamos
+            pass
 
         if not production:
             return

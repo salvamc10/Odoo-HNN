@@ -40,7 +40,7 @@ class MrpProduction(models.Model):
         unbuild = self.env['mrp.unbuild'].with_context(ctx).create({
             'product_id': production.product_id.id,
             'bom_id': production.bom_id.id,
-            'lot_id': production.lot_producing_id.id if production.lot_producing_id else False,
+            'lot_id': production.lot_producing_ids[0].id if production.lot_producing_ids else False,
             'location_id': production.location_dest_id.id,
             'company_id': production.company_id.id,
         })
@@ -62,13 +62,19 @@ class MrpProduction(models.Model):
             'product_id': production.product_id.id,
             'product_uom_id': production.product_uom_id.id,
             'bom_id': bom_refab.id,
-            'product_qty': production.qty_produced, 
-            'lot_producing_id': production.lot_producing_id.id if production.lot_producing_id else False,
+            'product_qty': production.qty_produced,
             'company_id': production.company_id.id,
             'location_src_id': production.location_src_id.id,
             'location_dest_id': production.location_dest_id.id,
         }
-        return self.env['mrp.production'].create(new_production_vals)
+        new_production = self.env['mrp.production'].create(new_production_vals)
+        
+        # Asignar el mismo lote producido de la orden original
+        if production.lot_producing_ids:
+            for lot in production.lot_producing_ids:
+                new_production.lot_producing_ids = [(4, lot.id)]
+                
+        return new_production
 
     def _assign_tracked_lots_to_new_mo(self, original_production, new_production):
         """

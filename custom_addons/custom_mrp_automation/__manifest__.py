@@ -4,7 +4,7 @@
     'version': '19.0.1.0',
     'summary': 'Automatiza la creación de órdenes de fabricación tras validar recepciones',
     'description': """
-    Este módulo permite automatizar la creación de órdenes de fabricación en Odoo 18
+    Este módulo permite automatizar la creación de órdenes de fabricación
     después de validar las recepciones de productos. Facilita la gestión de la producción
     al generar automáticamente las órdenes de fabricación necesarias basadas en las recepciones validadas.
     Permite una integración más fluida entre la gestión de inventario y la producción, mejorando la eficiencia del proceso.

@@ -9,11 +9,16 @@ class MrpProduction(models.Model):
         result = super().write(vals)
 
         for mo in self:
-            if 'lot_producing_id' in vals and mo.lot_producing_id and not mo.lot_producing_id.x_machine_number:
-                # Buscar lote WIP consumido con número de máquina
+            produced_lots = mo.lot_producing_ids
+            
+            # Procesar lotes producidos
+            if produced_lots:
                 raw_lots = mo.move_raw_ids.mapped('move_line_ids.lot_id')
                 lote_origen = raw_lots.filtered(lambda l: l.x_machine_number)
+                
                 if lote_origen:
-                    mo.lot_producing_id.x_machine_number = lote_origen[0].x_machine_number
+                    for produced_lot in produced_lots:
+                        if not produced_lot.x_machine_number:
+                            produced_lot.x_machine_number = lote_origen[0].x_machine_number
 
         return result
