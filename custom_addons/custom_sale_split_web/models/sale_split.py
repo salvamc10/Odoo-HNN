@@ -38,24 +38,6 @@ class SaleOrder(models.Model):
         return True
 
     def _create_child_order_for_group(self, group_key):
-        # Determinar la plantilla de presupuesto basada en el grupo_key
-        template_id = False
-        if group_key == 'maquinas':
-            template = self.env.ref('sale_management.sale_order_template_default', raise_if_not_found=False)
-            if not template:
-                templates = self.env['sale.order.template'].sudo().search([('name', '=', 'Maquina')], limit=1)
-                template_id = templates.id if templates else False
-            else:
-                template_id = template.id
-        elif group_key == 'recambios':
-            templates = self.env['sale.order.template'].sudo().search([('name', '=', 'Recambio')], limit=1)
-            template_id = templates.id if templates else False
-
-        # Copiar opciones de envío del pedido original
-        carrier_id = getattr(self, 'carrier_id', False) and self.carrier_id.id or False
-        delivery_price = getattr(self, 'delivery_price', 0.0)
-        delivery_message = getattr(self, 'delivery_message', '')
-        
         vals = {
             'partner_id': self.partner_id.id,
             'partner_invoice_id': self.partner_invoice_id.id,
@@ -65,11 +47,8 @@ class SaleOrder(models.Model):
             'website_id': self.website_id.id,
             'origin': self.name,
             'split_group_uid': self.split_group_uid,
-            'carrier_id': carrier_id,
-            'sale_order_template_id': template_id,
-            # Copiar datos de entrega
-            'delivery_price': delivery_price,
-            'delivery_message': delivery_message,
+            'carrier_id': getattr(self, 'carrier_id', False) and self.carrier_id.id or False,
+            'sale_order_template_id': False,
         }
         return self.sudo().create(vals)
 
@@ -91,12 +70,6 @@ class SaleOrder(models.Model):
         if not countable:
             if not self.split_group_uid:
                 self.split_group_uid = str(uuid4())
-            
-            # Por defecto, si no hay productos contables, asignamos plantilla de Maquina
-            template = self.env['sale.order.template'].sudo().search([('name', '=', 'Maquina')], limit=1)
-            if template:
-                self.write({'sale_order_template_id': template.id})
-                
             self.split_done = True
             return {'maquinas': self}
         groups = {'maquinas': [], 'recambios': []}
@@ -106,46 +79,19 @@ class SaleOrder(models.Model):
             self.split_group_uid = str(uuid4())
         if self.split_done and (not groups['maquinas'] or not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
-            
-            # Asegurarse de que la plantilla es correcta incluso si el pedido ya está dividido
-            if not self.sale_order_template_id:
-                template_name = 'Recambio' if key == 'recambios' else 'Maquina'
-                template = self.env['sale.order.template'].sudo().search([('name', '=', template_name)], limit=1)
-                if template:
-                    self.write({'sale_order_template_id': template.id})
-            
             return {key: self}
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
-            
-            # Asignar plantilla según tipo de productos, incluso cuando no se divide
-            template_name = 'Recambio' if key == 'recambios' else 'Maquina'
-            template = self.env['sale.order.template'].sudo().search([('name', '=', template_name)], limit=1)
-            if template:
-                self.write({'sale_order_template_id': template.id})
-            
             self.split_done = True
             return {key: self}
         orders = {'maquinas': self}
-        
-        # Asignar plantilla "Maquina" al pedido original (que contiene máquinas)
-        template = self.env['sale.order.template'].sudo().search([('name', '=', 'Maquina')], limit=1)
-        if template:
-            self.write({'sale_order_template_id': template.id})
-        
-        # Crear pedido para recambios
         orders['recambios'] = self._create_child_order_for_group('recambios')
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
-        
-        # Calcular el total de todos los pedidos en el grupo para determinar si aplicar envío gratuito
-        total_amount = sum(order.amount_untaxed for order in orders.values())
-        
         for so in orders.values():
             so.split_done = True
             if hasattr(so, '_update_delivery_price') and getattr(so, 'carrier_id', False):
                 try:
-                    # Almacenamos temporalmente el total del grupo para que el método de entrega pueda usarlo
-                    so.with_context(split_group_total=total_amount)._update_delivery_price()
+                    so._update_delivery_price()
                 except Exception:
                     pass
         return orders

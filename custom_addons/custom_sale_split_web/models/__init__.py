@@ -1,1 +1,1 @@
-from . import sale_split, payment_provider_split, delivery
+from . import sale_split, payment_provider_split
