@@ -67,22 +67,30 @@ class SaleOrder(models.Model):
     def split_web_cart_by_category(self):
         self.ensure_one()
         countable = self.order_line.filtered(self._is_countable_product_line)
+        
         if not countable:
             if not self.split_group_uid:
                 self.split_group_uid = str(uuid4())
             self.split_done = True
+            self._auto_assign_quotation_template()
             return {'maquinas': self}
+        
         groups = {'maquinas': [], 'recambios': []}
         for line in countable:
             groups[self._line_group_key(line)].append(line.id)
+        
         if not self.split_group_uid:
             self.split_group_uid = str(uuid4())
+        
         if self.split_done and (not groups['maquinas'] or not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
+            self._auto_assign_quotation_template()
             return {key: self}
+        
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self.split_done = True
+            self._auto_assign_quotation_template()
             return {key: self}
         
         orders = {'maquinas': self}
@@ -97,45 +105,33 @@ class SaleOrder(models.Model):
                 except Exception:
                     pass
         
-        # Asignar plantillas después de que todo el split esté completo
         for so in orders.values():
             so._auto_assign_quotation_template()
         
         return orders
     
     def write(self, vals):
-        """Override del write para actualizar plantilla cuando cambian las líneas"""
         result = super(SaleOrder, self).write(vals)
         
-        # Si se modifican las líneas de pedido, recalcular la plantilla
         if 'order_line' in vals:
             for order in self:
                 if order.website_id:
-                    # Usar with_delay para ejecutar después de que se complete el write
                     order._auto_assign_quotation_template()
         
         return result
     
     def _auto_assign_quotation_template(self):
-        """
-        Asigna automáticamente la plantilla de presupuesto basándose en los productos.
-        Replica la automatización: Líneas → Producto → Categoría del sitio web está en (Recambios)
-        """
         self.ensure_one()
         
-        # Refrescar el registro para obtener las líneas actualizadas
         self.env.invalidate_all()
         
-        # Solo procesar si no tiene ya una plantilla asignada
         if self.sale_order_template_id:
             return
         
-        # Verificar si tiene productos contables
         countable = self.order_line.filtered(self._is_countable_product_line)
         if not countable:
             return
         
-        # Verificar si algún producto está en la categoría "Recambios"
         has_recambios = False
         has_maquinas = False
         
@@ -145,23 +141,17 @@ class SaleOrder(models.Model):
             else:
                 has_maquinas = True
         
-        # Determinar la plantilla según la lógica de la automatización
-        # Si está en Recambios → Plantilla "Recambio"
-        # Si NO está en Recambios → Plantilla "Maquina"
         template_name = None
         if has_recambios and not has_maquinas:
             template_name = 'Recambio'
         elif has_maquinas and not has_recambios:
             template_name = 'Maquina'
         
-        # Buscar y asignar la plantilla usando SQL para evitar recursión
         if template_name:
             template = self.env['sale.order.template'].sudo().search([('name', '=', template_name)], limit=1)
             if template:
-                # Usar SQL directo para evitar recursión infinita del write
                 self.env.cr.execute(
                     "UPDATE sale_order SET sale_order_template_id = %s WHERE id = %s",
                     (template.id, self.id)
                 )
-                # Invalidar caché en Odoo 18
                 self.env.invalidate_all()
