@@ -67,24 +67,39 @@ class SaleOrder(models.Model):
     def split_web_cart_by_category(self):
         self.ensure_one()
         countable = self.order_line.filtered(self._is_countable_product_line)
+        
+        # Caso 1: Sin productos contables
         if not countable:
             if not self.split_group_uid:
                 self.split_group_uid = str(uuid4())
             self.split_done = True
+            # Asignar plantilla antes de retornar
+            self._auto_assign_quotation_template()
             return {'maquinas': self}
+        
         groups = {'maquinas': [], 'recambios': []}
         for line in countable:
             groups[self._line_group_key(line)].append(line.id)
+        
         if not self.split_group_uid:
             self.split_group_uid = str(uuid4())
+        
+        # Caso 2: Ya dividido previamente
         if self.split_done and (not groups['maquinas'] or not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
+            # Asignar plantilla antes de retornar
+            self._auto_assign_quotation_template()
             return {key: self}
+        
+        # Caso 3: No se divide (solo un tipo de productos o división desactivada)
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self.split_done = True
+            # Asignar plantilla antes de retornar
+            self._auto_assign_quotation_template()
             return {key: self}
         
+        # Caso 4: Sí se divide en 2 pedidos
         orders = {'maquinas': self}
         orders['recambios'] = self._create_child_order_for_group('recambios')
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
