@@ -11,7 +11,7 @@
     "category": "Manufacturing",
     "depends": ["mrp", "stock"],
     "data": [
-       'views/mrp_production_views.xml',
+        'views/mrp_production_views.xml',
     ],
     "installable": True,
     "application": False,
