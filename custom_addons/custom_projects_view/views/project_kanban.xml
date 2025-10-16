@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista KANBAN para proyectos, mostrando el departamento -->
+    <record id="view_project_project_kanban_department_custom" model="ir.ui.view">
+        <field name="name">project.project.kanban.department.custom</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="user_id"/>
+                <field name="date_start"/>
+                <field name="date"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <strong><field name="name"/></strong>
+                            <div t-if="record.department_id.raw_value" class="text-muted mt-1">
+                                <i class="fa fa-users me-1" title="Departamento"/> <field name="department_id"/>
+                            </div>
+                            <div t-if="record.user_id.raw_value" class="mt-1">
+                                <i class="fa fa-user me-1" title="Responsable"/> <field name="user_id"/>
+                            </div>
+                            <div t-if="record.date_start.raw_value" class="mt-1">
+                                <i class="fa fa-calendar me-1" title="Fecha inicio"/> <field name="date_start"/>
+                            </div>
+                            <div t-if="record.date.raw_value" class="mt-1">
+                                <i class="fa fa-calendar-check-o me-1" title="Fecha fin"/> <field name="date"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+</odoo>

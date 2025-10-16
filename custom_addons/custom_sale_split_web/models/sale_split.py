@@ -74,13 +74,6 @@ class SaleOrder(models.Model):
             self.split_done = True
             self._auto_assign_quotation_template()
             return {'maquinas': self}
-<<<<<<< HEAD
-        groups = {'maquinas': [], 'recambios': []}
-        for line in countable:
-            groups[self._line_group_key(line)].append(line.id)
-        if not self.split_group_uid:
-            self.split_group_uid = str(uuid4())
-=======
         
         groups = {'maquinas': [], 'recambios': []}
         for line in countable:
@@ -89,31 +82,21 @@ class SaleOrder(models.Model):
         if not self.split_group_uid:
             self.split_group_uid = str(uuid4())
         
->>>>>>> feature/auditlog
         if self.split_done and (not groups['maquinas'] or not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self._auto_assign_quotation_template()
             return {key: self}
-<<<<<<< HEAD
-=======
         
->>>>>>> feature/auditlog
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self.split_done = True
             self._auto_assign_quotation_template()
             return {key: self}
-<<<<<<< HEAD
-        orders = {'maquinas': self}
-        orders['recambios'] = self._create_child_order_for_group('recambios')
-        self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
-=======
         
         orders = {'maquinas': self}
         orders['recambios'] = self._create_child_order_for_group('recambios')
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
         
->>>>>>> feature/auditlog
         for so in orders.values():
             so.split_done = True
             if hasattr(so, '_update_delivery_price') and getattr(so, 'carrier_id', False):
@@ -121,13 +104,10 @@ class SaleOrder(models.Model):
                     so._update_delivery_price()
                 except Exception:
                     pass
-<<<<<<< HEAD
-=======
         
         for so in orders.values():
             so._auto_assign_quotation_template()
         
->>>>>>> feature/auditlog
         return orders
     
     def write(self, vals):

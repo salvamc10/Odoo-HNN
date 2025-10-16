@@ -11,11 +11,7 @@
     "category": "Manufacturing",
     "depends": ["mrp", "stock"],
     "data": [
-<<<<<<< HEAD
-       'views/mrp_production_views.xml',
-=======
         'views/mrp_production_views.xml',
->>>>>>> feature/auditlog
     ],
     "installable": True,
     "application": False,
