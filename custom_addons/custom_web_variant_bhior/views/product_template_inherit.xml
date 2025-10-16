@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="inherit_product_template_description" inherit_id="website_sale.product">
+
+        <!-- Insertar el campo x_studio_descripcion_1 justo después -->
+        <xpath expr="//*[@id='o_wsale_cta_wrapper']" position="before">
+            <div id="product_custom_description" class="o_product_custom_description mt-3"></div>
+            <br/>
+        </xpath>
+    </template>
+</odoo>

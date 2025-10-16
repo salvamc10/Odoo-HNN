@@ -67,26 +67,53 @@ class SaleOrder(models.Model):
     def split_web_cart_by_category(self):
         self.ensure_one()
         countable = self.order_line.filtered(self._is_countable_product_line)
+        
         if not countable:
             if not self.split_group_uid:
                 self.split_group_uid = str(uuid4())
             self.split_done = True
+            self._auto_assign_quotation_template()
             return {'maquinas': self}
+<<<<<<< HEAD
         groups = {'maquinas': [], 'recambios': []}
         for line in countable:
             groups[self._line_group_key(line)].append(line.id)
         if not self.split_group_uid:
             self.split_group_uid = str(uuid4())
+=======
+        
+        groups = {'maquinas': [], 'recambios': []}
+        for line in countable:
+            groups[self._line_group_key(line)].append(line.id)
+        
+        if not self.split_group_uid:
+            self.split_group_uid = str(uuid4())
+        
+>>>>>>> feature/auditlog
         if self.split_done and (not groups['maquinas'] or not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
+            self._auto_assign_quotation_template()
             return {key: self}
+<<<<<<< HEAD
+=======
+        
+>>>>>>> feature/auditlog
         if (not self.website_id.split_by_web_category) or (not groups['maquinas']) or (not groups['recambios']):
             key = 'recambios' if groups['recambios'] else 'maquinas'
             self.split_done = True
+            self._auto_assign_quotation_template()
             return {key: self}
+<<<<<<< HEAD
         orders = {'maquinas': self}
         orders['recambios'] = self._create_child_order_for_group('recambios')
         self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
+=======
+        
+        orders = {'maquinas': self}
+        orders['recambios'] = self._create_child_order_for_group('recambios')
+        self.env['sale.order.line'].browse(groups['recambios']).write({'order_id': orders['recambios'].id})
+        
+>>>>>>> feature/auditlog
         for so in orders.values():
             so.split_done = True
             if hasattr(so, '_update_delivery_price') and getattr(so, 'carrier_id', False):
@@ -94,4 +121,57 @@ class SaleOrder(models.Model):
                     so._update_delivery_price()
                 except Exception:
                     pass
+<<<<<<< HEAD
+=======
+        
+        for so in orders.values():
+            so._auto_assign_quotation_template()
+        
+>>>>>>> feature/auditlog
         return orders
+    
+    def write(self, vals):
+        result = super(SaleOrder, self).write(vals)
+        
+        if 'order_line' in vals:
+            for order in self:
+                if order.website_id:
+                    order._auto_assign_quotation_template()
+        
+        return result
+    
+    def _auto_assign_quotation_template(self):
+        self.ensure_one()
+        
+        self.env.invalidate_all()
+        
+        if self.sale_order_template_id:
+            return
+        
+        countable = self.order_line.filtered(self._is_countable_product_line)
+        if not countable:
+            return
+        
+        has_recambios = False
+        has_maquinas = False
+        
+        for line in countable:
+            if self._product_is_recambio(line.product_id):
+                has_recambios = True
+            else:
+                has_maquinas = True
+        
+        template_name = None
+        if has_recambios and not has_maquinas:
+            template_name = 'Recambio'
+        elif has_maquinas and not has_recambios:
+            template_name = 'Maquina'
+        
+        if template_name:
+            template = self.env['sale.order.template'].sudo().search([('name', '=', template_name)], limit=1)
+            if template:
+                self.env.cr.execute(
+                    "UPDATE sale_order SET sale_order_template_id = %s WHERE id = %s",
+                    (template.id, self.id)
+                )
+                self.env.invalidate_all()
