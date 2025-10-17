@@ -1,52 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Plantilla con estructura estándar Odoo: columnas fijas, barcode estándar -->
     <template id="report_lot_label_dymo">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="lot">
-                <!-- Split lote/serie -->
-                <t t-set="lot_split" t-value="lot.name.split('/')"/>
-                <t t-set="lote" t-value="lot_split[0] if len(lot_split) > 0 else lot.name"/>
-                <t t-set="serie" t-value="'/'.join(lot_split[1:]) if len(lot_split) > 1 else ''"/>
+                <t t-set="product" t-value="lot.product_id"/>
+                <t t-set="barcode_val" t-value="product.barcode or lot.name or product.default_code or ''"/>
+                <t t-set="default_code" t-value="product.default_code or ''"/>
+                <t t-set="lot_name" t-value="lot.name or ''"/>
 
-                <!-- Página individual -->
-                <div class="page" style="margin:0; padding:0; width:100%; height:100%;">
-                    <div style="font-family:Arial,sans-serif; width:100%; height:32mm; overflow:hidden;">
-                        <table style="width:100%; height:100%; border-collapse:collapse; table-layout:fixed;">
+                <div class="page" style="width:57mm; height:32mm; margin:0; padding:0;">
+                    <div style="font-family:Arial,sans-serif; text-align:center; width:100%; height:100%; overflow:hidden;">
+
+                        <!-- Código de barras -->
+                           <!-- Código de barras -->
+                        <div>
+                    <img t-att-src="'/report/barcode/Code128/%s' % (lot.product_id.barcode or '')"
+                  style="height:80px;" />
+                        </div>
+
+                        <!-- Nombre -->
+                        <div style="font-size:9px; font-weight:bold; margin-top:1mm;">
+                            <t t-esc="product.name"/>
+                        </div>
+
+                        <!-- Línea inferior -->
+                        <table style="width:100%; margin-top:1mm; font-size:8px;">
                             <tr>
-                                <!-- Columna izquierda: texto -->
-                                <td style="width:60%; vertical-align:top; padding:2px;">
-                                    <small style="font-size:10px;">
-                                        <t t-esc="lot.product_id.default_code or ''"/>
-                                    </small><br/>
-                                    <div style="font-size:9px; font-weight:bold; line-height:1.1; padding-top:1px;">
-                                        <t t-esc="lot.product_id.name or ''"/>
-                                    </div>
-                                    <div style="font-size:8px; line-height:1.1; padding-top:2px;">
-                                        <strong>Lote:</strong> <t t-esc="lote"/>
-                                        <t t-if="serie and serie != lote">
-                                            <br/><strong>Serie:</strong> <t t-esc="serie"/>
-                                        </t>
-                                        <t t-if="lot.x_machine_number">
-                                            <br/><strong>Máq:</strong> <t t-esc="lot.x_machine_number"/>
-                                        </t>
-                                    </div>
+                                <td style="text-align:left; padding-left:2mm;">
+                                    <t t-esc="default_code"/>
                                 </td>
-
-                                <!-- Columna derecha: código de barras centrado -->
-                                <td style="width:40%; vertical-align:middle; text-align:center; padding:0;">
-                                    <img t-att-src="'/report/barcode/?type=Code128&amp;value=' + (lot.product_id.barcode or lot.product_id.default_code or lot.name) + '&amp;width=100&amp;height=25'"
-                                         style="max-width:100%; max-height:100%; display:block; margin:0 auto;"/>
+                                <td style="text-align:right; padding-right:2mm;">
+                                    <t t-esc="lot_name"/>
                                 </td>
                             </tr>
                         </table>
+
                     </div>
                 </div>
             </t>
         </t>
     </template>
 
-    <!-- Paperformat -->
+    <!-- Formato DYMO -->
     <record id="paperformat_dymo_lot" model="report.paperformat">
         <field name="name">DYMO Lot Label</field>
         <field name="format">custom</field>
@@ -72,3 +67,4 @@
         <field name="binding_type">report</field>
     </record>
 </odoo>
+
