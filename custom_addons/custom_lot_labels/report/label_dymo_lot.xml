@@ -1,73 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Paperformat custom para DYMO (creado en el módulo) -->
-    <record id="paperformat_dymo_lot" model="report.paperformat">
-        <field name="name">DYMO Lot Label</field>
-        <field name="format">custom</field>
-        <field name="page_width">57</field>        <!-- mm -->
-        <field name="page_height">32</field>        <!-- mm -->
-        <field name="margin_top">0</field>
-        <field name="margin_bottom">0</field>
-        <field name="margin_left">0</field>
-        <field name="margin_right">0</field>
-        <field name="orientation">Portrait</field>
-    </record>
-    <!-- Plantilla base para etiquetas DYMO de lotes: hereda de la de productos y adapta -->
-    <template id="report_lot_label_dymo">
-        <t t-call="web.html_container">
-            <t t-foreach="docs" t-as="o">
-                <div class="page" style="margin: 0; padding: 0; width: 100%; height: 100%;">
-                    <div class="o_report_simple_label_dymo" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif;">
+    <!-- Herencia de la plantilla DYMO original de Odoo, adaptada para lotes -->
+    <template id="report_lot_label_dymo" inherit_id="product.report_simple_label_dymo">
+        <!-- Reemplaza el loop para usar lotes en lugar de productos -->
+        <xpath expr="//t[@t-foreach]" position="replace">
+            <t t-foreach="docs" t-as="lot">
+                <!-- Lógica de split para lote/serie (de tu A4) -->
+                <t t-set="lot_split" t-value="lot.name.split('/')"/>
+                <t t-set="lote" t-value="lot_split[0] if len(lot_split) > 0 else lot.name"/>
+                <t t-set="serie" t-value="'/'.join(lot_split[1:]) if len(lot_split) > 1 else ''"/>
 
-                        <!-- Columna izquierda: Código y nombre del producto del lote -->
-                        <div class="o_label_left_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 5px;">
-                            <!-- Código del producto -->
-                            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">
-                                <t t-esc="o.product_id.default_code or ''"/>
+                <div class="page" style="margin: 0; padding: 0; width: 100%; height: 100%;">
+                    <div class="o_report_simple_label_dymo" style="width: 100%; height: 100%; display: flex; font-family: Arial, sans-serif;">
+                        
+                        <!-- Columna izquierda: Info del producto y lote (estilo original + fixes) -->
+                        <div class="o_label_left_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 2px;">
+                            <!-- Código del producto (con estilo de tu fix: 11px, left, word-break) -->
+                            <small style="font-size:11px; width:100%; text-align:left; white-space:normal; word-break:normal; overflow-wrap:break-word; padding:2px 4px;">
+                                <t t-esc="lot.product_id.default_code or ''"/>
+                            </small>
+                            
+                            <!-- Nombre del producto (truncado si largo, como original) -->
+                            <div style="font-size: 10px; line-height: 1.1; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; padding: 2px;">
+                                <t t-esc="lot.product_id.name"/>
                             </div>
-                            <!-- Nombre del producto (truncado si es largo) -->
-                            <div style="font-size: 10px; line-height: 1.2; flex-grow: 1; overflow: hidden; text-overflow: ellipsis;">
-                                <t t-esc="o.product_id.name"/>
+                            
+                            <!-- Lote y Serie (compacto) -->
+                            <div style="font-size: 9px; margin-top: 2px; word-break: break-word;">
+                                <strong>Lote:</strong> <t t-esc="lote"/><br/>
+                                <t t-if="serie"><strong>Serie:</strong> <t t-esc="serie"/></t>
                             </div>
-                            <!-- Nombre del lote -->
-                            <div style="font-size: 11px; font-weight: bold; margin-top: 5px; word-break: break-word;">
-                                Lote: <t t-esc="o.name"/>
-                            </div>
-                            <!-- Ubicación temporal del producto -->
-                            <t t-if="o.product_id.x_ubicacion_temporal">
-                                <div style="font-size: 9px; text-align: right; margin-top: 2px;">
-                                    <t t-esc="o.product_id.x_ubicacion_temporal"/>
+                            
+                            <!-- Máquina (condicional, pequeño) -->
+                            <t t-if="lot.x_machine_number">
+                                <div style="font-size: 8px; margin-top: 1px; word-break: break-word;">
+                                    Máq: <t t-esc="lot.x_machine_number"/>
+                                </div>
+                            </t>
+                            
+                            <!-- Ubicación temporal (abajo derecha, como tu custom) -->
+                            <t t-if="lot.product_id.x_ubicacion_temporal">
+                                <div style="font-size: 8px; text-align: right; margin-top: auto; padding-top: 2px; border-top: 1px solid #ccc;">
+                                    <t t-esc="lot.product_id.x_ubicacion_temporal"/>
                                 </div>
                             </t>
                         </div>
 
-                        <!-- Columna derecha: Barcode y otros -->
-                        <div class="o_label_right_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 5px;">
-                            <!-- Barcode del producto -->
-                            <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=200&amp;height=50' % (o.product_id.barcode or o.product_id.default_code or '')" style="max-height: 50px; margin-bottom: 5px;"/>
-                            <!-- Barcode del lote (opcional, si quieres uno separado) -->
-                            <t t-if="o.name">
-                                <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=200&amp;height=30' % o.name" style="max-height: 30px;"/>
+                        <!-- Columna derecha: Barcode del producto (grande, arriba) + barcode lote (pequeño, abajo) -->
+                        <div class="o_label_right_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px;">
+                            <!-- Barcode principal del producto (estilo original: alto ~50% de etiqueta) -->
+                            <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=150&amp;height=40' % (lot.product_id.barcode or lot.product_id.default_code or lot.name)"
+                                 style="max-height: 60%; max-width: 100%; margin-bottom: 2px;"/>
+                            
+                            <!-- Barcode del lote completo (opcional, pequeño abajo para no dividir) -->
+                            <t t-if="lot.name">
+                                <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=100&amp;height=20' % lot.name"
+                                     style="max-height: 20%; max-width: 100%;"/>
                             </t>
                         </div>
 
                     </div>
                 </div>
             </t>
-        </t>
+        </xpath>
+
+        <!-- Elimina precio (de tu custom original) -->
+        <xpath expr="//strong[hasclass('o_label_price_small')]" position="replace">
+            <!-- Precio eliminado -->
+        </xpath>
     </template>
 
-    <!-- Acción de informe para DYMO en lotes -->
+    <!-- Paperformat DYMO custom (para evitar división: single label compacto) -->
+    <record id="paperformat_dymo_lot" model="report.paperformat">
+        <field name="name">DYMO Lot Label</field>
+        <field name="format">custom</field>
+        <field name="page_width">57</field>  <!-- mm para DYMO estándar -->
+        <field name="page_height">32</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="dpi">96</field>  <!-- Bajo para compacto; sube a 300 si borroso -->
+    </record>
+
+    <!-- Acción de informe -->
     <record id="action_report_lot_label_dymo" model="ir.actions.report">
-        <field name="name">Etiqueta DYMO por Lote (PDF)</field>
+        <field name="name">Etiqueta DYMO por Lote</field>
         <field name="model">stock.lot</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">custom_lot_labels.report_lot_label_dymo</field>
-        <field name="print_report_name">'Etiqueta Lote - %s' % (object.name)</field>
+        <field name="print_report_name">'Etiqueta DYMO - %s' % (object.name)</field>
         <field name="paperformat_id" ref="custom_lot_labels.paperformat_dymo_lot"/>
-        <!-- O el que uses para DYMO; si no existe, crea uno o usa el clonado -->
         <field name="binding_model_id" ref="stock.model_stock_lot"/>
-        <!-- Vincula al modelo stock.lot -->
         <field name="binding_type">report</field>
     </record>
 </odoo>
