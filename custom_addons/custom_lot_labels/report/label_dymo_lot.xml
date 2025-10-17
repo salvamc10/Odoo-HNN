@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Plantilla base para etiquetas DYMO de lotes: hereda de la de productos y adapta -->
+    <template id="report_lot_label_dymo">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page" style="margin: 0; padding: 0; width: 100%; height: 100%;">
+                    <div class="o_report_simple_label_dymo" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif;">
+                        
+                        <!-- Columna izquierda: Código y nombre del producto del lote -->
+                        <div class="o_label_left_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 5px;">
+                            <!-- Código del producto -->
+                            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">
+                                <t t-esc="o.product_id.default_code or ''"/>
+                            </div>
+                            <!-- Nombre del producto (truncado si es largo) -->
+                            <div style="font-size: 10px; line-height: 1.2; flex-grow: 1; overflow: hidden; text-overflow: ellipsis;">
+                                <t t-esc="o.product_id.name"/>
+                            </div>
+                            <!-- Nombre del lote -->
+                            <div style="font-size: 11px; font-weight: bold; margin-top: 5px; word-break: break-word;">
+                                Lote: <t t-esc="o.name"/>
+                            </div>
+                            <!-- Ubicación temporal del producto -->
+                            <t t-if="o.product_id.x_ubicacion_temporal">
+                                <div style="font-size: 9px; text-align: right; margin-top: 2px;">
+                                    <t t-esc="o.product_id.x_ubicacion_temporal"/>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Columna derecha: Barcode y otros -->
+                        <div class="o_label_right_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 5px;">
+                            <!-- Barcode del producto -->
+                            <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=200&amp;height=50' % (o.product_id.barcode or o.product_id.default_code or '')"
+                                 style="max-height: 50px; margin-bottom: 5px;"/>
+                            <!-- Barcode del lote (opcional, si quieres uno separado) -->
+                            <t t-if="o.name">
+                                <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=200&amp;height=30' % o.name"
+                                     style="max-height: 30px;"/>
+                            </t>
+                        </div>
+
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Acción de informe para DYMO en lotes -->
+    <record id="action_report_lot_label_dymo" model="ir.actions.report">
+        <field name="name">Etiqueta DYMO por Lote (PDF)</field>
+        <field name="model">stock.lot</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_lot_labels.report_lot_label_dymo</field>
+        <field name="print_report_name">'Etiqueta Lote - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="stock.paperformat_dymo"/>  <!-- O el que uses para DYMO; si no existe, crea uno o usa el clonado -->
+        <field name="binding_model_id" ref="stock.model_stock_lot"/>  <!-- Vincula al modelo stock.lot -->
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
