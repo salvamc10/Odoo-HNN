@@ -10,8 +10,8 @@
                 <t t-set="serie" t-value="'/'.join(lot_split[1:]) if len(lot_split) > 1 else ''"/>
 
                 <!-- Página individual -->
-                <div class="page" style="margin:0; padding:0; width:100%; height:100%; page-break-after:always;">
-                    <div style="font-family:Arial,sans-serif; width:100%; height:100%;">
+                <div class="page" style="margin:0; padding:0; width:100%; height:100%;">
+                    <div style="font-family:Arial,sans-serif; width:100%; height:32mm; overflow:hidden;">
                         <table style="width:100%; height:100%; border-collapse:collapse; table-layout:fixed;">
                             <tr>
                                 <!-- Columna izquierda: texto -->
