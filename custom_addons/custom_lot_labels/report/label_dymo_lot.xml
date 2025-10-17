@@ -1,62 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Herencia de la plantilla DYMO original de Odoo, adaptada para lotes -->
+    <!-- Herencia estricta de DYMO original: columnas, sin extras que causen paginación -->
     <template id="report_lot_label_dymo" inherit_id="product.report_simple_label_dymo">
-        <!-- Reemplaza el loop para usar lotes en lugar de productos -->
+        <!-- Reemplaza loop y contenido para lotes, manteniendo estructura base -->
         <xpath expr="//t[@t-foreach]" position="replace">
             <t t-foreach="docs" t-as="lot">
-                <!-- Lógica de split para lote/serie (de tu A4) -->
+                <!-- Split lote/serie -->
                 <t t-set="lot_split" t-value="lot.name.split('/')"/>
                 <t t-set="lote" t-value="lot_split[0] if len(lot_split) > 0 else lot.name"/>
                 <t t-set="serie" t-value="'/'.join(lot_split[1:]) if len(lot_split) > 1 else ''"/>
 
-                <div class="page" style="margin: 0; padding: 0; width: 100%; height: 100%;">
-                    <div class="o_report_simple_label_dymo" style="width: 100%; height: 100%; display: flex; font-family: Arial, sans-serif;">
+                <div class="page" style="margin: 0; padding: 0; width: 100%; height: 100%; page-break-after: always;">
+                    <div class="o_report_simple_label_dymo" style="width: 100%; height: 100%; display: flex; font-family: Arial, sans-serif; padding: 0;">
                         
-                        <!-- Columna izquierda: Info del producto y lote (estilo original + fixes) -->
-                        <div class="o_label_left_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 2px;">
-                            <!-- Código del producto (con estilo de tu fix: 11px, left, word-break) -->
-                            <small style="font-size:11px; width:100%; text-align:left; white-space:normal; word-break:normal; overflow-wrap:break-word; padding:2px 4px;">
+                        <!-- Columna izquierda: Compacta, como original (código arriba, nombre medio, lote abajo) -->
+                        <div class="o_label_left_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 1px;">
+                            <!-- Código (estilo fix original) -->
+                            <small style="font-size:11px; width:100%; text-align:left; white-space:normal; word-break:normal; overflow-wrap:break-word; padding:1px;">
                                 <t t-esc="lot.product_id.default_code or ''"/>
                             </small>
                             
-                            <!-- Nombre del producto (truncado si largo, como original) -->
-                            <div style="font-size: 10px; line-height: 1.1; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; padding: 2px;">
-                                <t t-esc="lot.product_id.name"/>
+                            <!-- Nombre producto (flex-grow para centrar) -->
+                            <div style="font-size: 10px; line-height: 1.1; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; padding: 1px; text-align: center;">
+                                <t t-esc="lot.product_id.name or ''"/>
                             </div>
                             
-                            <!-- Lote y Serie (compacto) -->
-                            <div style="font-size: 9px; margin-top: 2px; word-break: break-word;">
+                            <!-- Lote/Serie/Máquina (abajo, compacto) -->
+                            <div style="font-size: 9px; word-break: break-word; padding: 1px; text-align: left;">
                                 <strong>Lote:</strong> <t t-esc="lote"/><br/>
-                                <t t-if="serie"><strong>Serie:</strong> <t t-esc="serie"/></t>
+                                <t t-if="serie and serie != lote"><strong>Serie:</strong> <t t-esc="serie"/></t>
                             </div>
-                            
-                            <!-- Máquina (condicional, pequeño) -->
                             <t t-if="lot.x_machine_number">
-                                <div style="font-size: 8px; margin-top: 1px; word-break: break-word;">
+                                <div style="font-size: 8px; word-break: break-word; padding: 0 1px; text-align: left;">
                                     Máq: <t t-esc="lot.x_machine_number"/>
                                 </div>
                             </t>
                             
-                            <!-- Ubicación temporal (abajo derecha, como tu custom) -->
+                            <!-- Ubicación (siempre abajo derecha, pequeña) -->
                             <t t-if="lot.product_id.x_ubicacion_temporal">
-                                <div style="font-size: 8px; text-align: right; margin-top: auto; padding-top: 2px; border-top: 1px solid #ccc;">
+                                <div style="font-size: 8px; text-align: right; padding: 1px; border-top: 1px solid #eee;">
                                     <t t-esc="lot.product_id.x_ubicacion_temporal"/>
                                 </div>
                             </t>
                         </div>
 
-                        <!-- Columna derecha: Barcode del producto (grande, arriba) + barcode lote (pequeño, abajo) -->
-                        <div class="o_label_right_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2px;">
-                            <!-- Barcode principal del producto (estilo original: alto ~50% de etiqueta) -->
-                            <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=150&amp;height=40' % (lot.product_id.barcode or lot.product_id.default_code or lot.name)"
-                                 style="max-height: 60%; max-width: 100%; margin-bottom: 2px;"/>
-                            
-                            <!-- Barcode del lote completo (opcional, pequeño abajo para no dividir) -->
-                            <t t-if="lot.name">
-                                <img t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=100&amp;height=20' % lot.name"
-                                     style="max-height: 20%; max-width: 100%;"/>
-                            </t>
+                        <!-- Columna derecha: Solo barcode principal (grande, centrado, sin secundario para evitar blanco) -->
+                        <div class="o_label_right_column" style="width: 50%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1px;">
+                            <img t-att-src="'/report/barcode/?type=Code128&amp;value=' + (lot.product_id.barcode or lot.product_id.default_code or '') + '&amp;width=180&amp;height=50'"
+                                 style="max-height: 100%; max-width: 100%; display: block;"/>
                         </div>
 
                     </div>
@@ -64,27 +55,25 @@
             </t>
         </xpath>
 
-        <!-- Elimina precio (de tu custom original) -->
-        <xpath expr="//strong[hasclass('o_label_price_small')]" position="replace">
-            <!-- Precio eliminado -->
-        </xpath>
+        <!-- Elimina precio (custom original) -->
+        <xpath expr="//strong[hasclass('o_label_price_small')]" position="replace"/>
     </template>
 
-    <!-- Paperformat DYMO custom (para evitar división: single label compacto) -->
+    <!-- Paperformat ajustado (más compacto para evitar overflow) -->
     <record id="paperformat_dymo_lot" model="report.paperformat">
-        <field name="name">DYMO Lot Label</field>
+        <field name="name">DYMO Lot Label Compact</field>
         <field name="format">custom</field>
-        <field name="page_width">57</field>  <!-- mm para DYMO estándar -->
+        <field name="page_width">57</field>
         <field name="page_height">32</field>
         <field name="margin_top">0</field>
         <field name="margin_bottom">0</field>
         <field name="margin_left">0</field>
         <field name="margin_right">0</field>
         <field name="orientation">Portrait</field>
-        <field name="dpi">96</field>  <!-- Bajo para compacto; sube a 300 si borroso -->
+        <field name="dpi">96</field>
     </record>
 
-    <!-- Acción de informe -->
+    <!-- Acción -->
     <record id="action_report_lot_label_dymo" model="ir.actions.report">
         <field name="name">Etiqueta DYMO por Lote</field>
         <field name="model">stock.lot</field>
