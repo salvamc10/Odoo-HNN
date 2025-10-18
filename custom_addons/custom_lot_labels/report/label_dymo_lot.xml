@@ -9,13 +9,13 @@
                 <t t-set="lot_name" t-value="lot.name or ''"/>
 
                 <div class="page" style="width:57mm; height:32mm; margin:0; padding:0;">
-                    <div style="font-family:Arial,sans-serif; text-align:center; width:100%; height:100%; overflow:hidden;">
+                    <div style="font-family:Arial,sans-serif; text-align:center; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; padding:2mm;">
 
                         <!-- Código de barras -->
-                           <!-- Código de barras -->
-                        <div>
-                    <img t-att-src="'/report/barcode/Code128/%s' % (lot.product_id.barcode or '')"
-                  style="height:80px;" />
+                        <div style="margin-bottom:1mm;">
+                            <div t-out="barcode_val" 
+                                 style="padding:0; display:inline-block;" 
+                                 t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:50mm;height:12mm'}"/>
                         </div>
 
                         <!-- Nombre -->
@@ -67,4 +67,3 @@
         <field name="binding_type">report</field>
     </record>
 </odoo>
-
