@@ -2,39 +2,48 @@
 <odoo>
     <template id="report_lot_label_dymo">
         <t t-call="web.html_container">
+            <t t-set="barcode_size" t-value="'width:45.5mm;height:7.5mm'"/>
+            <t t-set="table_style" t-value="'width:100%;height:32mm;'"/>
+            <t t-set="padding_page" t-value="'padding: 2mm'"/>
+            
             <t t-foreach="docs" t-as="lot">
                 <t t-set="product" t-value="lot.product_id"/>
                 <t t-set="barcode_val" t-value="product.barcode or lot.name or product.default_code or ''"/>
                 <t t-set="default_code" t-value="product.default_code or ''"/>
                 <t t-set="lot_name" t-value="lot.name or ''"/>
 
-                <div class="page" style="width:57mm; height:32mm; margin:0; padding:0;">
-                    <div style="font-family:Arial,sans-serif; text-align:center; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; padding:2mm;">
-
+                <div class="o_label_sheet o_label_dymo" t-att-style="padding_page">
+                    <div class="o_label_full" t-att-style="table_style">
                         <!-- Código de barras -->
-                        <div style="margin-bottom:1mm;">
-                            <div t-out="barcode_val" 
-                                 style="padding:0; display:inline-block;" 
-                                 t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': 'width:50mm;height:12mm'}"/>
+                        <div class="text-start o_label_small_barcode">
+                            <t t-if="barcode_val">
+                                <div t-out="barcode_val" 
+                                     style="padding:0" 
+                                     t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': barcode_size}"/>
+                                <div class="o_label_name" style="height:1.7em;background-color: transparent;">
+                                    <span t-out="barcode_val"/>
+                                </div>
+                            </t>
                         </div>
-
-                        <!-- Nombre -->
-                        <div style="font-size:9px; font-weight:bold; margin-top:1mm;">
-                            <t t-esc="product.name"/>
+                        
+                        <!-- Nombre del producto -->
+                        <div class="o_label_name" style="line-height: 100%;background-color: transparent;padding-top: 1px;">
+                            <span t-field="product.name"/>
                         </div>
-
-                        <!-- Línea inferior -->
-                        <table style="width:100%; margin-top:1mm; font-size:8px;">
-                            <tr>
-                                <td style="text-align:left; padding-left:2mm;">
+                        
+                        <!-- Línea inferior: Código y Lote -->
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="o_label_left_column">
+                                <small class="text-nowrap" style="font-size: 0.875em;">
                                     <t t-esc="default_code"/>
-                                </td>
-                                <td style="text-align:right; padding-right:2mm;">
+                                </small>
+                            </div>
+                            <div class="text-end" style="padding: 0 4px;">
+                                <small class="text-nowrap" style="font-size: 0.875em;">
                                     <t t-esc="lot_name"/>
-                                </td>
-                            </tr>
-                        </table>
-
+                                </small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </t>
