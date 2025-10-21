@@ -20,7 +20,10 @@
         'report/lot_label_A4_report.xml',
         'report/label_dymo_remove_price.xml',
         'report/label_dymo_fix_default_code.xml',
+        'report/label_dymo_lot.xml',
     ],
     'installable': True,
     'application': False,
 }
+
+

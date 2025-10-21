@@ -5,8 +5,8 @@ class LotLabelLayout(models.TransientModel):
     _inherit = 'lot.label.layout'
 
     print_format = fields.Selection(
-        selection_add=[('a4', 'A4')],
-        ondelete={'a4': 'set default'}
+        selection_add=[('a4', 'A4'), ('dymo_lot', 'DYMO Lote')],
+        ondelete={'a4': 'set default', 'dymo_lot': 'set default'}
     )
 
     def process(self):
@@ -16,6 +16,8 @@ class LotLabelLayout(models.TransientModel):
             xml_id = 'stock.label_lot_template'
         elif self.print_format == 'a4':
             xml_id = 'custom_lot_labels.action_report_lotlabel_info_a4'
+        elif self.print_format == 'dymo_lot':
+            xml_id = 'custom_lot_labels.action_report_lotlabel_info_dymo_lot'
         else:
             xml_id = 'stock.action_report_lot_label'
 

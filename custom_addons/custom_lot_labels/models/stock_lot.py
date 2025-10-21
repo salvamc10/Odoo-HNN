@@ -9,3 +9,10 @@ class StockLotInherit(models.Model):
             string='Número de máquina',
             help='Número de identificación de la máquina asociado al lote.'
         )
+
+    x_ubicacion_temporal = fields.Char(
+        related='product_id.product_tmpl_id.x_ubicacion_temporal',
+        string="Ubicación temporal",
+        store=True,
+        readonly=True
+    )

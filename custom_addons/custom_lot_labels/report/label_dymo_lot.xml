@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_lot_label_dymo">
+        <t t-call="web.html_container">
+            <t t-set="barcode_size" t-value="'width:60.5mm;height:9mm'"/>
+            <t t-set="table_style" t-value="'width:100%;height:32mm;'"/>
+            <t t-set="padding_page" t-value="'padding: 2mm'"/>
+            
+            <t t-foreach="docs" t-as="lot">
+                <t t-set="product" t-value="lot.product_id"/>
+                <t t-set="barcode_val" t-value="product.barcode or lot.name or product.default_code or ''"/>
+                <t t-set="default_code" t-value="product.default_code or ''"/>
+                <t t-set="x_ubicacion_temporal" t-value="lot.x_ubicacion_temporal"/>
+                
+
+                <div class="o_label_sheet o_label_dymo" t-att-style="padding_page">
+                    <div class="o_label_full" t-att-style="table_style">
+                        <!-- Código de barras -->
+                        <div class="text-start o_label_small_barcode">
+                            <t t-if="barcode_val">
+                                <div t-out="barcode_val" 
+                                     style="padding:0" 
+                                     t-options="{'widget': 'barcode', 'quiet': 0, 'symbology': 'auto', 'img_style': barcode_size}"/>
+                                <div class="o_label_name" style="font-size:8pt; height:0.7em;background-color: transparent;padding: 1px;margin-top: 1mm;">
+                                    <span t-out="barcode_val"/>
+                                </div>
+                            </t>
+                        </div>
+                        
+                        <!-- Nombre del producto -->
+                        <div class="o_label_name" style="line-height: 100%;font-size:13pt;font-weight:500;margin-top:1mm;background-color: transparent;padding-top: 1px;">
+                            <span t-field="product.name"/>
+                        </div>
+                        <br/><br/>
+                      <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin: 0; padding: 0; box-sizing: border-box;">
+                        <!-- Campo izquierdo: Solo el código, pegado al borde izquierdo -->
+                        <div style="margin: 0; padding: 0; flex-shrink: 0;">
+                            <small class="text-nowrap" style="font-size: 0.875em;">
+                                <t t-esc="default_code"/>
+                            </small>
+                        </div>
+                        <!-- Campo derecho: Solo la ubicación, pegado al borde derecho -->
+                        <div style="margin: 0; padding: 0; flex-shrink: 0; text-align: right;">
+                            <small class="text-nowrap" style="font-size: 0.875em;">
+                                <t t-esc="x_ubicacion_temporal"/>
+                            </small>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+
+    <!-- Formato DYMO -->
+    <record id="paperformat_dymo_lot" model="report.paperformat">
+        <field name="name">DYMO Lot Label</field>
+        <field name="format">custom</field>
+        <field name="page_width">57</field>
+        <field name="page_height">32</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- Acción -->
+    <record id="action_report_lot_label_dymo" model="ir.actions.report">
+        <field name="name">Etiqueta DYMO por Lote</field>
+        <field name="model">stock.lot</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_lot_labels.report_lot_label_dymo</field>
+        <field name="print_report_name">'Etiqueta DYMO - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="custom_lot_labels.paperformat_dymo_lot"/>
+        <field name="binding_model_id" ref="stock.model_stock_lot"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
