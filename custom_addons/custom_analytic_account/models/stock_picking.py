@@ -179,28 +179,44 @@ class StockPicking(models.Model):
         return False
 
     def _distribute_analytic_in_sale_lines(self, picking, sale_order):
-        """
-        Distribuye las cuentas analíticas en las líneas de venta según lotes/series entregados.
-        """
-        # Agrupar qty_done por sale_line_id y lot_name
         distribution_data = self._group_qty_by_sale_line_and_lot(picking.move_line_ids)
         
-        # Aplicar distribución a cada línea de venta
         for sale_line_id, lot_qty_map in distribution_data.items():
             sale_line = self.env['sale.order.line'].browse(sale_line_id)
-            
-            # Buscar cuentas analíticas por código (lot_name)
             lot_to_account = self._get_analytic_accounts_by_lot_names(lot_qty_map.keys())
             
             if not lot_to_account:
-                self._log_message('WARNING', 
-                    f'No se encontraron cuentas analíticas para los lotes de la línea {sale_line.id}')
                 continue
             
-            analytic_dist = self._calculate_analytic_distribution(lot_qty_map, lot_to_account)
+            # PASAR sale_line para calcular sobre qty total
+            analytic_dist = self._calculate_analytic_distribution(
+                lot_qty_map, lot_to_account, order_line=sale_line
+            )
             
             if analytic_dist:
-                self._apply_analytic_distribution(sale_line, analytic_dist, 'sale')
+                self._apply_analytic_distribution_cumulative(sale_line, analytic_dist, 'sale')
+
+    # def _distribute_analytic_in_sale_lines(self, picking, sale_order):
+    #     
+    #     # Agrupar qty_done por sale_line_id y lot_name
+    #     distribution_data = self._group_qty_by_sale_line_and_lot(picking.move_line_ids)
+        
+    #     # Aplicar distribución a cada línea de venta
+    #     for sale_line_id, lot_qty_map in distribution_data.items():
+    #         sale_line = self.env['sale.order.line'].browse(sale_line_id)
+            
+    #         # Buscar cuentas analíticas por código (lot_name)
+    #         lot_to_account = self._get_analytic_accounts_by_lot_names(lot_qty_map.keys())
+            
+    #         if not lot_to_account:
+    #             self._log_message('WARNING', 
+    #                 f'No se encontraron cuentas analíticas para los lotes de la línea {sale_line.id}')
+    #             continue
+            
+    #         analytic_dist = self._calculate_analytic_distribution(lot_qty_map, lot_to_account)
+            
+    #         if analytic_dist:
+    #             self._apply_analytic_distribution(sale_line, analytic_dist, 'sale')
 
     def _group_qty_by_sale_line_and_lot(self, move_lines):
         """
@@ -246,66 +262,89 @@ class StockPicking(models.Model):
     # MÉTODOS COMUNES DE DISTRIBUCIÓN ANALÍTICA
     # ============================================================================
 
-    def _calculate_analytic_distribution(self, lot_qty_map, lot_to_account):
+    def _calculate_analytic_distribution(self, lot_qty_map, lot_to_account, order_line=None):
         """
-        Calcula la distribución analítica equitativa según cantidades.
-        
-        Args:
-            lot_qty_map: {lot_name: qty}
-            lot_to_account: {lot_name: account_id}
-        
-        Returns:
-            {account_id: percentage} - Suma exacta 100%
+        Calcula distribución sobre qty TOTAL del pedido, no sobre qty_done parcial.
         """
-        total_qty = sum(lot_qty_map.values())
+        # Obtener cantidad TOTAL de la línea de pedido
+        if order_line:
+            total_qty = order_line.product_uom_qty  # Cantidad total pedida
+        else:
+            total_qty = sum(lot_qty_map.values())  # Fallback para compras
+        
         if total_qty == 0:
             return {}
         
         analytic_dist = {}
         
-        # Calcular porcentajes sin redondear
+        # Calcular porcentajes sobre TOTAL del pedido
         for lot_name, qty in lot_qty_map.items():
             account_id = lot_to_account.get(lot_name)
             if account_id:
                 percentage = (qty / total_qty) * 100
                 analytic_dist[account_id] = percentage
         
-        if not analytic_dist:
-            return {}
-        
-        # Ajustar para que sume exactamente 100%
-        current_sum = sum(analytic_dist.values())
-        if abs(current_sum - 100.0) > 0.01:
-            last_account = list(analytic_dist.keys())[-1]
-            analytic_dist[last_account] += (100.0 - current_sum)
-        
         return analytic_dist
 
-    def _apply_analytic_distribution(self, order_line, analytic_dist, operation_type):
+    # def _calculate_analytic_distribution(self, lot_qty_map, lot_to_account):
+    #  
+    #     total_qty = sum(lot_qty_map.values())
+    #     if total_qty == 0:
+    #         return {}
+        
+    #     analytic_dist = {}
+        
+    #     # Calcular porcentajes sin redondear
+    #     for lot_name, qty in lot_qty_map.items():
+    #         account_id = lot_to_account.get(lot_name)
+    #         if account_id:
+    #             percentage = (qty / total_qty) * 100
+    #             analytic_dist[account_id] = percentage
+        
+    #     if not analytic_dist:
+    #         return {}
+        
+    #     # Ajustar para que sume exactamente 100%
+    #     current_sum = sum(analytic_dist.values())
+    #     if abs(current_sum - 100.0) > 0.01:
+    #         last_account = list(analytic_dist.keys())[-1]
+    #         analytic_dist[last_account] += (100.0 - current_sum)
+        
+    #     return analytic_dist
+
+    def _apply_analytic_distribution_cumulative(self, order_line, analytic_dist, operation_type):
         """
-        Aplica la distribución analítica a una línea de pedido.
-        
-        Args:
-            order_line: purchase.order.line o sale.order.line
-            analytic_dist: {account_id: percentage}
-            operation_type: 'purchase', 'sale', 'repair', 'maintenance'
+        Acumula distribución sin normalizar (cada entrega suma su % real).
         """
-        suma_porcentajes = sum(analytic_dist.values())
+        current_dist = order_line.analytic_distribution or {}
         
-        # Log de debug
-        self._log_message('DEBUG', 
-            f'{operation_type.upper()} Line {order_line.id}: Distribución={analytic_dist}, Suma={suma_porcentajes:.2f}%')
+        # SUMAR porcentajes reales
+        merged_dist = dict(current_dist)
+        for account_id, percentage in analytic_dist.items():
+            account_str = str(account_id)
+            merged_dist[account_str] = merged_dist.get(account_str, 0.0) + percentage
         
-        # Validar que suma sea 100%
-        if abs(suma_porcentajes - 100.0) < 0.1:
-            # Reset completo - evita dilución de distribuciones previas
-            order_line.write({'analytic_distribution': analytic_dist})
+        order_line.write({'analytic_distribution': merged_dist})
+        self._log_message('INFO', f'Distribución acumulada: {merged_dist}')
+
+    # def _apply_analytic_distribution(self, order_line, analytic_dist, operation_type):
+   
+    #     suma_porcentajes = sum(analytic_dist.values())
+        
+    #     # Log de debug
+    #     self._log_message('DEBUG', 
+    #         f'{operation_type.upper()} Line {order_line.id}: Distribución={analytic_dist}, Suma={suma_porcentajes:.2f}%')
+        
+    #     # Validar que suma sea 100%
+    #     if abs(suma_porcentajes - 100.0) < 0.1:
+    #         # Reset completo - evita dilución de distribuciones previas
+    #         order_line.write({'analytic_distribution': analytic_dist})
             
-            self._log_message('INFO', 
-                f'Distribución aplicada en {operation_type} line {order_line.id}: {analytic_dist} (suma: {suma_porcentajes:.2f}%)')
-        else:
-            self._log_message('ERROR', 
-                f'{operation_type.upper()} Line {order_line.id}: Suma={suma_porcentajes:.2f}% != 100%. No aplicado.')
+    #         self._log_message('INFO', 
+    #             f'Distribución aplicada en {operation_type} line {order_line.id}: {analytic_dist} (suma: {suma_porcentajes:.2f}%)')
+    #     else:
+    #         self._log_message('ERROR', 
+    #             f'{operation_type.upper()} Line {order_line.id}: Suma={suma_porcentajes:.2f}% != 100%. No aplicado.')
 
     # ============================================================================
     # MÉTODOS DE UTILIDAD Y LOGGING
