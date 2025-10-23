@@ -46,6 +46,15 @@ class StockPicking(models.Model):
         if not picking.move_line_ids:
             return
         
+        # Detectar si es devolución de alquiler
+        if self._is_rental_return(picking):
+            self._clear_partner_from_rental_accounts(picking)
+            return
+        
+        # Lógica normal de compras...
+        if not picking.move_line_ids:
+            return
+
         # Recopilar lotes/series únicos
         lot_names = self._get_unique_lot_names(picking.move_line_ids)
         if not lot_names:
@@ -59,6 +68,27 @@ class StockPicking(models.Model):
             self._distribute_analytic_in_purchase_lines(picking, lot_to_account)
         else:
             self._log_message('WARNING', f'Picking {picking.name} sin orden de compra asociada')
+
+    def _is_rental_return(self, picking):
+        """Detecta si es devolución de alquiler."""
+        return (
+            picking.picking_type_id.code == 'incoming' 
+            and picking.origin 
+            and 'RENT' in picking.origin.upper()
+        )
+
+    def _clear_partner_from_rental_accounts(self, picking):
+        """Limpia partner de cuentas analíticas al devolver alquiler."""
+        lot_names = self._get_unique_lot_names(picking.move_line_ids)
+        
+        for lot_name in lot_names:
+            account = self.env['account.analytic.account'].search([
+                ('code', '=', lot_name),
+            ], limit=1)
+            
+            if account and account.partner_id:
+                account.write({'partner_id': False})
+                self._log_message('INFO', f'Cliente limpiado de cuenta {lot_name} (devolución alquiler)')
 
     def _get_unique_lot_names(self, move_lines):
         """Extrae nombres únicos de lotes/series de las líneas de movimiento."""
@@ -196,28 +226,33 @@ class StockPicking(models.Model):
             if analytic_dist:
                 self._apply_analytic_distribution_cumulative(sale_line, analytic_dist, 'sale')
 
-    # def _distribute_analytic_in_sale_lines(self, picking, sale_order):
-    #     
-    #     # Agrupar qty_done por sale_line_id y lot_name
-    #     distribution_data = self._group_qty_by_sale_line_and_lot(picking.move_line_ids)
-        
-    #     # Aplicar distribución a cada línea de venta
-    #     for sale_line_id, lot_qty_map in distribution_data.items():
-    #         sale_line = self.env['sale.order.line'].browse(sale_line_id)
-            
-    #         # Buscar cuentas analíticas por código (lot_name)
-    #         lot_to_account = self._get_analytic_accounts_by_lot_names(lot_qty_map.keys())
-            
-    #         if not lot_to_account:
-    #             self._log_message('WARNING', 
-    #                 f'No se encontraron cuentas analíticas para los lotes de la línea {sale_line.id}')
-    #             continue
-            
-    #         analytic_dist = self._calculate_analytic_distribution(lot_qty_map, lot_to_account)
-            
-    #         if analytic_dist:
-    #             self._apply_analytic_distribution(sale_line, analytic_dist, 'sale')
+                # ASIGNAR CLIENTE A LAS CUENTAS ANALÍTICAS
+                self._assign_partner_to_analytic_accounts(
+                    lot_to_account.values(), 
+                    sale_order.partner_id,
+                    is_rental=self._is_rental_order(sale_order)
+                )
 
+    def _assign_partner_to_analytic_accounts(self, account_ids, partner, is_rental=False):
+        """
+        Asigna cliente a cuentas analíticas.
+        Si es alquiler, solo asigna (se limpiará en devolución).
+        """
+        accounts = self.env['account.analytic.account'].browse(list(account_ids))
+        
+        for account in accounts:
+            # Si es alquiler, solo asignar si está vacío
+            if is_rental:
+                if not account.partner_id:
+                    account.write({'partner_id': partner.id})
+            else:
+                # Venta definitiva: siempre asignar
+                account.write({'partner_id': partner.id})
+
+    def _is_rental_order(self, sale_order):
+        """Detecta si es orden de alquiler."""
+        return sale_order.is_rental if hasattr(sale_order, 'is_rental') else False
+    
     def _group_qty_by_sale_line_and_lot(self, move_lines):
         """
         Agrupa cantidades por línea de venta y lote.
@@ -286,32 +321,7 @@ class StockPicking(models.Model):
         
         return analytic_dist
 
-    # def _calculate_analytic_distribution(self, lot_qty_map, lot_to_account):
-    #  
-    #     total_qty = sum(lot_qty_map.values())
-    #     if total_qty == 0:
-    #         return {}
-        
-    #     analytic_dist = {}
-        
-    #     # Calcular porcentajes sin redondear
-    #     for lot_name, qty in lot_qty_map.items():
-    #         account_id = lot_to_account.get(lot_name)
-    #         if account_id:
-    #             percentage = (qty / total_qty) * 100
-    #             analytic_dist[account_id] = percentage
-        
-    #     if not analytic_dist:
-    #         return {}
-        
-    #     # Ajustar para que sume exactamente 100%
-    #     current_sum = sum(analytic_dist.values())
-    #     if abs(current_sum - 100.0) > 0.01:
-    #         last_account = list(analytic_dist.keys())[-1]
-    #         analytic_dist[last_account] += (100.0 - current_sum)
-        
-    #     return analytic_dist
-
+   
     def _apply_analytic_distribution_cumulative(self, order_line, analytic_dist, operation_type):
         """
         Acumula distribución sin normalizar (cada entrega suma su % real).
@@ -327,25 +337,7 @@ class StockPicking(models.Model):
         order_line.write({'analytic_distribution': merged_dist})
         self._log_message('INFO', f'Distribución acumulada: {merged_dist}')
 
-    # def _apply_analytic_distribution(self, order_line, analytic_dist, operation_type):
-   
-    #     suma_porcentajes = sum(analytic_dist.values())
-        
-    #     # Log de debug
-    #     self._log_message('DEBUG', 
-    #         f'{operation_type.upper()} Line {order_line.id}: Distribución={analytic_dist}, Suma={suma_porcentajes:.2f}%')
-        
-    #     # Validar que suma sea 100%
-    #     if abs(suma_porcentajes - 100.0) < 0.1:
-    #         # Reset completo - evita dilución de distribuciones previas
-    #         order_line.write({'analytic_distribution': analytic_dist})
-            
-    #         self._log_message('INFO', 
-    #             f'Distribución aplicada en {operation_type} line {order_line.id}: {analytic_dist} (suma: {suma_porcentajes:.2f}%)')
-    #     else:
-    #         self._log_message('ERROR', 
-    #             f'{operation_type.upper()} Line {order_line.id}: Suma={suma_porcentajes:.2f}% != 100%. No aplicado.')
-
+    
     # ============================================================================
     # MÉTODOS DE UTILIDAD Y LOGGING
     # ============================================================================
@@ -361,18 +353,7 @@ class StockPicking(models.Model):
         # Log en Python logger
         log_method = getattr(_logger, level.lower(), _logger.info)
         log_method(message)
-        
-        # Log en ir.logging (opcional, para auditoría en BD)
-        # Comentar si genera demasiados registros
-        # self.env['ir.logging'].sudo().create({
-        #     'name': f'Analytic Distribution - {level}',
-        #     'type': 'server',
-        #     'level': level,
-        #     'message': message,
-        #     'path': 'stock.picking',
-        #     'func': 'button_validate',
-        #     'line': '1',
-        # })
+       
 
     def _handle_batches_and_backorders(self):
         """
