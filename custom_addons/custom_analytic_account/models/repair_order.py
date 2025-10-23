@@ -1,5 +1,4 @@
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -31,89 +30,51 @@ class RepairOrder(models.Model):
             else:
                 repair.analytic_account_id = False
 
-    def action_repair_confirm(self):
+    def action_create_sale_order(self):
         """
-        Override: Al confirmar la reparación, asigna distribución analítica a todas las líneas.
+        Override: Al crear el presupuesto, asigna distribución analítica a todas las líneas.
         """
-        res = super(RepairOrder, self).action_repair_confirm()
+        res = super(RepairOrder, self).action_create_sale_order()
         
         for repair in self:
-            repair._assign_analytic_to_repair_lines()
+            if repair.sale_order_id and repair.analytic_account_id:
+                repair._assign_analytic_to_sale_order_lines()
+            elif not repair.analytic_account_id:
+                _logger.warning(
+                    f"Reparación {repair.name}: No se encontró cuenta analítica para el lote/serie "
+                    f"{repair.lot_id.name if repair.lot_id else 'N/A'}"
+                )
         
         return res
 
-    def action_repair_invoice_create(self):
+    def _assign_analytic_to_sale_order_lines(self):
         """
-        Override: Al crear la factura, asegura que las líneas tengan distribución analítica.
-        """
-        res = super(RepairOrder, self).action_repair_invoice_create()
-        
-        for repair in self:
-            repair._assign_analytic_to_repair_lines()
-            # También asignar a líneas de factura si se crearon
-            if repair.invoice_id:
-                repair._assign_analytic_to_invoice_lines()
-        
-        return res
-
-    def _assign_analytic_to_repair_lines(self):
-        """
-        Asigna el 100% de distribución analítica a todas las líneas de operaciones
+        Asigna el 100% de distribución analítica a todas las líneas del pedido de venta
         basándose en la cuenta analítica del producto a reparar.
         """
         self.ensure_one()
         
-        if not self.analytic_account_id:
-            _logger.warning(
-                f"Reparación {self.name}: No se encontró cuenta analítica para el lote/serie {self.lot_id.name if self.lot_id else 'N/A'}"
-            )
+        if not self.sale_order_id or not self.analytic_account_id:
             return
         
         # Distribución: 100% a la cuenta analítica del producto reparado
-        analytic_dist = {self.analytic_account_id.id: 100.0}
+        analytic_dist = {str(self.analytic_account_id.id): 100.0}
         
-        # Aplicar a todas las líneas de operaciones (piezas/componentes)
         lines_updated = 0
-        for operation in self.operations:
-            if operation.type in ('add', 'remove'):  # Solo líneas de productos
-                operation.write({'analytic_distribution': analytic_dist})
-                lines_updated += 1
-        
-        # Aplicar a líneas de honorarios/mano de obra
-        for fee in self.fees_lines:
-            fee.write({'analytic_distribution': analytic_dist})
+        for sale_line in self.sale_order_id.order_line:
+            sale_line.write({'analytic_distribution': analytic_dist})
             lines_updated += 1
         
         _logger.info(
-            f"Reparación {self.name}: {lines_updated} líneas actualizadas con distribución analítica {analytic_dist}"
-        )
-
-    def _assign_analytic_to_invoice_lines(self):
-        """
-        Asigna distribución analítica a las líneas de factura generadas.
-        """
-        self.ensure_one()
-        
-        if not self.invoice_id or not self.analytic_account_id:
-            return
-        
-        analytic_dist = {self.analytic_account_id.id: 100.0}
-        
-        for invoice_line in self.invoice_id.invoice_line_ids:
-            # Solo actualizar líneas relacionadas con esta reparación
-            if invoice_line.name and self.name in invoice_line.name:
-                invoice_line.write({'analytic_distribution': analytic_dist})
-        
-        _logger.info(
-            f"Reparación {self.name}: Distribución analítica aplicada a factura {self.invoice_id.name}"
+            f"Reparación {repair.name}: Distribución analítica aplicada a {lines_updated} líneas "
+            f"del pedido de venta {self.sale_order_id.name}"
         )
 
     @api.onchange('lot_id')
     def _onchange_lot_id(self):
         """
-        Al cambiar el lote/serie, recalcula la cuenta analítica.
+        Al cambiar el lote/serie, muestra warning si no existe cuenta analítica.
         """
-        # El compute se encarga, pero podemos mostrar un warning si no existe
         if self.lot_id:
             account = self.env['account.analytic.account'].search([
                 ('code', '=', self.lot_id.name),

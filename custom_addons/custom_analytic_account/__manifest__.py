@@ -19,6 +19,9 @@
         'purchase',
         'stock',
         'account',
+        'sale',
+        'sale_stock',
+        'repair'        
     ],
     'data': [        
     ],    
