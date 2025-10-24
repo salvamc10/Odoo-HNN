@@ -63,13 +63,8 @@ class RepairOrder(models.Model):
         lines_updated = 0
         for sale_line in self.sale_order_id.order_line:
             sale_line.write({'analytic_distribution': analytic_dist})
-            lines_updated += 1
+            lines_updated += 1        
         
-        _logger.info(
-            f"Reparación {repair.name}: Distribución analítica aplicada a {lines_updated} líneas "
-            f"del pedido de venta {self.sale_order_id.name}"
-        )
-
     @api.onchange('lot_id')
     def _onchange_lot_id(self):
         """
