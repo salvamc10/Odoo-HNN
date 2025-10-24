@@ -45,7 +45,7 @@ class StockPickingPurchase(models.Model):
     def _create_or_get_analytic_accounts(self, lot_names):
         """
         Crea o recupera cuentas analíticas para cada lote/serie.
-        Retorna dict: {lot_name: account_id}
+        Retorna dict: {lot_name: account_record} (FIX: records, no IDs)
         """
         lot_to_account = {}
         analytic_plan = self._get_default_analytic_plan()
@@ -59,7 +59,7 @@ class StockPickingPurchase(models.Model):
             ], limit=1)
             
             if existing_account:
-                lot_to_account[lot_name] = existing_account.id
+                lot_to_account[lot_name] = existing_account  # Record
                 self._log_message('INFO', f'Cuenta analítica existente: {lot_name} (ID: {existing_account.id})')
             else:
                 new_account = self.env['account.analytic.account'].create({
@@ -69,7 +69,7 @@ class StockPickingPurchase(models.Model):
                     'plan_id': analytic_plan.id,
                     'active': True,
                 })
-                lot_to_account[lot_name] = new_account.id
+                lot_to_account[lot_name] = new_account  # Record directo
                 self._log_message('INFO', f'Cuenta analítica creada: {lot_name} → {new_account.name} (ID: {new_account.id})')
         
         return lot_to_account
@@ -87,10 +87,11 @@ class StockPickingPurchase(models.Model):
         for purchase_line_id, lot_qty_map in distribution_data.items():
             purchase_line = self.env['purchase.order.line'].browse(purchase_line_id)
             analytic_dist = self._calculate_analytic_distribution(
-                lot_qty_map, lot_to_account, order_line=None
+                lot_qty_map, lot_to_account, order_line=purchase_line
             )
             
             if analytic_dist:
+                # FIX: Para compras, usa _apply_analytic_distribution (sobrescribe), no cumulative
                 self._apply_analytic_distribution(purchase_line, analytic_dist, 'purchase')
 
     def _group_qty_by_purchase_line_and_lot(self, move_lines):

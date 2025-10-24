@@ -68,7 +68,7 @@ class StockPickingSale(models.Model):
                 
                 # ASIGNAR CLIENTE A LAS CUENTAS ANALÍTICAS (venta definitiva)
                 self._assign_partner_to_analytic_accounts(
-                    lot_to_account.values(), 
+                    lot_to_account.values(),  # FIX: Ya son records
                     sale_order.partner_id,
                     is_rental=False
                 )
@@ -99,28 +99,25 @@ class StockPickingSale(models.Model):
     def _get_analytic_accounts_by_lot_names(self, lot_names):
         """
         Busca cuentas analíticas por código (lot_name).
-        Retorna: {lot_name: account_id}
+        Retorna: {lot_name: account_record} (FIX: records, no IDs)
         """
         lot_to_account = {}
-        
-        for lot_name in lot_names:
-            account = self.env['account.analytic.account'].search([
-                ('code', '=', lot_name),
-            ], limit=1)
-            
-            if account:
-                lot_to_account[lot_name] = account.id
+        accounts = self.env['account.analytic.account'].search([
+            ('code', 'in', list(lot_names))
+        ])
+        for acc in accounts:
+            lot_to_account[acc.code] = acc  # Record
         
         return lot_to_account
 
-    def _assign_partner_to_analytic_accounts(self, account_ids, partner, is_rental=False):
+    def _assign_partner_to_analytic_accounts(self, accounts, partner, is_rental=False):
         """
         Asigna cliente a cuentas analíticas.
         - Venta definitiva: siempre asigna
         - Alquiler: solo asigna si está vacío (no sobrescribe)
-        """
-        accounts = self.env['account.analytic.account'].browse(list(account_ids))
         
+        FIX: accounts ya son records (iterable de records)
+        """
         for account in accounts:
             if is_rental:
                 # Alquiler: solo asignar si está vacío

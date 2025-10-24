@@ -48,105 +48,122 @@ class StockPickingCommon(models.Model):
 
     def _calculate_analytic_distribution(self, lot_qty_map, lot_to_account, order_line=None):
         """
-        Calcula la distribución analítica proporcional según cantidades.
+        Calcula % basado en PROPORCIÓN de lotes en el pedido total, NO en qty_done.
         
-        Args:
-            lot_qty_map: {lot_name: qty}
-            lot_to_account: {lot_name: account_id}
-            order_line: Línea de pedido (ventas) o None (compras)
+        Ejemplo: Pedido 3 ud con lotes [A, B, C]
+        - Entrega 1: 2 ud [A, B] → A:33.33%, B:33.33% (no 50/50)
+        - Entrega 2: 1 ud [C] → C:33.33%
+        - Total acumulado: 100%
         
-        Returns:
-            {account_id_str: percentage} - Suma exacta 100%
+        FIX: Si lot_to_account tiene ints (IDs), browse a records.
         """
-        # Determinar cantidad total
-        if order_line and hasattr(order_line, 'product_uom_qty'):
-            # VENTAS: usar cantidad total pedida (para entregas parciales)
-            total_qty = order_line.product_uom_qty
-        else:
-            # COMPRAS: usar suma de cantidades entregadas
+        if not order_line:
+            # Sin order_line, reparto equitativo entre lotes
             total_qty = sum(lot_qty_map.values())
+        else:
+            # Con order_line, usar cantidad TOTAL del pedido
+            total_qty = getattr(order_line, 'product_qty', getattr(order_line, 'product_uom_qty', 0))
         
         if total_qty == 0:
             return {}
         
+        # FIX: Asegurar que lot_to_account tiene records (no IDs)
+        fixed_lot_to_account = {}
+        for lot_name, account in lot_to_account.items():
+            if isinstance(account, int):
+                account_rec = self.env['account.analytic.account'].browse(account)
+                if account_rec.exists():
+                    fixed_lot_to_account[lot_name] = account_rec
+                    _logger.info(f'  - Convertido ID {account} a record para {lot_name}')
+                else:
+                    _logger.warning(f'Cuenta ID {account} no existe para {lot_name}')
+                    continue
+            else:
+                fixed_lot_to_account[lot_name] = account
+        
+        lot_to_account = fixed_lot_to_account
+        
         analytic_dist = {}
+        for lot_name, qty_done in lot_qty_map.items():
+            account = lot_to_account.get(lot_name)
+            if account:
+                # Porcentaje = cantidad de este lote / cantidad total pedida (fijo, parcial OK)
+                percentage = round((qty_done / total_qty) * 100, 2)
+                analytic_dist[str(account.id)] = percentage
         
-        # Calcular porcentajes
-        for lot_name, qty in lot_qty_map.items():
-            account_id = lot_to_account.get(lot_name)
-            if account_id:
-                percentage = (qty / total_qty) * 100
-                analytic_dist[str(account_id)] = percentage
-        
-        if not analytic_dist:
-            return {}
-        
-        # Ajustar para que sume exactamente 100% (solo para compras)
-        if not order_line:
-            current_sum = sum(analytic_dist.values())
-            if abs(current_sum - 100.0) > 0.01:
-                last_account = list(analytic_dist.keys())[-1]
-                analytic_dist[last_account] += (100.0 - current_sum)
-        
+        _logger.info(f'  - Distribución calculada para esta entrega: {analytic_dist} (total_qty: {total_qty}, qty_this: {sum(lot_qty_map.values())})')
         return analytic_dist
-
+        
     def _apply_analytic_distribution(self, order_line, analytic_dist, operation_type):
         """
-        Aplica la distribución analítica a una línea de pedido (COMPRAS).
-        Sobrescribe completamente la distribución anterior.
+        Aplica la distribución analítica de forma ACUMULATIVA (para COMPRAS con recepciones parciales).
+        Agrega % nuevos a existentes, SIN normalizar (suma natural a 100% al final).
+        No check de 100%: Aplica parciales, Odoo prorratea.
         
         Args:
             order_line: purchase.order.line
-            analytic_dist: {account_id_str: percentage}
+            analytic_dist: {account_id_str: percentage} (parcial)
             operation_type: 'purchase'
         """
-        suma_porcentajes = sum(analytic_dist.values())
+        if not analytic_dist:
+            return
+        
+        # Obtener distribución actual
+        current_dist = order_line.analytic_distribution or {}
+        
+        # AGREGAR nueva distribución a la existente (sin tocar previos)
+        merged_dist = current_dist.copy()
+        for acc_id_str, percentage in analytic_dist.items():
+            if acc_id_str in merged_dist:
+                merged_dist[acc_id_str] += percentage  # Acumula si lote repetido (raro)
+            else:
+                merged_dist[acc_id_str] = percentage
+        
+        suma_porcentajes = sum(merged_dist.values())
         
         self._log_message('DEBUG', 
-            f'{operation_type.upper()} Line {order_line.id}: Distribución={analytic_dist}, Suma={suma_porcentajes:.2f}%')
+            f'{operation_type.upper()} Line {order_line.id}: Nueva dist={analytic_dist}, Acumulada={merged_dist}, Suma total={suma_porcentajes:.2f}%')
         
-        if abs(suma_porcentajes - 100.0) < 0.1:
-            order_line.write({'analytic_distribution': analytic_dist})
-            
-            self._log_message('INFO', 
-                f'Distribución aplicada en {operation_type} line {order_line.id}: {analytic_dist} (suma: {suma_porcentajes:.2f}%)')
-        else:
-            self._log_message('ERROR', 
-                f'{operation_type.upper()} Line {order_line.id}: Suma={suma_porcentajes:.2f}% != 100%. No aplicado.')
+        # Siempre aplica (parcial OK, suma crece a 100%)
+        order_line.write({'analytic_distribution': merged_dist})
+        
+        self._log_message('INFO', 
+            f'Distribución acumulada aplicada en {operation_type} line {order_line.id}: {merged_dist} (suma: {suma_porcentajes:.2f}%)')
 
     def _apply_analytic_distribution_cumulative(self, order_line, analytic_dist, operation_type):
         """
         Aplica distribución analítica de forma acumulativa (VENTAS con entregas parciales).
-        Suma a la distribución existente y normaliza a 100%.
+        Agrega % nuevos a existentes, SIN normalizar (suma natural a 100% al final).
         
         Args:
             order_line: sale.order.line
-            analytic_dist: {account_id_str: percentage}
+            analytic_dist: {account_id_str: percentage} (parcial)
             operation_type: 'sale'
         """
+        if not analytic_dist:
+            return
+        
         # Obtener distribución actual
         current_dist = order_line.analytic_distribution or {}
         
-        # SUMAR nueva distribución a la existente
-        merged_dist = {}
-        all_accounts = set(current_dist.keys()) | set(analytic_dist.keys())
+        # AGREGAR nueva distribución a la existente (sin tocar previos)
+        merged_dist = current_dist.copy()
+        for acc_id_str, percentage in analytic_dist.items():
+            if acc_id_str in merged_dist:
+                merged_dist[acc_id_str] += percentage  # Acumula si lote repetido
+            else:
+                merged_dist[acc_id_str] = percentage
         
-        for account_id_str in all_accounts:
-            current_value = current_dist.get(account_id_str, 0.0)
-            new_value = analytic_dist.get(account_id_str, 0.0)
-            merged_dist[account_id_str] = current_value + new_value
+        suma_porcentajes = sum(merged_dist.values())
         
-        # Normalizar a 100%
-        total = sum(merged_dist.values())
-        if total > 0:
-            normalized_dist = {k: (v / total) * 100 for k, v in merged_dist.items()}
-            order_line.write({'analytic_distribution': normalized_dist})
-            
-            self._log_message('INFO', 
-                f'Distribución acumulada en {operation_type} line {order_line.id}: {normalized_dist}')
-        else:
-            self._log_message('ERROR', 
-                f'{operation_type} line {order_line.id}: Total acumulado es 0, no se aplicó distribución')
+        self._log_message('DEBUG', 
+            f'{operation_type.upper()} Line {order_line.id}: Nueva dist={analytic_dist}, Acumulada={merged_dist}, Suma total={suma_porcentajes:.2f}%')
+        
+        # Siempre aplica (parcial OK)
+        order_line.write({'analytic_distribution': merged_dist})
+        
+        self._log_message('INFO', 
+            f'Distribución acumulada aplicada en {operation_type} line {order_line.id}: {merged_dist} (suma: {suma_porcentajes:.2f}%)')
 
     # ============================================================================
     # MÉTODOS DE UTILIDAD Y LOGGING

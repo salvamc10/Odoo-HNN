@@ -3,111 +3,137 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class RentalOrderWizard(models.TransientModel):
-    """Interceptar validación del wizard de alquiler"""
-    _inherit = 'rental.order.wizard'
+class RentalOrderWizardLine(models.TransientModel):
+    """Capturar datos de las líneas ANTES de que el wizard las procese"""
+    _inherit = 'rental.order.wizard.line'
     
-    def apply(self):
-        _logger.info('========== WIZARD APPLY EJECUTADO ==========')
-        res = super().apply()
-        _logger.info(f'========== RESULTADO SUPER: {res} ==========')
+    def write(self, vals):
+        """Interceptar cuando se asignan lotes en el wizard"""
+        res = super().write(vals)
         
-        picking = self._get_validated_picking()
-        _logger.info(f'========== PICKING ENCONTRADO: {picking} ==========')
-        
-        if picking:
-            _logger.info(f'[WIZARD] Procesando picking {picking.name} desde wizard')
-            
-            # Determinar si es entrega o devolución
-            if self.status == 'pickup':
-                self._process_rental_outgoing(picking)
-            elif self.status == 'return':
-                self._process_rental_incoming(picking)
+        # Si se está asignando un lote/serie
+        if 'lot_id' in vals and vals['lot_id']:
+            _logger.info(f'[WIZARD LINE] Lote asignado: {self.lot_id.name} - Cantidad: {self.product_uom_qty}')
         
         return res
+
+class StockMove(models.Model):
+    """Procesar en el momento en que se valida el movimiento de stock"""
+    _inherit = 'stock.move'
     
-    def _get_validated_picking(self):
-        """Obtener el picking recién validado"""
-        # El wizard tiene acceso al pedido
-        order = self.order_id
+    def _action_done(self, cancel_backorder=False):
+        res = super()._action_done(cancel_backorder=cancel_backorder)
         
-        if not order or not hasattr(order, 'is_rental') or not order.is_rental:
-            return False
+        rental_moves = self.filtered(lambda m: 
+            m.sale_line_id and 
+            m.sale_line_id.order_id and
+            m.sale_line_id.order_id.is_rental_order
+        )
         
-        # Buscar el último picking validado del pedido
-        picking = self.env['stock.picking'].search([
-            ('origin', '=', order.name),
-            ('state', '=', 'done')
-        ], order='date_done desc', limit=1)
+        for move in rental_moves:
+            _logger.info(f'[RENTAL MOVE] {move.reference}')
+            _logger.info(f'  - Origen: {move.location_id.name} (usage: {move.location_id.usage})')
+            _logger.info(f'  - Destino: {move.location_dest_id.name} (usage: {move.location_dest_id.usage})')
+            _logger.info(f'  - Picking ID: {move.picking_id.name if move.picking_id else "None"}')
+            _logger.info(f'  - Tipo picking: {move.picking_type_id.code if move.picking_type_id else "N/A"}')
+            
+            try:
+                # Detección principal: por picking_type (si existe)
+                if move.picking_type_id:
+                    if move.picking_type_id.code == 'outgoing':
+                        _logger.info('  → ES ENTREGA (por picking)')
+                        self._process_rental_delivery(move)
+                    elif move.picking_type_id.code == 'incoming':
+                        _logger.info('  → ES DEVOLUCIÓN (por picking)')
+                        self._process_rental_return(move)
+                else:
+                    # Fallback: Por nombres de ubicación (específico para flujos internos de rental)
+                    origin_name = move.location_id.name.lower()
+                    dest_name = move.location_dest_id.name.lower()
+                    
+                    if 'stock' in origin_name and 'rental' in dest_name:
+                        _logger.info('  → ES ENTREGA (por ubicación: Stock → Rental)')
+                        self._process_rental_delivery(move)
+                    elif 'rental' in origin_name and 'stock' in dest_name:
+                        _logger.info('  → ES DEVOLUCIÓN (por ubicación: Rental → Stock)')
+                        self._process_rental_return(move)
+                    else:
+                        # Fallback adicional: Por usage (para flujos con customer, si aplica)
+                        if move.location_dest_id.usage == 'customer':
+                            _logger.info('  → ES ENTREGA (por usage: a customer)')
+                            self._process_rental_delivery(move)
+                        elif move.location_id.usage == 'customer':
+                            _logger.info('  → ES DEVOLUCIÓN (por usage: desde customer)')
+                            self._process_rental_return(move)
+                        else:
+                            _logger.warning(f'  ⚠ Ubicación no reconocida: {move.location_id.name} → {move.location_dest_id.name} (usages: {move.location_id.usage} → {move.location_dest_id.usage})')
+            except Exception as e:
+                _logger.error(f'Error procesando movimiento {move.reference}: {str(e)}')
         
-        return picking
-    
-    def _process_rental_outgoing(self, picking):
-        """Procesa entregas de alquiler"""
-        rental_order = picking.sale_id
+        return res
         
-        if not rental_order or not picking.move_line_ids:
+    def _process_rental_delivery(self, move):
+        """Procesar entregas de alquiler"""
+        if not move.move_line_ids:
+            _logger.warning(f'No se encontraron move lines en el movimiento {move.reference}')
             return
         
-        distribution_data = self._group_qty_by_sale_line_and_lot(picking.move_line_ids)
+        sale_line = move.sale_line_id
+        rental_order = sale_line.order_id
         
-        for sale_line_id, lot_qty_map in distribution_data.items():
-            sale_line = self.env['sale.order.line'].browse(sale_line_id)
-            lot_to_account = self._get_analytic_accounts_by_lot_names(lot_qty_map.keys())
-            
-            if not lot_to_account:
-                continue
-            
-            analytic_dist = self._calculate_analytic_distribution(
-                lot_qty_map, lot_to_account, order_line=sale_line
-            )
-            
-            if analytic_dist:
-                self._apply_analytic_distribution(sale_line, analytic_dist, 'rental')
-                self._assign_partner_to_analytic_accounts(
-                    lot_to_account.values(), rental_order.partner_id, is_rental=True
-                )
-                _logger.info(f'✓ Distribución aplicada a {sale_line.display_name}')
-    
-    def _process_rental_incoming(self, picking):
-        """Procesa devoluciones"""
-        rental_order = picking.sale_id
+        # Agrupar cantidades por lote
+        lot_qty_map = {}
+        for ml in move.move_line_ids:
+            if ml.lot_id:
+                lot_name = ml.lot_id.name
+                lot_qty_map[lot_name] = lot_qty_map.get(lot_name, 0) + ml.quantity
         
-        if not rental_order or not picking.move_line_ids:
+        if not lot_qty_map:
+            _logger.warning(f'No se encontraron lotes en el movimiento {move.reference}')
             return
         
-        lot_names = self._get_unique_lot_names(picking.move_line_ids)
+        # Obtener cuentas analíticas usando el método helper
+        lot_to_account = self._get_analytic_accounts_by_lot_names(lot_qty_map.keys())
         
-        for lot_name in lot_names:
-            account = self.env['account.analytic.account'].search([
-                ('code', '=', lot_name)
-            ], limit=1)
-            
-            if account and account.partner_id:
-                account.write({'partner_id': False})
-                _logger.info(f'✓ Cliente limpiado de cuenta {lot_name}')
-    
-    # Métodos auxiliares (copiar de tu modelo stock.picking)
-    def _group_qty_by_sale_line_and_lot(self, move_lines):
-        """Agrupa cantidades por línea de venta y lote"""
-        result = {}
-        for ml in move_lines:
-            if not ml.sale_line_id or not ml.lot_id:
-                continue
-            
-            sale_line_id = ml.sale_line_id.id
-            lot_name = ml.lot_id.name
-            
-            if sale_line_id not in result:
-                result[sale_line_id] = {}
-            
-            result[sale_line_id][lot_name] = result[sale_line_id].get(lot_name, 0) + ml.quantity
+        if not lot_to_account:
+            _logger.warning(f'No se encontraron cuentas analíticas para lotes: {list(lot_qty_map.keys())}')
+            return
         
-        return result
+        # Calcular distribución
+        total_qty = sum(lot_qty_map.values())
+        distribution = {}
+        
+        for lot_name, qty in lot_qty_map.items():
+            account = lot_to_account.get(lot_name)
+            if account:
+                percentage = round((qty / total_qty) * 100, 2)
+                distribution[str(account.id)] = percentage
+        
+        if distribution:
+            sale_line.write({'analytic_distribution': distribution})
+            _logger.info(f'✓ Distribución aplicada: {distribution}')
+            
+            # Asignar cliente a cuentas
+            for account in lot_to_account.values():
+                if not account.partner_id:
+                    account.write({'partner_id': rental_order.partner_id.id})
+                    _logger.info(f'✓ Cliente asignado a cuenta {account.code}')
     
-    def _get_unique_lot_names(self, move_lines):
-        """Extrae nombres únicos de lotes"""
-        return list(set(ml.lot_id.name for ml in move_lines if ml.lot_id))
+    def _process_rental_return(self, move):
+        """Procesar devoluciones de alquiler"""
+        if not move.move_line_ids:
+            _logger.warning(f'No se encontraron move lines en el movimiento {move.reference}')
+            return
+        
+        for ml in move.move_line_ids:
+            if ml.lot_id:
+                lot_names = [ml.lot_id.name]  # Para usar el helper
+                lot_to_account = self._get_analytic_accounts_by_lot_names(lot_names)
+                account = lot_to_account.get(ml.lot_id.name)
+                
+                if account and account.partner_id:
+                    account.write({'partner_id': False})
+                    _logger.info(f'✓ Cliente limpiado de cuenta {account.code}')
     
     def _get_analytic_accounts_by_lot_names(self, lot_names):
         """Mapea lotes a cuentas analíticas"""
@@ -115,28 +141,3 @@ class RentalOrderWizard(models.TransientModel):
             ('code', 'in', list(lot_names))
         ])
         return {acc.code: acc for acc in accounts}
-    
-    def _calculate_analytic_distribution(self, lot_qty_map, lot_to_account, order_line=None):
-        """Calcula distribución proporcional"""
-        total_qty = sum(lot_qty_map.values())
-        if total_qty == 0:
-            return {}
-        
-        distribution = {}
-        for lot_name, qty in lot_qty_map.items():
-            account = lot_to_account.get(lot_name)
-            if account:
-                percentage = round((qty / total_qty) * 100, 2)
-                distribution[str(account.id)] = percentage
-        
-        return distribution
-    
-    def _apply_analytic_distribution(self, sale_line, distribution, source):
-        """Aplica distribución a la línea de venta"""
-        sale_line.write({'analytic_distribution': distribution})
-    
-    def _assign_partner_to_analytic_accounts(self, accounts, partner, is_rental=False):
-        """Asigna cliente a cuentas analíticas"""
-        for account in accounts:
-            if not account.partner_id:
-                account.write({'partner_id': partner.id})
